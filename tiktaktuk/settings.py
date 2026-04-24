@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -76,12 +77,35 @@ WSGI_APPLICATION = 'tiktaktuk.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+database_url = os.getenv('DATABASE_URL')
+
+if database_url:
+    parsed_url = urlparse(database_url)
+    query_params = parse_qs(parsed_url.query)
+
+    db_options = {}
+    if 'sslmode' in query_params and query_params['sslmode']:
+        db_options['sslmode'] = query_params['sslmode'][0]
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': unquote(parsed_url.path.lstrip('/')),
+            'USER': unquote(parsed_url.username or ''),
+            'PASSWORD': unquote(parsed_url.password or ''),
+            'HOST': parsed_url.hostname,
+            'PORT': parsed_url.port or 5432,
+            'OPTIONS': db_options,
+            'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -120,7 +144,4 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
