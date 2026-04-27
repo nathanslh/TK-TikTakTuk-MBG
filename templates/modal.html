@@ -1,1 +1,87 @@
-<div id="modal-root"></div>
+<div id="modal-root">
+	<div id="login-modal" class="fixed inset-0 z-[100] hidden" aria-hidden="true">
+		<div data-close-login-modal class="absolute inset-0 bg-[#2d2418]/45 backdrop-blur-[1.5px]"></div>
+
+		<div class="relative min-h-screen flex items-center justify-center p-4">
+			<div class="w-full max-w-md rounded-2xl border border-[#e9dbc1] bg-[#fffaf0] shadow-2xl">
+				<div class="px-5 py-4 border-b border-[#f0e2c5] flex items-start justify-between gap-3">
+					<div>
+						<h2 class="text-xl font-bold text-[#3d2f1f]">Masuk ke Akun Anda</h2>
+						<p class="mt-1 text-sm text-[#8c7656]">Gunakan kredensial Anda untuk mengakses platform.</p>
+					</div>
+					<button type="button" data-close-login-modal class="h-8 w-8 rounded-md text-[#7a6343] hover:bg-[#f7ecd8]" aria-label="Tutup modal">
+						x
+					</button>
+				</div>
+
+				<form action="#" method="post" class="p-5 grid gap-4">
+					{% csrf_token %}
+					<div>
+						<label for="modal-username" class="block mb-1.5 text-sm font-semibold text-[#6a5333]">Username</label>
+						<input id="modal-username" name="username" type="text" placeholder="Masukkan username" class="w-full rounded-lg border border-[#e6d7bb] bg-[#fffef9] px-3 py-2.5 outline-none focus:border-[#d0ac75] focus:ring-4 focus:ring-[#d6ae6f]/25">
+					</div>
+					<div>
+						<label for="modal-password" class="block mb-1.5 text-sm font-semibold text-[#6a5333]">Password</label>
+						<input id="modal-password" name="password" type="password" placeholder="Masukkan password" class="w-full rounded-lg border border-[#e6d7bb] bg-[#fffef9] px-3 py-2.5 outline-none focus:border-[#d0ac75] focus:ring-4 focus:ring-[#d6ae6f]/25">
+					</div>
+
+					<button type="submit" class="w-full rounded-xl border-none px-4 py-2.5 font-semibold text-white bg-gradient-to-br from-[#cfac7a] to-[#b9905c] hover:brightness-105">
+						Masuk
+					</button>
+
+					<p class="text-sm text-center text-[#806949]">
+						Belum punya akun?
+						<a href="{% url 'register' %}" class="font-bold text-[#8c6a3e] hover:underline">Daftar sekarang</a>
+					</p>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	(function () {
+		const modal = document.getElementById('login-modal');
+		if (!modal) {
+			return;
+		}
+
+		const openers = document.querySelectorAll('[data-open-login-modal]');
+		const closers = modal.querySelectorAll('[data-close-login-modal]');
+
+		const openModal = function () {
+			modal.classList.remove('hidden');
+			modal.setAttribute('aria-hidden', 'false');
+			document.body.style.overflow = 'hidden';
+
+			const firstInput = modal.querySelector('#modal-username');
+			if (firstInput) {
+				firstInput.focus();
+			}
+		};
+
+		const closeModal = function () {
+			modal.classList.add('hidden');
+			modal.setAttribute('aria-hidden', 'true');
+			document.body.style.overflow = '';
+		};
+
+		openers.forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				openModal();
+			});
+		});
+
+		closers.forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				closeModal();
+			});
+		});
+
+		document.addEventListener('keydown', function (event) {
+			if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+				closeModal();
+			}
+		});
+	})();
+</script>

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Pilih Role - TikTakTuk{% endblock %}
+
+{% block content %}
+<main class="auth-wrap">
+	<section class="auth-brand">
+		<div class="auth-logo">TT</div>
+		<h1 class="auth-title">TikTakTuk</h1>
+		<p class="auth-subtitle">Daftar untuk Memulai</p>
+	</section>
+
+	<section class="auth-card">
+		<h2 class="auth-section-title">Jenis Pengguna</h2>
+		<p class="auth-muted">Pilih jenis akun yang sesuai dengan kebutuhan Anda.</p>
+
+		<div class="role-grid">
+			<a href="{% url 'register_customer' %}" class="role-card">
+				<h3 class="role-name">Pelanggan</h3>
+				<p class="role-desc">Beli tiket, kelola pesanan, dan eksplor event favorit.</p>
+			</a>
+
+			<a href="{% url 'register_organizer' %}" class="role-card">
+				<h3 class="role-name">Penyelenggara</h3>
+				<p class="role-desc">Buat event, atur venue, dan kelola penjualan tiket.</p>
+			</a>
+
+			<a href="{% url 'register_admin' %}" class="role-card">
+				<h3 class="role-name">Admin</h3>
+				<p class="role-desc">Akses administrasi sistem untuk kebutuhan internal.</p>
+			</a>
+		</div>
+	</section>
+
+	<p class="auth-footer">Sudah punya akun? <button type="button" data-open-login-modal class="auth-link">Login di sini</button></p>
+</main>
+{% endblock %}

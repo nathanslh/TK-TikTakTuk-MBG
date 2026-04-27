@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrasi Admin - TikTakTuk{% endblock %}
+
+{% block content %}
+<main class="auth-wrap">
+  <section class="auth-brand">
+    <div class="auth-logo">TT</div>
+    <h1 class="auth-title">TikTakTuk</h1>
+    <p class="auth-subtitle">Daftar untuk Memulai</p>
+  </section>
+
+  <section class="auth-card">
+    <p><a class="auth-link" href="{% url 'register' %}">← Kembali</a></p>
+    <h2 class="auth-section-title" style="margin-top: .8rem;">Registrasi Admin</h2>
+    <p class="auth-muted">Akun Admin digunakan untuk keperluan internal sistem.</p>
+    <div class="role-grid">
+      <div class="role-card">
+        <h3 class="role-name">Akses Terbatas</h3>
+        <p class="role-desc">Frontend ini disiapkan untuk preview desain. Aktivasi akun Admin dapat dihubungkan ke backend pada tahap implementasi berikutnya.</p>
+      </div>
+    </div>
+    <p style="margin-top: 1rem;"><button type="button" data-open-login-modal class="auth-link">Buka Login</button></p>
+  </section>
+</main>
+{% endblock %}
