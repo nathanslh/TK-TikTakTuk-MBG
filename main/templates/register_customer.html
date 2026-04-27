@@ -7,13 +7,12 @@
   <section class="auth-brand">
     <div class="auth-logo">TT</div>
     <h1 class="auth-title">TikTakTuk</h1>
-    <p class="auth-subtitle">Daftar untuk Memulai</p>
+    <p class="auth-subtitle">Daftar sebagai pelanggan</p>
   </section>
 
   <section class="auth-card">
     <p><a class="auth-link" href="{% url 'register' %}">← Kembali</a></p>
-    <h2 class="auth-section-title" style="margin-top: .8rem;">Daftar sebagai Pelanggan</h2>
-    <p class="auth-muted">Buat akun baru untuk mulai mencari event dan membeli tiket.</p>
+    <h2 class="auth-section-title section-spacer">Daftar sebagai Pelanggan</h2>
 
     <form class="form-grid" action="#" method="post">
       {% csrf_token %}
@@ -42,8 +41,8 @@
         <input class="form-input" id="confirm_password" name="confirm_password" type="password" placeholder="Konfirmasi password" required>
       </div>
 
-      <label style="display:flex; gap:.5rem; align-items:flex-start; color:#7b6646; margin-top:.2rem;">
-        <input type="checkbox" required style="margin-top: .25rem;">
+      <label class="inline-check">
+        <input type="checkbox" required>
         <span>Saya setuju dengan <a class="auth-link" href="#">Syarat & Ketentuan</a></span>
       </label>
 
