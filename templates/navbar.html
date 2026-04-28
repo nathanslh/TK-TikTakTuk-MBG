@@ -1,5 +1,5 @@
 <div class="header-shell">
-  <header class="site-header sticky top-4 z-50">
+  <header class="site-header sticky top-0 z-50">
     <nav class="site-nav" aria-label="Navigasi utama">
       <a href="{% url 'home' %}" class="brand-link">
         <span class="brand-mark">TT</span>
@@ -23,7 +23,7 @@
             <a href="#" class="nav-link">Profile</a>
           {% else %}
             <a href="{% url 'home' %}" class="nav-link">Dashboard</a>
-            <a href="#" class="nav-link">Profile</a>
+            <a href="{% url 'profile_customer' %}" class="nav-link">Profile</a>
           {% endif %}
 
           <a href="#" class="nav-link nav-link-ghost">Logout</a>
