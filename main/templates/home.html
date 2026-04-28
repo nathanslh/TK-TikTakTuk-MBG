@@ -3,5 +3,72 @@
 {% block title %}Beranda - TikTakTuk{% endblock %}
 
 {% block content %}
-<main></main>
+<main class="profile-wrap">
+	<section class="page-hero">
+		<div class="hero-grid">
+			<div>
+				<span class="home-badge">Dashboard TikTakTuk</span>
+				<h1 class="home-title">Kelola event tanpa tampilan yang berantakan.</h1>
+				<p class="home-copy">
+					TikTakTuk dirapikan jadi lebih jelas, lebih hangat, dan lebih mudah dipakai. Navigasi, form, profil, dan manajemen venue sekarang punya bahasa visual yang sama.
+				</p>
+
+				<div class="home-actions">
+					<a href="{% url 'register' %}" class="home-cta">Mulai Registrasi</a>
+					<button type="button" data-open-login-modal class="home-ghost">Buka Login</button>
+				</div>
+			</div>
+
+			<aside class="home-card">
+				<span class="home-kicker">Ringkasan UI</span>
+				<h2 class="home-section-title">Titik fokus yang lebih tegas</h2>
+				<p class="home-copy">
+					Setiap halaman sekarang punya kartu, jarak, dan hierarki yang seragam sehingga isi utama tidak tenggelam oleh elemen lain.
+				</p>
+
+				<div class="home-list">
+					<div class="home-item">
+						<span>Navbar</span>
+						<strong>Lebih ringan</strong>
+					</div>
+					<div class="home-item">
+						<span>Form</span>
+						<strong>Lebih konsisten</strong>
+					</div>
+					<div class="home-item">
+						<span>Mobile layout</span>
+						<strong>Lebih aman dibaca</strong>
+					</div>
+				</div>
+			</aside>
+		</div>
+	</section>
+
+	<section class="section-card" style="margin-top: 1rem;">
+		<div class="section-head">
+			<div>
+				<h2 class="section-title">Arah desain baru</h2>
+				<p class="section-copy">Fokusnya bukan cuma cantik, tapi juga membuat halaman yang tadinya acak lebih gampang dipahami.</p>
+			</div>
+		</div>
+
+		<div class="feature-grid">
+			<article class="feature-card">
+				<span class="feature-pill">01</span>
+				<h3>Hierarki lebih jelas</h3>
+				<p>Judul, isi, dan aksi utama dipisahkan dengan jarak dan ukuran yang lebih tegas.</p>
+			</article>
+			<article class="feature-card">
+				<span class="feature-pill">02</span>
+				<h3>Komponen konsisten</h3>
+				<p>Form, kartu, dan tombol memakai bahasa visual yang sama di seluruh halaman.</p>
+			</article>
+			<article class="feature-card">
+				<span class="feature-pill">03</span>
+				<h3>Responsif lebih aman</h3>
+				<p>Tata letak turun ke satu kolom di ukuran kecil supaya tidak saling tumpuk.</p>
+			</article>
+		</div>
+	</section>
+</main>
 {% endblock %}
