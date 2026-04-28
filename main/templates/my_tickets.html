@@ -1,697 +1,540 @@
 {% extends 'base.html' %}
 
-{% block title %}R-Tiket - TikTakTuk{% endblock %}
+{% block title %}CRUD Tiket - TikTakTuk{% endblock %}
 
 {% block content %}
-<main class="header-shell pb-12" data-ticket-role="{{ request.resolver_match.url_name|default:'my_tickets_admin' }}">
-  <section class="tickets-hero">
-    <div>
-      <span id="ticket-page-badge" class="page-badge">R-Tiket</span>
-      <h1 id="ticket-page-title" class="tickets-title">Daftar Tiket</h1>
-      <p id="ticket-page-copy" class="page-copy"></p>
-    </div>
-
-    <div class="tickets-stats-grid">
-      <article class="tickets-stat-card">
-        <span class="tickets-stat-label">Total tiket</span>
-        <strong id="stat-total" class="tickets-stat-value">0</strong>
-        <span class="tickets-stat-note">Disesuaikan dengan role yang sedang dibuka.</span>
-      </article>
-      <article class="tickets-stat-card">
-        <span class="tickets-stat-label">Valid</span>
-        <strong id="stat-valid" class="tickets-stat-value">0</strong>
-        <span class="tickets-stat-note">Tiket aktif yang masih bisa dipakai.</span>
-      </article>
-      <article class="tickets-stat-card">
-        <span class="tickets-stat-label">Terpakai</span>
-        <strong id="stat-used" class="tickets-stat-value">0</strong>
-        <span class="tickets-stat-note">Tiket yang sudah dipakai di gate.</span>
-      </article>
-    </div>
-  </section>
-
-  <section class="tickets-card">
-    <div class="tickets-toolbar">
-      <div>
-        <h2 class="tickets-section-title">Daftar Tiket</h2>
-        <p id="tickets-section-copy" class="tickets-section-copy"></p>
-      </div>
-
-      <button type="button" id="open-ticket-modal" class="tickets-add-btn hidden">
-        + Tambah Ticket
-      </button>
-    </div>
-
-    <div class="tickets-filter-row">
-      <div class="tickets-field">
-        <label for="ticket-search" class="form-label">Filter by code or event</label>
-        <input id="ticket-search" type="text" class="form-input" placeholder="Cari kode tiket atau nama acara...">
-      </div>
-
-      <div class="tickets-field">
-        <label for="ticket-status-filter" class="form-label">Filter by status</label>
-        <select id="ticket-status-filter" class="form-input">
-          <option value="all">Semua Status</option>
-          <option value="VALID">Valid</option>
-          <option value="USED">Used</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
-      </div>
-    </div>
-
-    <div id="ticket-list" class="tickets-list"></div>
-  </section>
-</main>
-
-<div id="ticket-add-modal" class="tickets-modal hidden" aria-hidden="true">
-  <div class="tickets-modal-backdrop" data-close-ticket-add-modal></div>
-  <div class="tickets-modal-shell">
-    <section class="tickets-modal-panel tickets-modal-panel-large">
-      <div class="tickets-modal-header">
-        <div>
-          <h2 class="tickets-modal-title">Tambah Ticket Baru</h2>
-          <p class="tickets-modal-copy">Pilih order, kategori, dan kursi yang tersedia. Kode tiket akan digenerate otomatis.</p>
-        </div>
-        <button type="button" class="tickets-modal-close" data-close-ticket-add-modal aria-label="Tutup modal">x</button>
-      </div>
-
-      <form id="ticket-add-form" class="tickets-form">
-        <div class="tickets-field">
-          <label for="ticket-order" class="form-label">Order</label>
-          <select id="ticket-order" class="form-input"></select>
-        </div>
-
-        <div class="tickets-field">
-          <label for="ticket-category" class="form-label">Kategori Tiket</label>
-          <select id="ticket-category" class="form-input"></select>
-        </div>
-
-        <div id="ticket-seat-field" class="tickets-field hidden">
-          <label for="ticket-seat" class="form-label">Kursi <span class="tickets-help-inline">(opsional - reserved seating)</span></label>
-          <select id="ticket-seat" class="form-input"></select>
-        </div>
-
-        <div class="tickets-field">
-          <label class="form-label">Kode Tiket</label>
-          <div class="tickets-code-box">
-            <input id="ticket-code" type="text" class="tickets-code-input" value="Auto-generate saat dibuat" readonly>
-            <p class="tickets-code-note">Kode akan di-generate otomatis saat tiket disimpan. Format bebas.</p>
+{% with role|default:"org" as role %}
+<main class="ticket-page">
+  <section class="ticket-shell space-y-6">
+    <header class="ticket-card rounded-3xl p-6 md:p-8">
+      <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
+        <div class="space-y-4 max-w-3xl">
+          <span class="ticket-kicker">Temporary route</span>
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-950">CRUD Tiket</h1>
+            <p class="mt-3 text-slate-600 leading-relaxed">
+              Halaman sementara untuk mengelola tiket, kategori, status pembayaran, dan relasi kursi dalam satu tampilan yang lebih rapi.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span class="page-badge">/my-tickets-cust</span>
+            <span class="page-badge">/my-tickets-org</span>
+            <span class="page-badge">/my-tickets-admin</span>
           </div>
         </div>
 
-        <div class="tickets-form-actions">
-          <button type="button" class="tickets-cancel-btn" data-close-ticket-add-modal>Batal</button>
-          <button type="submit" class="tickets-submit-btn">Buat Ticket</button>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full xl:w-auto">
+          <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm min-w-[150px]">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Tiket</p>
+            <div class="ticket-stat-value" data-stat-total>6</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm min-w-[150px]">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sudah Bayar</p>
+            <div class="ticket-stat-value" data-stat-paid>4</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm min-w-[150px]">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending</p>
+            <div class="ticket-stat-value" data-stat-pending>2</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm min-w-[150px]">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Seat</p>
+            <div class="ticket-stat-value" data-stat-seats>12</div>
+          </div>
         </div>
-      </form>
-    </section>
-  </div>
-</div>
+      </div>
+    </header>
 
-<div id="ticket-update-modal" class="tickets-modal hidden" aria-hidden="true">
-  <div class="tickets-modal-backdrop" data-close-ticket-update-modal></div>
-  <div class="tickets-modal-shell">
-    <section class="tickets-modal-panel tickets-modal-panel-large">
-      <div class="tickets-modal-header">
+    <section class="ticket-card rounded-3xl p-6 md:p-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
-          <h2 class="tickets-modal-title">Update Tiket</h2>
-          <p class="tickets-modal-copy">Ubah status dan kursi tiket. Kode tiket bersifat read-only.</p>
+          <h2 class="text-xl font-bold text-slate-950">Daftar Tiket</h2>
+          <p class="text-sm text-slate-500 mt-1">Cari, filter, lalu edit data tiket secara sementara dari halaman ini.</p>
         </div>
-        <button type="button" class="tickets-modal-close" data-close-ticket-update-modal aria-label="Tutup modal">x</button>
+        {% if role != 'cust' %}
+        <button type="button" data-open-ticket-modal="create" class="inline-flex items-center justify-center gap-2 rounded-full ticket-cta px-5 py-2.5 text-sm font-bold transition-colors">
+          <span>+</span>
+          Tambah Tiket
+        </button>
+        {% endif %}
       </div>
 
-      <form id="ticket-update-form" class="tickets-form">
-        <div class="tickets-field">
-          <label for="update-ticket-code" class="form-label">Kode Tiket</label>
-          <input id="update-ticket-code" type="text" class="form-input" readonly>
-        </div>
+      <div class="ticket-toolbar mb-6">
+        <input class="form-input" type="search" placeholder="Cari kode tiket atau kategori" data-ticket-search>
+        <select class="form-input" data-filter-category>
+          <option value="all">Semua Kategori</option>
+          <option value="VVIP">VVIP</option>
+          <option value="VIP">VIP</option>
+          <option value="Reguler">Reguler</option>
+        </select>
+        <select class="form-input" data-filter-status>
+          <option value="all">Semua Status</option>
+          <option value="paid">Sudah Bayar</option>
+          <option value="pending">Pending</option>
+        </select>
+        <button type="button" class="rounded-xl ticket-cta-secondary px-4 py-3 text-sm font-semibold transition-colors" data-clear-filters>Reset Filter</button>
+      </div>
 
-        <div class="tickets-field">
-          <label for="update-ticket-status" class="form-label">Status</label>
-          <select id="update-ticket-status" class="form-input">
-            <option value="VALID">Valid</option>
-            <option value="USED">Used</option>
-            <option value="CANCELLED">Cancelled</option>
+      <div class="overflow-x-auto">
+        <table class="ticket-table" aria-label="Tabel tiket">
+          <thead>
+            <tr>
+              <th>Kode Tiket</th>
+              <th>Kategori</th>
+              <th>Seat</th>
+              <th>Status</th>
+              <th>Harga</th>
+              <th class="text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="ticket-tbody">
+            <tr data-ticket-row data-ticket-code="TTK-001" data-ticket-category="VVIP" data-ticket-seats="A1, A2" data-ticket-status="paid" data-ticket-price="1500000">
+              <td class="font-bold text-slate-900">TTK-001</td>
+              <td class="text-slate-600">VVIP</td>
+              <td class="text-slate-600">A1, A2</td>
+              <td><span class="ticket-chip is-paid">Sudah Bayar</span></td>
+              <td class="font-bold text-slate-700">Rp 1.500.000</td>
+              {% if role != 'cust' %}
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="ticket-action ticket-action-edit" data-open-ticket-modal="edit" data-ticket-code="TTK-001" data-ticket-category="VVIP" data-ticket-seats="A1, A2" data-ticket-status="paid" data-ticket-price="1500000">Edit</button>
+                  <button type="button" class="ticket-action ticket-action-delete" data-open-delete-modal data-ticket-code="TTK-001">Hapus</button>
+                </div>
+              </td>
+              {% else %}
+              <td class="text-center text-sm text-slate-500">—</td>
+              {% endif %}
+            </tr>
+            <tr data-ticket-row data-ticket-code="TTK-002" data-ticket-category="VIP" data-ticket-seats="B1, B2" data-ticket-status="pending" data-ticket-price="750000">
+              <td class="font-bold text-slate-900">TTK-002</td>
+              <td class="text-slate-600">VIP</td>
+              <td class="text-slate-600">B1, B2</td>
+              <td><span class="ticket-chip is-pending">Pending</span></td>
+              <td class="font-bold text-slate-700">Rp 750.000</td>
+              {% if role != 'cust' %}
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="ticket-action ticket-action-edit" data-open-ticket-modal="edit" data-ticket-code="TTK-002" data-ticket-category="VIP" data-ticket-seats="B1, B2" data-ticket-status="pending" data-ticket-price="750000">Edit</button>
+                  <button type="button" class="ticket-action ticket-action-delete" data-open-delete-modal data-ticket-code="TTK-002">Hapus</button>
+                </div>
+              </td>
+              {% else %}
+              <td class="text-center text-sm text-slate-500">—</td>
+              {% endif %}
+            </tr>
+            <tr data-ticket-row data-ticket-code="TTK-003" data-ticket-category="Reguler" data-ticket-seats="C1, C2, C3" data-ticket-status="paid" data-ticket-price="350000">
+              <td class="font-bold text-slate-900">TTK-003</td>
+              <td class="text-slate-600">Reguler</td>
+              <td class="text-slate-600">C1, C2, C3</td>
+              <td><span class="ticket-chip is-paid">Sudah Bayar</span></td>
+              <td class="font-bold text-slate-700">Rp 350.000</td>
+              {% if role != 'cust' %}
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="ticket-action ticket-action-edit" data-open-ticket-modal="edit" data-ticket-code="TTK-003" data-ticket-category="Reguler" data-ticket-seats="C1, C2, C3" data-ticket-status="paid" data-ticket-price="350000">Edit</button>
+                  <button type="button" class="ticket-action ticket-action-delete" data-open-delete-modal data-ticket-code="TTK-003">Hapus</button>
+                </div>
+              </td>
+              {% else %}
+              <td class="text-center text-sm text-slate-500">—</td>
+              {% endif %}
+            </tr>
+            <tr data-ticket-row data-ticket-code="TTK-004" data-ticket-category="VIP" data-ticket-seats="D1" data-ticket-status="paid" data-ticket-price="900000">
+              <td class="font-bold text-slate-900">TTK-004</td>
+              <td class="text-slate-600">VIP</td>
+              <td class="text-slate-600">D1</td>
+              <td><span class="ticket-chip is-paid">Sudah Bayar</span></td>
+              <td class="font-bold text-slate-700">Rp 900.000</td>
+              {% if role != 'cust' %}
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="ticket-action ticket-action-edit" data-open-ticket-modal="edit" data-ticket-code="TTK-004" data-ticket-category="VIP" data-ticket-seats="D1" data-ticket-status="paid" data-ticket-price="900000">Edit</button>
+                  <button type="button" class="ticket-action ticket-action-delete" data-open-delete-modal data-ticket-code="TTK-004">Hapus</button>
+                </div>
+              </td>
+              {% else %}
+              <td class="text-center text-sm text-slate-500">—</td>
+              {% endif %}
+            </tr>
+            <tr data-ticket-row data-ticket-code="TTK-005" data-ticket-category="VVIP" data-ticket-seats="E1, E2" data-ticket-status="pending" data-ticket-price="2000000">
+              <td class="font-bold text-slate-900">TTK-005</td>
+              <td class="text-slate-600">VVIP</td>
+              <td class="text-slate-600">E1, E2</td>
+              <td><span class="ticket-chip is-pending">Pending</span></td>
+              <td class="font-bold text-slate-700">Rp 2.000.000</td>
+              {% if role != 'cust' %}
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="ticket-action ticket-action-edit" data-open-ticket-modal="edit" data-ticket-code="TTK-005" data-ticket-category="VVIP" data-ticket-seats="E1, E2" data-ticket-status="pending" data-ticket-price="2000000">Edit</button>
+                  <button type="button" class="ticket-action ticket-action-delete" data-open-delete-modal data-ticket-code="TTK-005">Hapus</button>
+                </div>
+              </td>
+              {% else %}
+              <td class="text-center text-sm text-slate-500">—</td>
+              {% endif %}
+            </tr>
+            <tr data-ticket-row data-ticket-code="TTK-006" data-ticket-category="Reguler" data-ticket-seats="F1, F2, F3, F4" data-ticket-status="paid" data-ticket-price="250000">
+              <td class="font-bold text-slate-900">TTK-006</td>
+              <td class="text-slate-600">Reguler</td>
+              <td class="text-slate-600">F1, F2, F3, F4</td>
+              <td><span class="ticket-chip is-paid">Sudah Bayar</span></td>
+              <td class="font-bold text-slate-700">Rp 250.000</td>
+              {% if role != 'cust' %}
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="ticket-action ticket-action-edit" data-open-ticket-modal="edit" data-ticket-code="TTK-006" data-ticket-category="Reguler" data-ticket-seats="F1, F2, F3, F4" data-ticket-status="paid" data-ticket-price="250000">Edit</button>
+                  <button type="button" class="ticket-action ticket-action-delete" data-open-delete-modal data-ticket-code="TTK-006">Hapus</button>
+                </div>
+              </td>
+              {% else %}
+              <td class="text-center text-sm text-slate-500">—</td>
+              {% endif %}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+</main>
+
+
+
+{% if role != 'cust' %}
+<div class="ticket-modal" id="ticket-modal" aria-hidden="true">
+  <div class="ticket-modal-panel" role="dialog" aria-modal="true" aria-labelledby="ticket-modal-title">
+    <div class="p-6 md:p-7 border-b border-slate-100 flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-slate-950" id="ticket-modal-title">Tambah Tiket</h2>
+        <p class="text-sm text-slate-500 mt-1" id="ticket-modal-copy">Masukkan data tiket baru untuk sementara di halaman ini.</p>
+      </div>
+      <button type="button" class="rounded-full p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" data-close-ticket-modal aria-label="Tutup">x</button>
+    </div>
+
+    <form class="p-6 md:p-7" id="ticket-form">
+      <input type="hidden" id="ticket-form-mode" value="create">
+      <input type="hidden" id="ticket-original-code" value="">
+
+      <div class="ticket-form-grid">
+        <div>
+          <label class="ticket-form-label" for="ticket-code">Kode Tiket</label>
+          <input id="ticket-code" class="form-input" type="text" placeholder="TTK-007" required>
+        </div>
+        <div>
+          <label class="ticket-form-label" for="ticket-category">Kategori</label>
+          <select id="ticket-category" required>
+            <option value="">Pilih kategori</option>
+            <option value="VVIP">VVIP</option>
+            <option value="VIP">VIP</option>
+            <option value="Reguler">Reguler</option>
           </select>
         </div>
-
-        <div class="tickets-field">
-          <label for="update-ticket-seat" class="form-label">Kursi</label>
-          <select id="update-ticket-seat" class="form-input"></select>
+        <!-- Order removed from table to reduce density; keep if needed later -->
+        <div>
+          <label class="ticket-form-label" for="ticket-price">Harga</label>
+          <input id="ticket-price" class="form-input" type="number" min="0" placeholder="1500000" required>
         </div>
-
-        <div class="tickets-form-actions">
-          <button type="button" class="tickets-cancel-btn" data-close-ticket-update-modal>Batal</button>
-          <button type="submit" class="tickets-submit-btn">Simpan</button>
+        <div class="ticket-form-field-full">
+          <label class="ticket-form-label" for="ticket-seats">Seat Terhubung</label>
+          <textarea id="ticket-seats" placeholder="Contoh: A1, A2, A3" required></textarea>
         </div>
-      </form>
-    </section>
+        <div>
+          <label class="ticket-form-label" for="ticket-status">Status</label>
+          <select id="ticket-status" required>
+            <option value="paid">Sudah Bayar</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+        <div class="flex items-end gap-3">
+          <button type="button" class="rounded-xl ticket-cta-secondary px-4 py-3 text-sm font-bold transition-colors w-full" data-close-ticket-modal>Batal</button>
+          <button type="submit" class="rounded-xl ticket-cta px-4 py-3 text-sm font-bold transition-colors w-full" id="ticket-submit-button">Simpan</button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 
-<div id="ticket-delete-modal" class="tickets-modal hidden" aria-hidden="true">
-  <div class="tickets-modal-backdrop" data-close-ticket-delete-modal></div>
-  <div class="tickets-modal-shell">
-    <section class="tickets-modal-panel tickets-delete-panel">
-      <div class="tickets-modal-header tickets-delete-header">
-        <div>
-          <h2 class="tickets-delete-title">Hapus Tiket</h2>
-          <p class="tickets-modal-copy">Apakah Anda yakin ingin menghapus tiket ini? Relasi kursi akan dilepaskan. Tindakan ini tidak dapat dibatalkan.</p>
-        </div>
-        <button type="button" class="tickets-modal-close" data-close-ticket-delete-modal aria-label="Tutup modal">x</button>
+  <div class="ticket-modal" id="ticket-delete-modal" aria-hidden="true">
+  <div class="ticket-modal-panel ticket-modal-panel--narrow" role="dialog" aria-modal="true" aria-labelledby="ticket-delete-title">
+    <div class="p-6 md:p-7 border-b border-slate-100 flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-red-600" id="ticket-delete-title">Hapus Tiket</h2>
+        <p class="text-sm text-slate-500 mt-1">Konfirmasi agar tiket tidak terhapus tanpa sengaja.</p>
       </div>
+      <button type="button" class="rounded-full p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" data-close-ticket-delete-modal aria-label="Tutup">x</button>
+    </div>
 
-      <div class="tickets-form-actions tickets-delete-actions">
-        <button type="button" class="tickets-cancel-btn" data-close-ticket-delete-modal>Batal</button>
-        <button type="button" id="confirm-delete-ticket" class="tickets-danger-btn">Hapus</button>
+    <div class="p-6 md:p-7 space-y-6">
+      <p class="text-slate-600 leading-relaxed" id="ticket-delete-copy">Anda akan menghapus tiket ini dari daftar sementara.</p>
+      <div class="flex gap-3 justify-end">
+        <button type="button" class="rounded-xl ticket-cta-secondary px-4 py-3 text-sm font-bold transition-colors" data-close-ticket-delete-modal>Batal</button>
+        <button type="button" class="rounded-xl ticket-cta px-4 py-3 text-sm font-bold transition-colors" id="ticket-delete-submit">Hapus</button>
       </div>
-    </section>
+    </div>
+  </div>
+</div>
+
+<div class="ticket-toast" id="ticket-toast" aria-live="polite" aria-atomic="true">
+  <div class="ticket-toast-dot"></div>
+  <div>
+    <div class="font-bold" id="ticket-toast-title">Berhasil</div>
+    <div class="text-sm text-slate-300" id="ticket-toast-copy">Data tiket berhasil diproses.</div>
   </div>
 </div>
 
 <script>
   (function () {
-    const main = document.querySelector('[data-ticket-role]');
-    if (!main) {
-      return;
-    }
+    const ticketModal = document.getElementById('ticket-modal');
+    const ticketDeleteModal = document.getElementById('ticket-delete-modal');
+    const ticketForm = document.getElementById('ticket-form');
+    const ticketModalTitle = document.getElementById('ticket-modal-title');
+    const ticketModalCopy = document.getElementById('ticket-modal-copy');
+    const ticketSubmitButton = document.getElementById('ticket-submit-button');
+    const ticketFormMode = document.getElementById('ticket-form-mode');
+    const ticketOriginalCode = document.getElementById('ticket-original-code');
+    const ticketCodeField = document.getElementById('ticket-code');
+    const ticketCategoryField = document.getElementById('ticket-category');
+    const ticketSeatsField = document.getElementById('ticket-seats');
+    const ticketPriceField = document.getElementById('ticket-price');
+    const ticketStatusField = document.getElementById('ticket-status');
+    const ticketTbody = document.getElementById('ticket-tbody');
+    const ticketDeleteCopy = document.getElementById('ticket-delete-copy');
+    const ticketDeleteSubmit = document.getElementById('ticket-delete-submit');
+    const ticketToast = document.getElementById('ticket-toast');
+    const ticketToastTitle = document.getElementById('ticket-toast-title');
+    const ticketToastCopy = document.getElementById('ticket-toast-copy');
+    const closeFormButtons = document.querySelectorAll('[data-close-ticket-modal]');
+    const closeDeleteButtons = document.querySelectorAll('[data-close-ticket-delete-modal]');
 
-    const roleKey = main.dataset.ticketRole || 'my_tickets_admin';
-    const configMap = {
-      my_tickets_admin: {
-        badge: 'R-Tiket Admin',
-        title: 'Manajemen Tiket',
-        copy: 'Kelola tiket: tambah, update, dan hapus tiket.',
-        sectionCopy: 'Admin melihat seluruh tiket di sistem, dari semua customer dan semua event.',
-        allowAdd: true,
-        allowMutate: true,
-        showCustomer: true,
-      },
-      my_tickets_org: {
-        badge: 'R-Tiket Organizer',
-        title: 'Manajemen Tiket',
-        copy: 'Kelola tiket untuk event organizer (frontend only).',
-        sectionCopy: 'Organizer melihat seluruh tiket pada halaman ini. Di backend nanti data akan difilter per event organizer.',
-        allowAdd: true,
-        allowMutate: false,
-        showCustomer: true,
-      },
-      my_tickets_cust: {
-        badge: 'R-Tiket Customer',
-        title: 'Tiket Saya',
-        copy: 'Kelola dan akses tiket pertunjukan Anda.',
-        sectionCopy: 'Customer hanya melihat tiket miliknya sendiri berdasarkan order yang dia buat.',
-        allowAdd: false,
-        allowMutate: false,
-        showCustomer: false,
-      },
-      my_tickets: {
-        badge: 'R-Tiket Admin',
-        title: 'Manajemen Tiket',
-        copy: 'Kelola tiket: tambah, update, dan hapus tiket.',
-        sectionCopy: 'Admin melihat seluruh tiket di sistem, dari semua customer dan semua event.',
-        allowAdd: true,
-        allowMutate: true,
-        showCustomer: true,
-      },
-    };
-
-    const config = configMap[roleKey] || configMap.my_tickets_admin;
-
-    const orders = [
-      { order_id: 'ord_001', customer_id: 'cust_001', customer_name: 'Budi Santoso', event_id: 'evt_melodi_senja', event_title: 'Konser Melodi Senja', event_datetime: '2024-05-15 19:00', venue: 'Jakarta Convention Center', reserved_seating: true },
-      { order_id: 'ord_002', customer_id: 'cust_002', customer_name: 'Siti Rahayu', event_id: 'evt_melodi_senja', event_title: 'Konser Melodi Senja', event_datetime: '2024-05-15 19:00', venue: 'Jakarta Convention Center', reserved_seating: true },
-      { order_id: 'ord_003', customer_id: 'cust_001', customer_name: 'Budi Santoso', event_id: 'evt_nada_nusantara', event_title: 'Festival Nada Nusantara', event_datetime: '2024-06-03 20:00', venue: 'Istora Senayan', reserved_seating: true },
-      { order_id: 'ord_004', customer_id: 'cust_003', customer_name: 'Dimas Wicaksono', event_id: 'evt_tech_expo', event_title: 'Jakarta Tech Expo', event_datetime: '2024-06-21 10:00', venue: 'JCC Hall A', reserved_seating: false },
-    ];
-
-    const categories = [
-      { category_id: 'cat_vip_melodi', event_id: 'evt_melodi_senja', category_name: 'VIP', price: 750000, quota: 150, used: 3 },
-      { category_id: 'cat_regular_melodi', event_id: 'evt_melodi_senja', category_name: 'Regular', price: 350000, quota: 150, used: 150 },
-      { category_id: 'cat_gold_nada', event_id: 'evt_nada_nusantara', category_name: 'Gold', price: 500000, quota: 80, used: 18 },
-      { category_id: 'cat_silver_nada', event_id: 'evt_nada_nusantara', category_name: 'Silver', price: 275000, quota: 60, used: 60 },
-      { category_id: 'cat_early_tech', event_id: 'evt_tech_expo', category_name: 'Early Bird', price: 225000, quota: 120, used: 80 },
-      { category_id: 'cat_general_tech', event_id: 'evt_tech_expo', category_name: 'General Access', price: 125000, quota: 120, used: 120 },
-    ];
-
-    const seats = [
-      { seat_id: 'seat_melodi_a1', event_id: 'evt_melodi_senja', label: 'VIP - Baris B, No. 1' },
-      { seat_id: 'seat_melodi_a2', event_id: 'evt_melodi_senja', label: 'VIP - Baris B, No. 2' },
-      { seat_id: 'seat_melodi_b1', event_id: 'evt_melodi_senja', label: 'VIP - Baris C, No. 1' },
-      { seat_id: 'seat_nada_a4', event_id: 'evt_nada_nusantara', label: 'Section 1 - Baris A, No. 4' },
-      { seat_id: 'seat_nada_a5', event_id: 'evt_nada_nusantara', label: 'Section 1 - Baris A, No. 5' },
-    ];
-
-    const initialTickets = [
-      { ticket_id: 'tkt_001', ticket_code: 'TTK-EVT001-VIP-001', customer_id: 'cust_001', customer_name: 'Budi Santoso', order_id: 'ord_001', event_id: 'evt_melodi_senja', event_title: 'Konser Melodi Senja', event_datetime: '2024-05-15 19:00', venue: 'Jakarta Convention Center', category_name: 'VIP', price: 750000, status: 'VALID', seat_id: 'seat_melodi_a1', seat_label: 'VIP - Baris B, No. 1', qr_hint: 'SCAN ENTRY' },
-      { ticket_id: 'tkt_002', ticket_code: 'TTK-EVT001-VIP-002', customer_id: 'cust_001', customer_name: 'Budi Santoso', order_id: 'ord_001', event_id: 'evt_melodi_senja', event_title: 'Konser Melodi Senja', event_datetime: '2024-05-15 19:00', venue: 'Jakarta Convention Center', category_name: 'VIP', price: 750000, status: 'USED', seat_id: 'seat_melodi_a2', seat_label: 'VIP - Baris B, No. 2', qr_hint: 'SCAN ENTRY' },
-      { ticket_id: 'tkt_003', ticket_code: 'TTK-EVT003-GOLD-001', customer_id: 'cust_001', customer_name: 'Budi Santoso', order_id: 'ord_003', event_id: 'evt_nada_nusantara', event_title: 'Festival Nada Nusantara', event_datetime: '2024-06-03 20:00', venue: 'Istora Senayan', category_name: 'Gold', price: 500000, status: 'VALID', seat_id: 'seat_nada_a4', seat_label: 'Section 1 - Baris A, No. 4', qr_hint: 'SCAN ENTRY' },
-      { ticket_id: 'tkt_004', ticket_code: 'TTK-EVT001-GEN-001', customer_id: 'cust_002', customer_name: 'Siti Rahayu', order_id: 'ord_002', event_id: 'evt_melodi_senja', event_title: 'Konser Melodi Senja', event_datetime: '2024-05-15 19:00', venue: 'Jakarta Convention Center', category_name: 'Regular', price: 350000, status: 'VALID', seat_id: null, seat_label: 'Tanpa Kursi', qr_hint: 'SCAN ENTRY' },
-      { ticket_id: 'tkt_005', ticket_code: 'TTK-EVT004-GEN-001', customer_id: 'cust_003', customer_name: 'Dimas Wicaksono', order_id: 'ord_004', event_id: 'evt_tech_expo', event_title: 'Jakarta Tech Expo', event_datetime: '2024-06-21 10:00', venue: 'JCC Hall A', category_name: 'General Access', price: 125000, status: 'CANCELLED', seat_id: null, seat_label: 'Tanpa Kursi', qr_hint: 'SCAN ENTRY' },
-    ];
-
-    const state = {
-      tickets: initialTickets.slice(),
-      filters: {
-        query: '',
-        status: 'all',
-      },
-      nextTicketNumber: initialTickets.length + 1,
-      editTicketId: null,
-      deleteTicketId: null,
-      addOrderId: null,
-    };
-
-    const elements = {
-      badge: document.getElementById('ticket-page-badge'),
-      title: document.getElementById('ticket-page-title'),
-      copy: document.getElementById('ticket-page-copy'),
-      sectionCopy: document.getElementById('tickets-section-copy'),
-      total: document.getElementById('stat-total'),
-      valid: document.getElementById('stat-valid'),
-      used: document.getElementById('stat-used'),
-      search: document.getElementById('ticket-search'),
-      statusFilter: document.getElementById('ticket-status-filter'),
-      addButton: document.getElementById('open-ticket-modal'),
-      ticketList: document.getElementById('ticket-list'),
-      addModal: document.getElementById('ticket-add-modal'),
-      updateModal: document.getElementById('ticket-update-modal'),
-      deleteModal: document.getElementById('ticket-delete-modal'),
-      addForm: document.getElementById('ticket-add-form'),
-      updateForm: document.getElementById('ticket-update-form'),
-      orderSelect: document.getElementById('ticket-order'),
-      categorySelect: document.getElementById('ticket-category'),
-      seatField: document.getElementById('ticket-seat-field'),
-      seatSelect: document.getElementById('ticket-seat'),
-      addTicketCode: document.getElementById('ticket-code'),
-      updateTicketCode: document.getElementById('update-ticket-code'),
-      updateTicketStatus: document.getElementById('update-ticket-status'),
-      updateTicketSeat: document.getElementById('update-ticket-seat'),
-      confirmDeleteButton: document.getElementById('confirm-delete-ticket'),
-      closeAdd: document.querySelectorAll('[data-close-ticket-add-modal]'),
-      closeUpdate: document.querySelectorAll('[data-close-ticket-update-modal]'),
-      closeDelete: document.querySelectorAll('[data-close-ticket-delete-modal]'),
-    };
+    let deleteTargetRow = null;
+    let toastTimer = null;
 
     function formatCurrency(value) {
-      return 'Rp ' + Number(value).toLocaleString('id-ID');
+      return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
     }
 
-    function escapeHtml(value) {
-      return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    function setBodyScroll() {
+      document.body.style.overflow = ticketModal && ticketModal.classList.contains('is-open') || ticketDeleteModal && ticketDeleteModal.classList.contains('is-open') ? 'hidden' : '';
     }
 
-    function statusLabel(status) {
-      return {
-        VALID: 'VALID',
-        USED: 'USED',
-        CANCELLED: 'CANCELLED',
-      }[status] || status;
-    }
+    function showToast(title, message) {
+      if (!ticketToastTitle) return;
+      ticketToastTitle.textContent = title;
+      ticketToastCopy.textContent = message;
+      ticketToast.classList.add('is-visible');
 
-    function statusClass(status) {
-      return {
-        VALID: 'tickets-status-valid',
-        USED: 'tickets-status-used',
-        CANCELLED: 'tickets-status-cancelled',
-      }[status] || 'tickets-status-valid';
-    }
-
-    function isCustomerTicket(ticket) {
-      return ticket.customer_id === 'cust_001';
-    }
-
-    function visibleTickets() {
-      const roleFiltered = roleKey === 'my_tickets_cust'
-        ? state.tickets.filter(isCustomerTicket)
-        : state.tickets.slice();
-
-      const query = state.filters.query.trim().toLowerCase();
-      return roleFiltered.filter(function (ticket) {
-        const matchesStatus = state.filters.status === 'all' || ticket.status === state.filters.status;
-        const matchesQuery = !query || ticket.ticket_code.toLowerCase().includes(query) || ticket.event_title.toLowerCase().includes(query);
-        return matchesStatus && matchesQuery;
-      });
-    }
-
-    function renderHeader() {
-      elements.badge.textContent = config.badge;
-      elements.title.textContent = config.title;
-      elements.copy.textContent = config.copy;
-      elements.sectionCopy.textContent = config.sectionCopy;
-      document.title = config.title + ' - TikTakTuk';
-      if (config.allowAdd) {
-        elements.addButton.classList.remove('hidden');
+      if (toastTimer) {
+        window.clearTimeout(toastTimer);
       }
+
+      toastTimer = window.setTimeout(function () {
+        ticketToast.classList.remove('is-visible');
+      }, 2400);
     }
 
-    function renderStats() {
-      const current = visibleTickets();
-      const valid = current.filter(function (ticket) { return ticket.status === 'VALID'; }).length;
-      const used = current.filter(function (ticket) { return ticket.status === 'USED'; }).length;
-      elements.total.textContent = String(current.length);
-      elements.valid.textContent = String(valid);
-      elements.used.textContent = String(used);
-    }
+    function openTicketModal(mode, trigger) {
+      if (!ticketFormMode) return;
+      ticketFormMode.value = mode;
+      ticketModalTitle.textContent = mode === 'edit' ? 'Edit Tiket' : 'Tambah Tiket';
+      ticketModalCopy.textContent = mode === 'edit'
+        ? 'Perbarui tiket yang sudah ada tanpa mengubah struktur halaman.'
+        : 'Masukkan data tiket baru untuk sementara di halaman ini.';
+      ticketSubmitButton.textContent = mode === 'edit' ? 'Simpan Perubahan' : 'Simpan';
 
-    function renderQr(code) {
-      const hash = code.split('').reduce(function (acc, ch) { return acc + ch.charCodeAt(0); }, 0);
-      const cells = [];
-      for (let index = 0; index < 36; index += 1) {
-        const on = ((hash + index * 7) % 3) !== 0;
-        cells.push('<span class="ticket-qr-cell ' + (on ? 'on' : 'off') + '"></span>');
-      }
-      return '<div class="ticket-qr-matrix">' + cells.join('') + '</div>';
-    }
-
-    function renderCard(ticket) {
-      const canMutate = config.allowMutate;
-      const actionButtons = canMutate
-        ? '<button type="button" class="ticket-action-btn ticket-action-primary" data-action="update" data-ticket-id="' + escapeHtml(ticket.ticket_id) + '">Update</button>' +
-          '<button type="button" class="ticket-action-btn ticket-action-danger" data-action="delete" data-ticket-id="' + escapeHtml(ticket.ticket_id) + '">Hapus</button>'
-        : '<button type="button" class="ticket-action-btn ticket-action-secondary" data-action="view" data-ticket-id="' + escapeHtml(ticket.ticket_id) + '">Tampilkan QR</button>' +
-          '<button type="button" class="ticket-action-btn ticket-action-ghost" data-action="download" data-ticket-id="' + escapeHtml(ticket.ticket_id) + '">Unduh</button>';
-
-      const customerBlock = config.showCustomer ? '<div class="ticket-meta-item"><span>Pelanggan</span><strong>' + escapeHtml(ticket.customer_name) + '</strong></div>' : '';
-      return [
-        '<article class="ticket-card" data-ticket-id="' + escapeHtml(ticket.ticket_id) + '">',
-        '  <div class="ticket-card-main">',
-        '    <div class="ticket-chip-row">',
-        '      <span class="ticket-badge ' + statusClass(ticket.status) + '">' + escapeHtml(statusLabel(ticket.status)) + '</span>',
-        '      <span class="ticket-badge ticket-kind">' + escapeHtml(ticket.category_name) + '</span>',
-        '    </div>',
-        '    <h3 class="ticket-event-title">' + escapeHtml(ticket.event_title) + '</h3>',
-        '    <p class="ticket-code">' + escapeHtml(ticket.ticket_code) + '</p>',
-        '    <div class="ticket-meta-grid">',
-        '      <div class="ticket-meta-item"><span>Jadwal</span><strong>' + escapeHtml(ticket.event_datetime) + '</strong></div>',
-        '      <div class="ticket-meta-item"><span>Lokasi</span><strong>' + escapeHtml(ticket.venue) + '</strong></div>',
-        '      <div class="ticket-meta-item"><span>Kursi</span><strong>' + escapeHtml(ticket.seat_label) + '</strong></div>',
-        '      <div class="ticket-meta-item"><span>Order</span><strong>' + escapeHtml(ticket.order_id) + '</strong></div>',
-        customerBlock,
-        '      <div class="ticket-meta-item"><span>Harga</span><strong>' + escapeHtml(formatCurrency(ticket.price)) + '</strong></div>',
-        '    </div>',
-        '    <div class="ticket-actions">',
-        actionButtons,
-        '    </div>',
-        '  </div>',
-        '  <aside class="ticket-qr-panel">',
-        '    <div class="ticket-qr-box">',
-        renderQr(ticket.ticket_code),
-        '    </div>',
-        '    <span class="ticket-qr-label">' + escapeHtml(ticket.qr_hint) + '</span>',
-        '  </aside>',
-        '</article>',
-      ].join('');
-    }
-
-    function renderTickets() {
-      const rows = visibleTickets();
-      renderStats();
-      if (!rows.length) {
-        elements.ticketList.innerHTML = '<div class="tickets-empty">Tidak ada tiket yang cocok dengan filter saat ini.</div>';
-        return;
-      }
-      elements.ticketList.innerHTML = rows.map(renderCard).join('');
-    }
-
-    function getTicket(ticketId) {
-      return state.tickets.find(function (ticket) {
-        return ticket.ticket_id === ticketId;
-      });
-    }
-
-    function getOrderById(orderId) {
-      return orders.find(function (order) {
-        return order.order_id === orderId;
-      });
-    }
-
-    function seatsForEvent(eventId, excludeTicketId) {
-      return seats.filter(function (seat) {
-        if (seat.event_id !== eventId) {
-          return false;
-        }
-        const occupied = state.tickets.some(function (ticket) {
-          return ticket.ticket_id !== excludeTicketId && ticket.seat_id === seat.seat_id;
-        });
-        return !occupied;
-      });
-    }
-
-    function openModal(modalElement) {
-      modalElement.classList.remove('hidden');
-      modalElement.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(modalElement) {
-      modalElement.classList.add('hidden');
-      modalElement.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-    }
-
-    function ticketCodeForNewTicket() {
-      const now = new Date();
-      const datePart = String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
-      return 'TKT-' + datePart + '-' + String(state.nextTicketNumber).padStart(3, '0');
-    }
-
-    function renderAddOrderOptions() {
-      elements.orderSelect.innerHTML = orders.map(function (order, index) {
-        return '<option value="' + escapeHtml(order.order_id) + '"' + (index === 0 ? ' selected' : '') + '>' + escapeHtml(order.order_id + ' - ' + order.customer_name + ' - ' + order.event_title) + '</option>';
-      }).join('');
-    }
-
-    function renderAddCategoryOptions() {
-      const order = getOrderById(elements.orderSelect.value);
-      const filtered = categories.filter(function (category) {
-        return order && category.event_id === order.event_id;
-      });
-      elements.categorySelect.innerHTML = filtered.map(function (category, index) {
-        const full = Number(category.used) >= Number(category.quota);
-        const label = category.category_name + ' - ' + formatCurrency(category.price) + ' (' + category.used + '/' + category.quota + ')';
-        return '<option value="' + escapeHtml(category.category_id) + '"' + (index === 0 ? ' selected' : '') + (full ? ' disabled' : '') + '>' + escapeHtml(label) + (full ? ' [penuh]' : '') + '</option>';
-      }).join('');
-      if (!filtered.length) {
-        elements.categorySelect.innerHTML = '<option value="">Tidak ada kategori</option>';
-      }
-    }
-
-    function renderAddSeatOptions() {
-      const order = getOrderById(elements.orderSelect.value);
-      if (!order || !order.reserved_seating) {
-        elements.seatField.classList.add('hidden');
-        elements.seatSelect.innerHTML = '';
-        return;
-      }
-      const availableSeats = seatsForEvent(order.event_id, null);
-      elements.seatField.classList.remove('hidden');
-      if (!availableSeats.length) {
-        elements.seatSelect.innerHTML = '<option value="">Tanpa Kursi</option>';
-        return;
-      }
-      elements.seatSelect.innerHTML = ['<option value="">Tanpa Kursi</option>'].concat(availableSeats.map(function (seat) {
-        return '<option value="' + escapeHtml(seat.seat_id) + '">' + escapeHtml(seat.label) + '</option>';
-      })).join('');
-    }
-
-    function renderUpdateSeatOptions(ticket) {
-      const order = getOrderById(ticket.order_id) || orders.find(function (order) {
-        return order.event_id === ticket.event_id;
-      });
-      const seatOptions = ['<option value="">Tanpa Kursi</option>'];
-      if (order && order.reserved_seating) {
-        const availableSeats = seatsForEvent(order.event_id, ticket.ticket_id);
-        const currentSeat = seats.find(function (seat) {
-          return seat.seat_id === ticket.seat_id;
-        });
-        if (ticket.seat_id) {
-          seatOptions.push('<option value="' + escapeHtml(ticket.seat_id) + '">Current - ' + escapeHtml(ticket.seat_label) + '</option>');
-        }
-        seatOptions.push.apply(seatOptions, availableSeats.map(function (seat) {
-          if (seat.seat_id === ticket.seat_id) {
-            return '';
-          }
-          return '<option value="' + escapeHtml(seat.seat_id) + '">' + escapeHtml(seat.label) + '</option>';
-        }).filter(Boolean));
-        elements.updateTicketSeat.innerHTML = seatOptions.join('');
-        elements.updateTicketSeat.value = ticket.seat_id || '';
+      if (mode === 'edit' && trigger) {
+        ticketOriginalCode.value = trigger.dataset.ticketCode || '';
+        ticketCodeField.value = trigger.dataset.ticketCode || '';
+        ticketCategoryField.value = trigger.dataset.ticketCategory || '';
+        ticketSeatsField.value = trigger.dataset.ticketSeats || '';
+        ticketPriceField.value = trigger.dataset.ticketPrice || '';
+        ticketStatusField.value = trigger.dataset.ticketStatus || 'paid';
       } else {
-        elements.updateTicketSeat.innerHTML = '<option value="">Tanpa Kursi</option>';
-        elements.updateTicketSeat.value = '';
+        ticketOriginalCode.value = '';
+        ticketForm.reset();
       }
+
+      ticketModal.classList.add('is-open');
+      ticketModal.setAttribute('aria-hidden', 'false');
+      setBodyScroll();
+      ticketCodeField.focus();
     }
 
-    function openUpdateModal(ticketId) {
-      const ticket = getTicket(ticketId);
-      if (!ticket) {
+    function closeTicketModal() {
+      if (!ticketModal) return;
+      ticketModal.classList.remove('is-open');
+      ticketModal.setAttribute('aria-hidden', 'true');
+      setBodyScroll();
+    }
+
+    function openDeleteModal(trigger) {
+      deleteTargetRow = trigger.closest('[data-ticket-row]');
+      const code = trigger.dataset.ticketCode || 'tiket ini';
+      ticketDeleteCopy.textContent = 'Anda akan menghapus ' + code + ' dari daftar sementara. Tindakan ini tidak dapat dibatalkan.';
+      ticketDeleteSubmit.dataset.ticketCode = code;
+      ticketDeleteModal.classList.add('is-open');
+      ticketDeleteModal.setAttribute('aria-hidden', 'false');
+      setBodyScroll();
+    }
+
+    function closeDeleteModal() {
+      ticketDeleteModal.classList.remove('is-open');
+      ticketDeleteModal.setAttribute('aria-hidden', 'true');
+      setBodyScroll();
+      deleteTargetRow = null;
+      ticketDeleteSubmit.dataset.ticketCode = '';
+    }
+
+    function buildRow(ticketData) {
+      const row = document.createElement('tr');
+      row.dataset.ticketRow = '';
+      row.dataset.ticketCode = ticketData.code;
+      row.dataset.ticketCategory = ticketData.category;
+      row.dataset.ticketSeats = ticketData.seats;
+      row.dataset.ticketStatus = ticketData.status;
+      row.dataset.ticketPrice = ticketData.price;
+      row.innerHTML = [
+        '<td class="font-bold text-slate-900">' + ticketData.code + '</td>',
+        '<td class="text-slate-600">' + ticketData.category + '</td>',
+        '<td class="text-slate-600">' + ticketData.seats + '</td>',
+        '<td><span class="ticket-chip ' + (ticketData.status === 'paid' ? 'is-paid' : 'is-pending') + '">' + (ticketData.status === 'paid' ? 'Sudah Bayar' : 'Pending') + '</span></td>',
+        '<td class="font-bold text-slate-700">' + formatCurrency(ticketData.price) + '</td>',
+        '<td><div class="flex items-center justify-center gap-2"><button type="button" class="ticket-action ticket-action-edit" data-open-ticket-modal="edit" data-ticket-code="' + ticketData.code + '" data-ticket-category="' + ticketData.category + '" data-ticket-seats="' + ticketData.seats + '" data-ticket-status="' + ticketData.status + '" data-ticket-price="' + ticketData.price + '">Edit</button><button type="button" class="ticket-action ticket-action-delete" data-open-delete-modal data-ticket-code="' + ticketData.code + '">Hapus</button></div></td>'
+      ].join('');
+      return row;
+    }
+
+    function updateStats() {
+      const rows = ticketTbody.querySelectorAll('[data-ticket-row]');
+      let paidCount = 0;
+      let pendingCount = 0;
+      let seatCount = 0;
+
+      rows.forEach(function (row) {
+        const status = row.dataset.ticketStatus || 'paid';
+        const seats = (row.dataset.ticketSeats || '').split(',').filter(Boolean);
+
+        seatCount += seats.length;
+        if (status === 'paid') {
+          paidCount += 1;
+        } else {
+          pendingCount += 1;
+        }
+      });
+
+      statTotal.textContent = String(rows.length);
+      statPaid.textContent = String(paidCount);
+      statPending.textContent = String(pendingCount);
+      statSeats.textContent = String(seatCount);
+    }
+
+    function applyFilters() {
+      const query = searchField.value.trim().toLowerCase();
+      const selectedCategory = categoryFilter.value;
+      const selectedStatus = statusFilter.value;
+
+      ticketTbody.querySelectorAll('[data-ticket-row]').forEach(function (row) {
+        const code = (row.dataset.ticketCode || '').toLowerCase();
+        const category = row.dataset.ticketCategory || '';
+        const status = row.dataset.ticketStatus || '';
+        const matchesQuery = !query || code.includes(query) || category.toLowerCase().includes(query);
+        const matchesCategory = selectedCategory === 'all' || category === selectedCategory;
+        const matchesStatus = selectedStatus === 'all' || status === selectedStatus;
+
+        row.hidden = !(matchesQuery && matchesCategory && matchesStatus);
+      });
+    }
+
+    document.addEventListener('click', function (event) {
+      const openButton = event.target.closest('[data-open-ticket-modal]');
+      const deleteButton = event.target.closest('[data-open-delete-modal]');
+
+      if (openButton) {
+        openTicketModal(openButton.dataset.openTicketModal, openButton);
+      }
+
+      if (deleteButton) {
+        openDeleteModal(deleteButton);
+      }
+    });
+
+    closeFormButtons.forEach(function (button) {
+      button.addEventListener('click', closeTicketModal);
+    });
+
+    closeDeleteButtons.forEach(function (button) {
+      button.addEventListener('click', closeDeleteModal);
+    });
+
+    ticketForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const ticketData = {
+        code: ticketCodeField.value.trim(),
+        category: ticketCategoryField.value,
+        seats: ticketSeatsField.value.trim(),
+        price: ticketPriceField.value.trim(),
+        status: ticketStatusField.value,
+      };
+
+      if (ticketFormMode.value === 'edit') {
+        const targetRow = Array.from(ticketTbody.querySelectorAll('[data-ticket-row]')).find(function (row) {
+          return row.dataset.ticketCode === ticketOriginalCode.value;
+        });
+
+        if (targetRow) {
+          const replacement = buildRow(ticketData);
+          targetRow.replaceWith(replacement);
+        }
+
+        showToast('Tiket diperbarui', 'Data tiket berhasil diperbarui sementara.');
+      } else {
+        ticketTbody.prepend(buildRow(ticketData));
+        showToast('Tiket ditambahkan', 'Tiket baru berhasil masuk ke daftar sementara.');
+      }
+
+      closeTicketModal();
+      updateStats();
+      applyFilters();
+    });
+
+    ticketDeleteSubmit.addEventListener('click', function () {
+      if (deleteTargetRow) {
+        deleteTargetRow.remove();
+      }
+
+      closeDeleteModal();
+      updateStats();
+      applyFilters();
+      showToast('Tiket dihapus', 'Data tiket berhasil dihapus dari daftar sementara.');
+    });
+
+    searchField.addEventListener('input', applyFilters);
+    categoryFilter.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+
+    clearFiltersButton.addEventListener('click', function () {
+      searchField.value = '';
+      categoryFilter.value = 'all';
+      statusFilter.value = 'all';
+      applyFilters();
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') {
         return;
       }
-      state.editTicketId = ticketId;
-      elements.updateTicketCode.value = ticket.ticket_code;
-      elements.updateTicketStatus.value = ticket.status;
-      renderUpdateSeatOptions(ticket);
-      openModal(elements.updateModal);
-    }
 
-    function openDeleteModal(ticketId) {
-      state.deleteTicketId = ticketId;
-      openModal(elements.deleteModal);
-    }
+      if (ticketModal.classList.contains('is-open')) {
+        closeTicketModal();
+      }
 
-    function openAddModal() {
-      renderAddOrderOptions();
-      renderAddCategoryOptions();
-      renderAddSeatOptions();
-      elements.addTicketCode.value = ticketCodeForNewTicket();
-      openModal(elements.addModal);
-    }
-
-    function syncSeatAssignments() {
-      state.tickets.forEach(function (ticket) {
-        if (!ticket.seat_id) {
-          ticket.seat_label = 'Tanpa Kursi';
-        } else {
-          const seat = seats.find(function (entry) {
-            return entry.seat_id === ticket.seat_id;
-          });
-          ticket.seat_label = seat ? seat.label : ticket.seat_label;
-        }
-      });
-    }
-
-    elements.search.addEventListener('input', function (event) {
-      state.filters.query = event.target.value;
-      renderTickets();
+      if (ticketDeleteModal.classList.contains('is-open')) {
+        closeDeleteModal();
+      }
     });
 
-    elements.statusFilter.addEventListener('change', function (event) {
-      state.filters.status = event.target.value;
-      renderTickets();
-    });
-
-    if (config.allowAdd) {
-      elements.addButton.addEventListener('click', openAddModal);
-      elements.closeAdd.forEach(function (button) {
-        button.addEventListener('click', function () {
-          closeModal(elements.addModal);
-        });
-      });
-
-      elements.orderSelect.addEventListener('change', function () {
-        renderAddCategoryOptions();
-        renderAddSeatOptions();
-        elements.addTicketCode.value = ticketCodeForNewTicket();
-      });
-
-      elements.addForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const order = getOrderById(elements.orderSelect.value);
-        const category = categories.find(function (entry) {
-          return entry.category_id === elements.categorySelect.value;
-        });
-        const seat = elements.seatSelect.value ? seats.find(function (entry) {
-          return entry.seat_id === elements.seatSelect.value;
-        }) : null;
-        if (!order || !category) {
-          return;
-        }
-        const ticket = {
-          ticket_id: 'tkt_' + String(state.nextTicketNumber).padStart(3, '0'),
-          ticket_code: ticketCodeForNewTicket(),
-          customer_id: order.customer_id,
-          customer_name: order.customer_name,
-          order_id: order.order_id,
-          event_id: order.event_id,
-          event_title: order.event_title,
-          event_datetime: order.event_datetime,
-          venue: order.venue,
-          category_name: category.category_name,
-          price: category.price,
-          status: 'VALID',
-          seat_id: seat ? seat.seat_id : null,
-          seat_label: seat ? seat.label : 'Tanpa Kursi',
-          qr_hint: 'SCAN ENTRY',
-        };
-        state.tickets.unshift(ticket);
-        state.nextTicketNumber += 1;
-        closeModal(elements.addModal);
-        renderTickets();
-      });
-    } else {
-      elements.addButton.classList.add('hidden');
-    }
-
-    if (config.allowMutate) {
-      elements.ticketList.addEventListener('click', function (event) {
-        const button = event.target.closest('[data-action]');
-        if (!button) {
-          return;
-        }
-        const ticketId = button.getAttribute('data-ticket-id');
-        const action = button.getAttribute('data-action');
-        if (action === 'update') {
-          openUpdateModal(ticketId);
-        }
-        if (action === 'delete') {
-          openDeleteModal(ticketId);
-        }
-      });
-
-      elements.closeUpdate.forEach(function (button) {
-        button.addEventListener('click', function () {
-          closeModal(elements.updateModal);
-        });
-      });
-
-      elements.closeDelete.forEach(function (button) {
-        button.addEventListener('click', function () {
-          closeModal(elements.deleteModal);
-        });
-      });
-
-      elements.updateForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const ticket = getTicket(state.editTicketId);
-        if (!ticket) {
-          return;
-        }
-        ticket.status = elements.updateTicketStatus.value;
-        const selectedSeatId = elements.updateTicketSeat.value;
-        ticket.seat_id = selectedSeatId || null;
-        if (ticket.seat_id) {
-          const seat = seats.find(function (entry) {
-            return entry.seat_id === ticket.seat_id;
-          });
-          ticket.seat_label = seat ? seat.label : 'Tanpa Kursi';
-        } else {
-          ticket.seat_label = 'Tanpa Kursi';
-        }
-        syncSeatAssignments();
-        closeModal(elements.updateModal);
-        renderTickets();
-      });
-
-      elements.confirmDeleteButton.addEventListener('click', function () {
-        if (!state.deleteTicketId) {
-          return;
-        }
-        state.tickets = state.tickets.filter(function (ticket) {
-          return ticket.ticket_id !== state.deleteTicketId;
-        });
-        state.deleteTicketId = null;
-        closeModal(elements.deleteModal);
-        renderTickets();
-      });
-    }
-
-    renderHeader();
-    renderTickets();
-  }());
+    updateStats();
+    applyFilters();
+  })();
 </script>
+{% endif %}
+
 {% endblock %}

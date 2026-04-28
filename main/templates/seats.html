@@ -1,0 +1,517 @@
+{% extends 'base.html' %}
+
+{% block title %}CRUD Seat - TikTakTuk{% endblock %}
+
+{% block content %}
+<main class="seat-page">
+  <section class="seat-shell space-y-6">
+    <header class="seat-card rounded-3xl p-6 md:p-8">
+      <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
+        <div class="space-y-4 max-w-3xl">
+          <span class="seat-kicker">Temporary route</span>
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-950">CRUD Seat</h1>
+            <p class="mt-3 text-slate-600 leading-relaxed">
+              Halaman sementara untuk mengelola seat berdasarkan venue, section, row, dan nomor kursi dengan tampilan yang bersih.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span class="page-badge">/seats-cust</span>
+            <span class="page-badge">/seats-org</span>
+            <span class="page-badge">/seats-admin</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full xl:w-auto">
+          <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm min-w-[150px]">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Seat</p>
+            <div class="seat-stat-value" data-stat-total>6</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm min-w-[150px]">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Reserved</p>
+            <div class="seat-stat-value" data-stat-reserved>4</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm min-w-[150px]">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Free</p>
+            <div class="seat-stat-value" data-stat-free>2</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm min-w-[150px]">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Venue</p>
+            <div class="seat-stat-value" data-stat-venue>3</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="seat-card rounded-3xl p-6 md:p-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-950">Daftar Seat</h2>
+          <p class="text-sm text-slate-500 mt-1">Cari, filter, lalu edit data seat secara sementara dari halaman ini.</p>
+        </div>
+        <button type="button" data-open-seat-modal="create" class="inline-flex items-center justify-center gap-2 rounded-full seat-cta px-5 py-2.5 text-sm font-bold transition-colors">
+          <span>+</span>
+          Tambah Seat
+        </button>
+      </div>
+
+      <div class="seat-toolbar mb-6">
+        <input class="form-input" type="search" placeholder="Cari nomor seat atau section" data-seat-search>
+        <select class="form-input" data-filter-venue>
+          <option value="all">Semua Venue</option>
+          <option value="The Grand Hall">The Grand Hall</option>
+          <option value="Nusantara Open Space">Nusantara Open Space</option>
+          <option value="Cakra Event Center">Cakra Event Center</option>
+        </select>
+        <select class="form-input" data-filter-section>
+          <option value="all">Semua Section</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="VIP">VIP</option>
+        </select>
+        <button type="button" class="rounded-xl seat-cta-secondary px-4 py-3 text-sm font-semibold transition-colors" data-clear-filters>Reset Filter</button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="seat-table" aria-label="Tabel seat">
+          <thead>
+            <tr>
+              <th>Seat</th>
+              <th>Section</th>
+              <th>Row</th>
+              <th>Venue</th>
+              <th>Status</th>
+              <th class="text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="seat-tbody">
+            <tr data-seat-row data-seat-number="A01" data-seat-section="A" data-seat-row-number="1" data-seat-venue="The Grand Hall" data-seat-status="reserved">
+              <td class="font-bold text-slate-900">A01</td>
+              <td class="text-slate-600">A</td>
+              <td class="text-slate-600">1</td>
+              <td class="text-slate-600">The Grand Hall</td>
+              <td><span class="seat-pill is-reserved">Reserved</span></td>
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="seat-action seat-action-edit" data-open-seat-modal="edit" data-seat-number="A01" data-seat-section="A" data-seat-row-number="1" data-seat-venue="The Grand Hall" data-seat-status="reserved">Edit</button>
+                  <button type="button" class="seat-action seat-action-delete" data-open-delete-modal data-seat-number="A01">Hapus</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-seat-row data-seat-number="A02" data-seat-section="A" data-seat-row-number="1" data-seat-venue="The Grand Hall" data-seat-status="reserved">
+              <td class="font-bold text-slate-900">A02</td>
+              <td class="text-slate-600">A</td>
+              <td class="text-slate-600">1</td>
+              <td class="text-slate-600">The Grand Hall</td>
+              <td><span class="seat-pill is-reserved">Reserved</span></td>
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="seat-action seat-action-edit" data-open-seat-modal="edit" data-seat-number="A02" data-seat-section="A" data-seat-row-number="1" data-seat-venue="The Grand Hall" data-seat-status="reserved">Edit</button>
+                  <button type="button" class="seat-action seat-action-delete" data-open-delete-modal data-seat-number="A02">Hapus</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-seat-row data-seat-number="B01" data-seat-section="B" data-seat-row-number="2" data-seat-venue="Nusantara Open Space" data-seat-status="free">
+              <td class="font-bold text-slate-900">B01</td>
+              <td class="text-slate-600">B</td>
+              <td class="text-slate-600">2</td>
+              <td class="text-slate-600">Nusantara Open Space</td>
+              <td><span class="seat-pill is-free">Free</span></td>
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="seat-action seat-action-edit" data-open-seat-modal="edit" data-seat-number="B01" data-seat-section="B" data-seat-row-number="2" data-seat-venue="Nusantara Open Space" data-seat-status="free">Edit</button>
+                  <button type="button" class="seat-action seat-action-delete" data-open-delete-modal data-seat-number="B01">Hapus</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-seat-row data-seat-number="B02" data-seat-section="B" data-seat-row-number="2" data-seat-venue="Nusantara Open Space" data-seat-status="free">
+              <td class="font-bold text-slate-900">B02</td>
+              <td class="text-slate-600">B</td>
+              <td class="text-slate-600">2</td>
+              <td class="text-slate-600">Nusantara Open Space</td>
+              <td><span class="seat-pill is-free">Free</span></td>
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="seat-action seat-action-edit" data-open-seat-modal="edit" data-seat-number="B02" data-seat-section="B" data-seat-row-number="2" data-seat-venue="Nusantara Open Space" data-seat-status="free">Edit</button>
+                  <button type="button" class="seat-action seat-action-delete" data-open-delete-modal data-seat-number="B02">Hapus</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-seat-row data-seat-number="VIP01" data-seat-section="VIP" data-seat-row-number="1" data-seat-venue="Cakra Event Center" data-seat-status="reserved">
+              <td class="font-bold text-slate-900">VIP01</td>
+              <td class="text-slate-600">VIP</td>
+              <td class="text-slate-600">1</td>
+              <td class="text-slate-600">Cakra Event Center</td>
+              <td><span class="seat-pill is-reserved">Reserved</span></td>
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="seat-action seat-action-edit" data-open-seat-modal="edit" data-seat-number="VIP01" data-seat-section="VIP" data-seat-row-number="1" data-seat-venue="Cakra Event Center" data-seat-status="reserved">Edit</button>
+                  <button type="button" class="seat-action seat-action-delete" data-open-delete-modal data-seat-number="VIP01">Hapus</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-seat-row data-seat-number="C01" data-seat-section="C" data-seat-row-number="3" data-seat-venue="Cakra Event Center" data-seat-status="reserved">
+              <td class="font-bold text-slate-900">C01</td>
+              <td class="text-slate-600">C</td>
+              <td class="text-slate-600">3</td>
+              <td class="text-slate-600">Cakra Event Center</td>
+              <td><span class="seat-pill is-reserved">Reserved</span></td>
+              <td>
+                <div class="flex items-center justify-center gap-2">
+                  <button type="button" class="seat-action seat-action-edit" data-open-seat-modal="edit" data-seat-number="C01" data-seat-section="C" data-seat-row-number="3" data-seat-venue="Cakra Event Center" data-seat-status="reserved">Edit</button>
+                  <button type="button" class="seat-action seat-action-delete" data-open-delete-modal data-seat-number="C01">Hapus</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+</main>
+
+<div class="seat-modal" id="seat-modal" aria-hidden="true">
+  <div class="seat-modal-panel" role="dialog" aria-modal="true" aria-labelledby="seat-modal-title">
+    <div class="p-6 md:p-7 border-b border-slate-100 flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-slate-950" id="seat-modal-title">Tambah Seat</h2>
+        <p class="text-sm text-slate-500 mt-1" id="seat-modal-copy">Masukkan data seat baru untuk sementara di halaman ini.</p>
+      </div>
+      <button type="button" class="rounded-full p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" data-close-seat-modal aria-label="Tutup">x</button>
+    </div>
+
+    <form class="p-6 md:p-7" id="seat-form">
+      <input type="hidden" id="seat-form-mode" value="create">
+      <input type="hidden" id="seat-original-number" value="">
+
+      <div class="seat-form-grid">
+        <div>
+          <label class="seat-form-label" for="seat-number">Nomor Seat</label>
+          <input id="seat-number" class="form-input" type="text" placeholder="A03" required>
+        </div>
+        <div>
+          <label class="seat-form-label" for="seat-section">Section</label>
+          <select id="seat-section" required>
+            <option value="">Pilih section</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="VIP">VIP</option>
+          </select>
+        </div>
+        <div>
+          <label class="seat-form-label" for="seat-row-number">Row</label>
+          <input id="seat-row-number" class="form-input" type="number" min="1" placeholder="1" required>
+        </div>
+        <div>
+          <label class="seat-form-label" for="seat-venue">Venue</label>
+          <select id="seat-venue" required>
+            <option value="">Pilih venue</option>
+            <option value="The Grand Hall">The Grand Hall</option>
+            <option value="Nusantara Open Space">Nusantara Open Space</option>
+            <option value="Cakra Event Center">Cakra Event Center</option>
+          </select>
+        </div>
+        <div class="seat-form-field-full flex items-end gap-3">
+          <div class="w-full">
+            <label class="seat-form-label" for="seat-status">Status</label>
+            <select id="seat-status" required>
+              <option value="reserved">Reserved</option>
+              <option value="free">Free</option>
+            </select>
+          </div>
+        </div>
+        <div class="seat-form-field-full flex gap-3">
+          <button type="button" class="rounded-xl seat-cta-secondary px-4 py-3 text-sm font-bold transition-colors w-full" data-close-seat-modal>Batal</button>
+          <button type="submit" class="rounded-xl seat-cta px-4 py-3 text-sm font-bold transition-colors w-full" id="seat-submit-button">Simpan</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="seat-modal" id="seat-delete-modal" aria-hidden="true">
+  <div class="seat-modal-panel seat-modal-panel--narrow" role="dialog" aria-modal="true" aria-labelledby="seat-delete-title">
+    <div class="p-6 md:p-7 border-b border-slate-100 flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-red-600" id="seat-delete-title">Hapus Seat</h2>
+        <p class="text-sm text-slate-500 mt-1">Konfirmasi agar seat tidak terhapus tanpa sengaja.</p>
+      </div>
+      <button type="button" class="rounded-full p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" data-close-seat-delete-modal aria-label="Tutup">x</button>
+    </div>
+
+    <div class="p-6 md:p-7 space-y-6">
+      <p class="text-slate-600 leading-relaxed" id="seat-delete-copy">Anda akan menghapus seat ini dari daftar sementara.</p>
+      <div class="flex gap-3 justify-end">
+        <button type="button" class="rounded-xl seat-cta-secondary px-4 py-3 text-sm font-bold transition-colors" data-close-seat-delete-modal>Batal</button>
+        <button type="button" class="rounded-xl seat-cta px-4 py-3 text-sm font-bold transition-colors" id="seat-delete-submit">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="seat-toast" id="seat-toast" aria-live="polite" aria-atomic="true">
+  <div class="seat-toast-dot"></div>
+  <div>
+    <div class="font-bold" id="seat-toast-title">Berhasil</div>
+    <div class="text-sm text-slate-300" id="seat-toast-copy">Data seat berhasil diproses.</div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const seatModal = document.getElementById('seat-modal');
+    const seatDeleteModal = document.getElementById('seat-delete-modal');
+    const seatForm = document.getElementById('seat-form');
+    const seatModalTitle = document.getElementById('seat-modal-title');
+    const seatModalCopy = document.getElementById('seat-modal-copy');
+    const seatSubmitButton = document.getElementById('seat-submit-button');
+    const seatFormMode = document.getElementById('seat-form-mode');
+    const seatOriginalNumber = document.getElementById('seat-original-number');
+    const seatNumberField = document.getElementById('seat-number');
+    const seatSectionField = document.getElementById('seat-section');
+    const seatRowNumberField = document.getElementById('seat-row-number');
+    const seatVenueField = document.getElementById('seat-venue');
+    const seatStatusField = document.getElementById('seat-status');
+    const seatTbody = document.getElementById('seat-tbody');
+    const seatDeleteCopy = document.getElementById('seat-delete-copy');
+    const seatDeleteSubmit = document.getElementById('seat-delete-submit');
+    const seatToast = document.getElementById('seat-toast');
+    const seatToastTitle = document.getElementById('seat-toast-title');
+    const seatToastCopy = document.getElementById('seat-toast-copy');
+    const searchField = document.querySelector('[data-seat-search]');
+    const venueFilter = document.querySelector('[data-filter-venue]');
+    const sectionFilter = document.querySelector('[data-filter-section]');
+    const clearFiltersButton = document.querySelector('[data-clear-filters]');
+    const statTotal = document.querySelector('[data-stat-total]');
+    const statReserved = document.querySelector('[data-stat-reserved]');
+    const statFree = document.querySelector('[data-stat-free]');
+    const statVenue = document.querySelector('[data-stat-venue]');
+    const closeFormButtons = document.querySelectorAll('[data-close-seat-modal]');
+    const closeDeleteButtons = document.querySelectorAll('[data-close-seat-delete-modal]');
+
+    let deleteTargetRow = null;
+    let toastTimer = null;
+
+    function setBodyScroll() {
+      document.body.style.overflow = seatModal.classList.contains('is-open') || seatDeleteModal.classList.contains('is-open') ? 'hidden' : '';
+    }
+
+    function showToast(title, message) {
+      seatToastTitle.textContent = title;
+      seatToastCopy.textContent = message;
+      seatToast.classList.add('is-visible');
+
+      if (toastTimer) {
+        window.clearTimeout(toastTimer);
+      }
+
+      toastTimer = window.setTimeout(function () {
+        seatToast.classList.remove('is-visible');
+      }, 2400);
+    }
+
+    function openSeatModal(mode, trigger) {
+      seatFormMode.value = mode;
+      seatModalTitle.textContent = mode === 'edit' ? 'Edit Seat' : 'Tambah Seat';
+      seatModalCopy.textContent = mode === 'edit'
+        ? 'Perbarui seat yang sudah ada tanpa mengubah struktur halaman.'
+        : 'Masukkan data seat baru untuk sementara di halaman ini.';
+      seatSubmitButton.textContent = mode === 'edit' ? 'Simpan Perubahan' : 'Simpan';
+
+      if (mode === 'edit' && trigger) {
+        seatOriginalNumber.value = trigger.dataset.seatNumber || '';
+        seatNumberField.value = trigger.dataset.seatNumber || '';
+        seatSectionField.value = trigger.dataset.seatSection || '';
+        seatRowNumberField.value = trigger.dataset.seatRowNumber || '';
+        seatVenueField.value = trigger.dataset.seatVenue || '';
+        seatStatusField.value = trigger.dataset.seatStatus || 'reserved';
+      } else {
+        seatOriginalNumber.value = '';
+        seatForm.reset();
+      }
+
+      seatModal.classList.add('is-open');
+      seatModal.setAttribute('aria-hidden', 'false');
+      setBodyScroll();
+      seatNumberField.focus();
+    }
+
+    function closeSeatModal() {
+      seatModal.classList.remove('is-open');
+      seatModal.setAttribute('aria-hidden', 'true');
+      setBodyScroll();
+    }
+
+    function openDeleteModal(trigger) {
+      deleteTargetRow = trigger.closest('[data-seat-row]');
+      const seatNumber = trigger.dataset.seatNumber || 'seat ini';
+      seatDeleteCopy.textContent = 'Anda akan menghapus ' + seatNumber + ' dari daftar sementara. Tindakan ini tidak dapat dibatalkan.';
+      seatDeleteSubmit.dataset.seatNumber = seatNumber;
+      seatDeleteModal.classList.add('is-open');
+      seatDeleteModal.setAttribute('aria-hidden', 'false');
+      setBodyScroll();
+    }
+
+    function closeDeleteModal() {
+      seatDeleteModal.classList.remove('is-open');
+      seatDeleteModal.setAttribute('aria-hidden', 'true');
+      setBodyScroll();
+      deleteTargetRow = null;
+      seatDeleteSubmit.dataset.seatNumber = '';
+    }
+
+    function buildRow(seatData) {
+      const row = document.createElement('tr');
+      row.dataset.seatRow = '';
+      row.dataset.seatNumber = seatData.number;
+      row.dataset.seatSection = seatData.section;
+      row.dataset.seatRowNumber = seatData.rowNumber;
+      row.dataset.seatVenue = seatData.venue;
+      row.dataset.seatStatus = seatData.status;
+      row.innerHTML = [
+        '<td class="font-bold text-slate-900">' + seatData.number + '</td>',
+        '<td class="text-slate-600">' + seatData.section + '</td>',
+        '<td class="text-slate-600">' + seatData.rowNumber + '</td>',
+        '<td class="text-slate-600">' + seatData.venue + '</td>',
+        '<td><span class="seat-pill ' + (seatData.status === 'reserved' ? 'is-reserved' : 'is-free') + '">' + (seatData.status === 'reserved' ? 'Reserved' : 'Free') + '</span></td>',
+        '<td><div class="flex items-center justify-center gap-2"><button type="button" class="seat-action seat-action-edit" data-open-seat-modal="edit" data-seat-number="' + seatData.number + '" data-seat-section="' + seatData.section + '" data-seat-row-number="' + seatData.rowNumber + '" data-seat-venue="' + seatData.venue + '" data-seat-status="' + seatData.status + '">Edit</button><button type="button" class="seat-action seat-action-delete" data-open-delete-modal data-seat-number="' + seatData.number + '">Hapus</button></div></td>'
+      ].join('');
+      return row;
+    }
+
+    function updateStats() {
+      const rows = seatTbody.querySelectorAll('[data-seat-row]');
+      const venueSet = new Set();
+      let reservedCount = 0;
+      let freeCount = 0;
+
+      rows.forEach(function (row) {
+        const status = row.dataset.seatStatus || 'reserved';
+        venueSet.add(row.dataset.seatVenue || '');
+
+        if (status === 'reserved') {
+          reservedCount += 1;
+        } else {
+          freeCount += 1;
+        }
+      });
+
+      statTotal.textContent = String(rows.length);
+      statReserved.textContent = String(reservedCount);
+      statFree.textContent = String(freeCount);
+      statVenue.textContent = String(venueSet.size);
+    }
+
+    function applyFilters() {
+      const query = searchField.value.trim().toLowerCase();
+      const selectedVenue = venueFilter.value;
+      const selectedSection = sectionFilter.value;
+
+      seatTbody.querySelectorAll('[data-seat-row]').forEach(function (row) {
+        const number = (row.dataset.seatNumber || '').toLowerCase();
+        const section = row.dataset.seatSection || '';
+        const venue = row.dataset.seatVenue || '';
+        const matchesQuery = !query || number.includes(query) || section.toLowerCase().includes(query);
+        const matchesVenue = selectedVenue === 'all' || venue === selectedVenue;
+        const matchesSection = selectedSection === 'all' || section === selectedSection;
+
+        row.hidden = !(matchesQuery && matchesVenue && matchesSection);
+      });
+    }
+
+    document.addEventListener('click', function (event) {
+      const openButton = event.target.closest('[data-open-seat-modal]');
+      const deleteButton = event.target.closest('[data-open-delete-modal]');
+
+      if (openButton) {
+        openSeatModal(openButton.dataset.openSeatModal, openButton);
+      }
+
+      if (deleteButton) {
+        openDeleteModal(deleteButton);
+      }
+    });
+
+    closeFormButtons.forEach(function (button) {
+      button.addEventListener('click', closeSeatModal);
+    });
+
+    closeDeleteButtons.forEach(function (button) {
+      button.addEventListener('click', closeDeleteModal);
+    });
+
+    seatForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const seatData = {
+        number: seatNumberField.value.trim(),
+        section: seatSectionField.value,
+        rowNumber: seatRowNumberField.value.trim(),
+        venue: seatVenueField.value,
+        status: seatStatusField.value,
+      };
+
+      if (seatFormMode.value === 'edit') {
+        const targetRow = Array.from(seatTbody.querySelectorAll('[data-seat-row]')).find(function (row) {
+          return row.dataset.seatNumber === seatOriginalNumber.value;
+        });
+
+        if (targetRow) {
+          const replacement = buildRow(seatData);
+          targetRow.replaceWith(replacement);
+        }
+
+        showToast('Seat diperbarui', 'Data seat berhasil diperbarui sementara.');
+      } else {
+        seatTbody.prepend(buildRow(seatData));
+        showToast('Seat ditambahkan', 'Seat baru berhasil masuk ke daftar sementara.');
+      }
+
+      closeSeatModal();
+      updateStats();
+      applyFilters();
+    });
+
+    seatDeleteSubmit.addEventListener('click', function () {
+      if (deleteTargetRow) {
+        deleteTargetRow.remove();
+      }
+
+      closeDeleteModal();
+      updateStats();
+      applyFilters();
+      showToast('Seat dihapus', 'Data seat berhasil dihapus dari daftar sementara.');
+    });
+
+    searchField.addEventListener('input', applyFilters);
+    venueFilter.addEventListener('change', applyFilters);
+    sectionFilter.addEventListener('change', applyFilters);
+
+    clearFiltersButton.addEventListener('click', function () {
+      searchField.value = '';
+      venueFilter.value = 'all';
+      sectionFilter.value = 'all';
+      applyFilters();
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      if (seatModal.classList.contains('is-open')) {
+        closeSeatModal();
+      }
+
+      if (seatDeleteModal.classList.contains('is-open')) {
+        closeDeleteModal();
+      }
+    });
+
+    updateStats();
+    applyFilters();
+  })();
+</script>
+{% endblock %}
