@@ -4,6 +4,12 @@
 
 {% block content %}
 <main class="profile-wrap">
+	<a href="{% url 'my_tickets_admin' %}"><button style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+		Ticket Admin</button></a>
+	<a href="{% url 'my_tickets_org' %}"><button style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+		Ticket Organisasi</button></a>
+	<a href="{% url 'my_tickets_cust' %}"><button style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+		Ticket Customer</button></a>
 	<section class="page-hero">
 		<div class="hero-grid">
 			<div>
