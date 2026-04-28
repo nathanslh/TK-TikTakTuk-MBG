@@ -37,50 +37,154 @@
 			</div>
 		</div>
 	</div>
+
+	<div id="password-modal" class="password-modal" aria-hidden="true">
+		<div class="password-modal-backdrop" data-close-password-modal></div>
+		<div class="password-modal-panel" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
+			<div class="password-modal-header">
+				<div>
+					<h2 id="password-modal-title" class="password-modal-title">Ubah Password</h2>
+					<p id="password-modal-copy" class="password-modal-copy">Perbarui password untuk menjaga keamanan akun Anda.</p>
+				</div>
+				<button type="button" class="password-modal-close" data-close-password-modal aria-label="Tutup">x</button>
+			</div>
+
+			<form action="#" method="post" class="password-form-grid" id="password-modal-form">
+				{% csrf_token %}
+				<div class="profile-field">
+					<label for="global-old-password">Password Lama</label>
+					<input id="global-old-password" name="old_password" type="password" placeholder="Masukkan password lama" required>
+				</div>
+				<div class="profile-field">
+					<label for="global-new-password">Password Baru</label>
+					<input id="global-new-password" name="new_password" type="password" placeholder="Masukkan password baru" required>
+				</div>
+				<div class="profile-field">
+					<label for="global-confirm-password">Konfirmasi Password Baru</label>
+					<input id="global-confirm-password" name="confirm_new_password" type="password" placeholder="Ulangi password baru" required>
+				</div>
+
+				<div class="profile-inline-actions">
+					<button type="button" class="profile-btn profile-btn-ghost" data-close-password-modal>Batal</button>
+					<button type="submit" class="profile-btn profile-btn-primary">Update Password</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </div>
 
 <script>
 	(function () {
-		const modal = document.getElementById('login-modal');
-		if (!modal) {
+		const loginModal = document.getElementById('login-modal');
+		const passwordModal = document.getElementById('password-modal');
+
+		if (!loginModal) {
 			return;
 		}
 
-		const openers = document.querySelectorAll('[data-open-login-modal]');
-		const closers = modal.querySelectorAll('[data-close-login-modal]');
+		const loginOpeners = document.querySelectorAll('[data-open-login-modal]');
+		const loginClosers = loginModal.querySelectorAll('[data-close-login-modal]');
+		const passwordOpeners = document.querySelectorAll('[data-open-password-modal]');
+		const passwordClosers = passwordModal ? passwordModal.querySelectorAll('[data-close-password-modal]') : [];
+		const passwordTitle = passwordModal ? passwordModal.querySelector('#password-modal-title') : null;
+		const passwordCopy = passwordModal ? passwordModal.querySelector('#password-modal-copy') : null;
+		const passwordForm = passwordModal ? passwordModal.querySelector('#password-modal-form') : null;
 
-		const openModal = function () {
-			modal.classList.remove('hidden');
-			modal.setAttribute('aria-hidden', 'false');
-			document.body.style.overflow = 'hidden';
+		const syncBodyScroll = function () {
+			const loginOpen = loginModal.getAttribute('aria-hidden') === 'false';
+			const passwordOpen = passwordModal && passwordModal.classList.contains('is-open');
+			document.body.style.overflow = loginOpen || passwordOpen ? 'hidden' : '';
+		};
 
-			const firstInput = modal.querySelector('#modal-username');
+		const openLoginModal = function () {
+			loginModal.classList.remove('hidden');
+			loginModal.setAttribute('aria-hidden', 'false');
+			syncBodyScroll();
+
+			const firstInput = loginModal.querySelector('#modal-username');
 			if (firstInput) {
 				firstInput.focus();
 			}
 		};
 
-		const closeModal = function () {
-			modal.classList.add('hidden');
-			modal.setAttribute('aria-hidden', 'true');
-			document.body.style.overflow = '';
+		const closeLoginModal = function () {
+			loginModal.classList.add('hidden');
+			loginModal.setAttribute('aria-hidden', 'true');
+			syncBodyScroll();
 		};
 
-		openers.forEach(function (btn) {
+		const openPasswordModal = function (trigger) {
+			if (!passwordModal) {
+				return;
+			}
+
+			if (trigger && passwordTitle && trigger.dataset.passwordTitle) {
+				passwordTitle.textContent = trigger.dataset.passwordTitle;
+			}
+
+			if (trigger && passwordCopy && trigger.dataset.passwordCopy) {
+				passwordCopy.textContent = trigger.dataset.passwordCopy;
+			}
+
+			if (trigger && passwordForm && trigger.dataset.passwordAction) {
+				passwordForm.setAttribute('action', trigger.dataset.passwordAction);
+			}
+
+			passwordModal.classList.add('is-open');
+			passwordModal.setAttribute('aria-hidden', 'false');
+			syncBodyScroll();
+
+			const firstInput = passwordModal.querySelector('#global-old-password');
+			if (firstInput) {
+				firstInput.focus();
+			}
+		};
+
+		const closePasswordModal = function () {
+			if (!passwordModal) {
+				return;
+			}
+
+			passwordModal.classList.remove('is-open');
+			passwordModal.setAttribute('aria-hidden', 'true');
+			syncBodyScroll();
+		};
+
+		loginOpeners.forEach(function (btn) {
 			btn.addEventListener('click', function () {
-				openModal();
+				openLoginModal();
 			});
 		});
 
-		closers.forEach(function (btn) {
+		loginClosers.forEach(function (btn) {
 			btn.addEventListener('click', function () {
-				closeModal();
+				closeLoginModal();
+			});
+		});
+
+		passwordOpeners.forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				openPasswordModal(btn);
+			});
+		});
+
+		passwordClosers.forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				closePasswordModal();
 			});
 		});
 
 		document.addEventListener('keydown', function (event) {
-			if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
-				closeModal();
+			if (event.key !== 'Escape') {
+				return;
+			}
+
+			if (loginModal.getAttribute('aria-hidden') === 'false') {
+				closeLoginModal();
+			}
+
+			if (passwordModal && passwordModal.classList.contains('is-open')) {
+				closePasswordModal();
 			}
 		});
 	})();
