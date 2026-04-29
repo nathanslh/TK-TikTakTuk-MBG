@@ -24,4 +24,7 @@ urlpatterns = [
     path('seats-cust/', TemplateView.as_view(template_name='seats.html', extra_context={'role': 'cust'}), name='seats_cust'),
     path('seats-org/', TemplateView.as_view(template_name='seats.html', extra_context={'role': 'org'}), name='seats_org'),
     path('seats-admin/', TemplateView.as_view(template_name='seats.html', extra_context={'role': 'admin'}), name='seats_admin'),
+    path('checkout/', views.checkout_view, name='checkout'),
+    path('orders/', views.order_list_view, name='order_list'),
+    path('promotions/', views.promotion_list, name='promotion_list'),
 ]
