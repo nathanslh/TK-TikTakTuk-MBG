@@ -1,0 +1,1209 @@
+{% extends 'base.html' %}
+
+{% block title %}Manajemen Venue - TikTakTuk{% endblock %}
+
+{% block content %}
+<style>
+  .venue-page {
+    max-width: 1200px;
+    margin: 1.5rem auto 2.5rem;
+    padding: 0 1rem 2rem;
+  }
+
+  .venue-shell {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .venue-card,
+  .venue-modal-panel,
+  .venue-toast {
+    background: rgba(253, 251, 246, 0.96);
+    border: 1px solid rgba(168, 140, 111, 0.16);
+    box-shadow: 0 16px 32px rgba(100, 80, 60, 0.08);
+    backdrop-filter: blur(8px);
+  }
+
+  .venue-hero {
+    border-radius: 26px;
+    padding: 1.35rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .venue-hero-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .venue-kicker {
+    display: inline-block;
+    color: #7a6757;
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .venue-title {
+    margin-top: 0.7rem;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1.12;
+    color: #3d322a;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .venue-copy {
+    margin-top: 0.55rem;
+    max-width: 70ch;
+    color: #7c6c60;
+    line-height: 1.65;
+  }
+
+  .venue-actions {
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .venue-button,
+  .venue-button-secondary,
+  .venue-button-ghost {
+    border: none;
+    border-radius: 999px;
+    padding: 0.72rem 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    line-height: 1;
+  }
+
+  .venue-button {
+    background: linear-gradient(145deg, #bfa485 0%, #9a8264 100%);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(120, 100, 80, 0.18);
+  }
+
+  .venue-button:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(145deg, #b39575 0%, #8e7658 100%);
+  }
+
+  .venue-button-secondary {
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(168, 140, 111, 0.22);
+    color: #5a4f48;
+  }
+
+  .venue-button-secondary:hover {
+    transform: translateY(-1px);
+    background: rgba(245, 240, 233, 0.95);
+  }
+
+  .venue-button-edit {
+    background: #ffffff;
+    border: 1px solid rgba(125, 110, 96, 0.24);
+    color: #4c4138;
+    box-shadow: none;
+  }
+
+  .venue-button-edit:hover {
+    transform: translateY(-1px);
+    background: rgba(251, 248, 243, 0.98);
+    border-color: rgba(125, 110, 96, 0.32);
+  }
+
+  .venue-button-ghost {
+    background: rgba(243, 237, 230, 0.82);
+    color: #5a4f48;
+    border: 1px solid rgba(168, 140, 111, 0.16);
+  }
+
+  .venue-button-ghost:hover {
+    transform: translateY(-1px);
+    background: rgba(235, 228, 220, 0.96);
+  }
+
+  .venue-button-delete {
+    background: #fff5f4;
+    border: 1px solid rgba(241, 89, 78, 0.4);
+    color: #f04b3d;
+    box-shadow: none;
+  }
+
+  .venue-button-delete:hover {
+    transform: translateY(-1px);
+    background: #ffeceb;
+    border-color: rgba(241, 89, 78, 0.55);
+  }
+
+  .venue-button-delete-solid {
+    background: linear-gradient(145deg, #f06a5d 0%, #d9483a 100%);
+    border: 1px solid rgba(217, 72, 58, 0.22);
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(217, 72, 58, 0.18);
+  }
+
+  .venue-button-delete-solid:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(145deg, #e95e50 0%, #c83d31 100%);
+    border-color: rgba(217, 72, 58, 0.28);
+  }
+
+  .venue-btn-icon {
+    width: 0.92rem;
+    height: 0.92rem;
+    flex: 0 0 auto;
+  }
+
+  .venue-button-edit .venue-btn-icon {
+    color: #6b5a4c;
+  }
+
+  .venue-button-delete .venue-btn-icon {
+    color: #f04b3d;
+  }
+
+  .venue-button-delete-solid .venue-btn-icon {
+    color: #fff;
+  }
+
+  .venue-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .venue-stat {
+    border-radius: 18px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(168, 140, 111, 0.12);
+  }
+
+  .venue-stat-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #8b7d6f;
+  }
+
+  .venue-stat-value {
+    margin-top: 0.35rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #3d322a;
+  }
+
+  .venue-panel {
+    border-radius: 26px;
+    padding: 1.2rem;
+  }
+
+  .venue-panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .venue-panel-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #3d322a;
+    letter-spacing: -0.02em;
+  }
+
+  .venue-panel-copy {
+    margin-top: 0.25rem;
+    color: #7c6c60;
+  }
+
+  .venue-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .venue-field,
+  .venue-select {
+    width: 100%;
+    border: 1px solid rgba(168, 140, 111, 0.22);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #3d322a;
+    padding: 0.78rem 0.95rem;
+    outline: none;
+  }
+
+  .venue-field:focus,
+  .venue-select:focus {
+    border-color: rgba(168, 140, 111, 0.55);
+    box-shadow: 0 0 0 4px rgba(168, 140, 111, 0.14);
+  }
+
+  .venue-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .venue-card {
+    border-radius: 22px;
+    padding: 1rem;
+    display: grid;
+    gap: 0.95rem;
+  }
+
+  .venue-card-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .venue-card-title-wrap {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .venue-card-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.95rem;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, rgba(168, 140, 111, 0.18), rgba(168, 140, 111, 0.1));
+    color: #8b6f55;
+    border: 1px solid rgba(168, 140, 111, 0.16);
+  }
+
+  .venue-card-icon svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .venue-name {
+    font-size: 1.12rem;
+    font-weight: 800;
+    color: #3d322a;
+  }
+
+  .venue-meta {
+    margin-top: 0.25rem;
+    color: #7c6c60;
+    line-height: 1.6;
+  }
+
+  .venue-meta-stack {
+    display: grid;
+    gap: 0.14rem;
+  }
+
+  .venue-detail-line {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-left: 3.3rem;
+    color: #6f5d50;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .venue-detail-line svg {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    color: #8b6f55;
+  }
+
+  .venue-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .venue-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.66rem;
+    border-radius: 999px;
+    background: rgba(168, 140, 111, 0.12);
+    color: #6b5a4c;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .venue-card-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-left: 3.3rem;
+  }
+
+  .venue-card-actions .venue-button,
+  .venue-card-actions .venue-button-edit,
+  .venue-card-actions .venue-button-delete {
+    padding: 0.34rem 0.62rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    border-radius: 10px;
+  }
+
+  .venue-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: none;
+  }
+
+  .venue-modal.is-open {
+    display: grid;
+  }
+
+  .venue-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(61, 50, 42, 0.34);
+    backdrop-filter: blur(7px);
+  }
+
+  .venue-modal-panel {
+    position: relative;
+    width: min(720px, calc(100% - 1.1rem));
+    margin: auto;
+    border-radius: 24px;
+    padding: 1.15rem;
+  }
+
+  .venue-modal-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(168, 140, 111, 0.16);
+    padding-bottom: 0.9rem;
+  }
+
+  .venue-modal-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #3d322a;
+    letter-spacing: -0.02em;
+  }
+
+  .venue-modal-copy {
+    margin-top: 0.25rem;
+    color: #7c6c60;
+    max-width: 60ch;
+  }
+
+  .venue-modal-close {
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(168, 140, 111, 0.18);
+    background: rgba(255, 255, 255, 0.84);
+    color: #8b7d6f;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .venue-modal-body {
+    padding-top: 1rem;
+  }
+
+  .venue-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .venue-form-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .venue-form-field-inline {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(168, 140, 111, 0.18);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.84);
+  }
+
+  .venue-form-field-inline input[type="checkbox"] {
+    width: 1.05rem;
+    height: 1.05rem;
+    accent-color: #a88c6f;
+    flex: 0 0 auto;
+  }
+
+  .venue-form-field-inline label {
+    margin: 0;
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: #5f4f42;
+    line-height: 1.45;
+  }
+
+  .venue-form-field label {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #5f4f42;
+  }
+
+  .venue-form-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .venue-textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  #venue-modal .venue-modal-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.1rem;
+  }
+
+  #venue-modal .venue-modal-actions button {
+    min-height: 2.9rem;
+    justify-content: center;
+  }
+
+  #venue-modal .venue-button-ghost {
+    background: linear-gradient(145deg, #ff6a66 0%, #e83f3a 100%);
+    color: #fff;
+    border-color: rgba(232, 63, 58, 0.28);
+    box-shadow: 0 10px 20px rgba(232, 63, 58, 0.18);
+    flex: 0 1 150px;
+  }
+
+  #venue-modal .venue-button-ghost:hover {
+    background: linear-gradient(145deg, #ff5c57 0%, #d92f2a 100%);
+    border-color: rgba(217, 47, 42, 0.34);
+  }
+
+  #venue-modal #venue-submit-button {
+    flex: 1 1 240px;
+  }
+
+  .venue-delete-preview {
+    background: rgba(243, 237, 230, 0.76);
+    border: 1px solid rgba(168, 140, 111, 0.14);
+    border-radius: 18px;
+    padding: 0.95rem;
+    color: #5a4f48;
+    line-height: 1.6;
+  }
+
+  .venue-toast {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 140;
+    width: min(360px, calc(100% - 2rem));
+    border-radius: 18px;
+    padding: 0.95rem 1rem;
+    display: none;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .venue-toast.is-visible {
+    display: flex;
+  }
+
+  .venue-toast-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 999px;
+    margin-top: 0.28rem;
+    background: #a88c6f;
+    flex: 0 0 auto;
+  }
+
+  .venue-toast-title {
+    font-weight: 800;
+    color: #3d322a;
+  }
+
+  .venue-toast-copy {
+    margin-top: 0.2rem;
+    color: #7c6c60;
+  }
+
+  @media (max-width: 980px) {
+    .venue-stats,
+    .venue-toolbar,
+    .venue-grid,
+    .venue-form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .venue-page {
+      margin-top: 1rem;
+      padding-inline: 0.75rem;
+    }
+
+    .venue-hero,
+    .venue-panel,
+    .venue-modal-panel {
+      border-radius: 20px;
+      padding: 1rem;
+    }
+
+    .venue-title {
+      font-size: 1.7rem;
+    }
+
+    .venue-panel-title {
+      font-size: 1.2rem;
+    }
+
+    .venue-modal-actions,
+    .venue-actions,
+    .venue-card-actions {
+      width: 100%;
+    }
+
+    .venue-card-actions {
+      margin-left: 0;
+    }
+
+    .venue-button,
+    .venue-button-secondary,
+    .venue-button-ghost,
+    .venue-button-edit,
+    .venue-button-delete {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<main class="venue-page">
+  <section class="venue-shell">
+    <header class="venue-hero auth-card">
+      <div class="venue-hero-top">
+        <div>
+          <h1 class="venue-title">Manajemen Venue</h1>
+          <p class="venue-copy">Cari atau kelola venue anda</p>
+        </div>
+
+        <div class="venue-actions">
+          <button type="button" class="venue-button" data-open-venue-modal="create">Tambah Venue</button>
+          <button type="button" class="venue-button-secondary" data-scroll-to-list>Ke Daftar Venue</button>
+        </div>
+      </div>
+
+      <div class="venue-stats">
+        <div class="venue-stat">
+          <div class="venue-stat-label">Total Venue</div>
+          <div class="venue-stat-value" data-stat-total>4</div>
+        </div>
+        <div class="venue-stat">
+          <div class="venue-stat-label">Reserved Seating</div>
+          <div class="venue-stat-value" data-stat-reserved>2</div>
+        </div>
+        <div class="venue-stat">
+          <div class="venue-stat-label">Free Seating</div>
+          <div class="venue-stat-value" data-stat-free>2</div>
+        </div>
+        <div class="venue-stat">
+          <div class="venue-stat-label">Total Kapasitas</div>
+          <div class="venue-stat-value">5.400</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="venue-panel auth-card" id="venue-list-section">
+      <div class="venue-panel-head">
+        <div>
+          <h2 class="venue-panel-title">Daftar Venue</h2>
+          <p class="venue-panel-copy">Cari berdasarkan nama atau alamat, lalu filter berdasarkan kota dan jenis seating.</p>
+        </div>
+      </div>
+
+      <div class="venue-toolbar">
+        <input class="form-input" type="search" placeholder="Cari nama venue atau alamat" data-venue-search>
+        <select class="form-input" data-filter-city>
+          <option value="all">Semua Kota</option>
+          <option value="Jakarta">Jakarta</option>
+          <option value="Bandung">Bandung</option>
+          <option value="Surabaya">Surabaya</option>
+        </select>
+        <select class="form-input" data-filter-seating>
+          <option value="all">Semua Seating</option>
+          <option value="reserved">Reserved seating</option>
+          <option value="free">Free seating</option>
+        </select>
+        <button type="button" class="venue-button-ghost" data-clear-filters>Reset Filter</button>
+      </div>
+
+      <div class="venue-grid" data-venue-grid>
+        <article class="venue-card" data-venue-card data-name="The Grand Hall" data-address="Jl. Asia Afrika No. 12, Bandung" data-city="Bandung" data-seating="reserved">
+          <div class="venue-card-head">
+            <div class="venue-card-title-wrap">
+              <div class="venue-card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+              </div>
+              <div class="venue-meta-stack">
+              <h3 class="venue-name">The Grand Hall</h3>
+              <p class="venue-meta">Jl. Asia Afrika No. 12, Bandung</p>
+              </div>
+            </div>
+            <span class="venue-chip">Reserved</span>
+          </div>
+          <div class="venue-detail-line">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11h10a2 2 0 0 1 2 2v2H5v-2a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11V8.8A1.8 1.8 0 0 1 9.8 7h4.4A1.8 1.8 0 0 1 16 8.8V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 15v2.2M17 15v2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>1.500 seat</span>
+          </div>
+          <div class="venue-card-actions">
+            <button type="button" class="venue-button-edit" data-open-venue-modal="edit" data-venue-name="The Grand Hall" data-venue-address="Jl. Asia Afrika No. 12, Bandung" data-venue-city="Bandung" data-venue-capacity="1500" data-venue-seating="reserved">
+              <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 20h4l10.5-10.5a1.8 1.8 0 0 0 0-2.5l-1.5-1.5a1.8 1.8 0 0 0-2.5 0L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M13.5 6.5 17.5 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Edit</span>
+            </button>
+            <button type="button" class="venue-button-delete" data-open-delete-modal data-venue-name="The Grand Hall">
+              <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7m-7 0 .6 11a1.8 1.8 0 0 0 1.8 1.7h3.2a1.8 1.8 0 0 0 1.8-1.7L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Hapus</span>
+            </button>
+          </div>
+        </article>
+
+        <article class="venue-card" data-venue-card data-name="Nusantara Open Space" data-address="Jl. Ahmad Yani No. 88, Jakarta" data-city="Jakarta" data-seating="free">
+          <div class="venue-card-head">
+            <div class="venue-card-title-wrap">
+              <div class="venue-card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+              </div>
+              <div class="venue-meta-stack">
+              <h3 class="venue-name">Nusantara Open Space</h3>
+              <p class="venue-meta">Jl. Ahmad Yani No. 88, Jakarta</p>
+              </div>
+            </div>
+            <span class="venue-chip">Free seating</span>
+          </div>
+          <div class="venue-detail-line">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11h10a2 2 0 0 1 2 2v2H5v-2a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11V8.8A1.8 1.8 0 0 1 9.8 7h4.4A1.8 1.8 0 0 1 16 8.8V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 15v2.2M17 15v2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>2.400 seat</span>
+          </div>
+          <div class="venue-card-actions">
+            <button type="button" class="venue-button-edit" data-open-venue-modal="edit" data-venue-name="Nusantara Open Space" data-venue-address="Jl. Ahmad Yani No. 88, Jakarta" data-venue-city="Jakarta" data-venue-capacity="2400" data-venue-seating="free">
+              <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 20h4l10.5-10.5a1.8 1.8 0 0 0 0-2.5l-1.5-1.5a1.8 1.8 0 0 0-2.5 0L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M13.5 6.5 17.5 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Edit</span>
+            </button>
+            <button type="button" class="venue-button-delete" data-open-delete-modal data-venue-name="Nusantara Open Space">
+              <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7m-7 0 .6 11a1.8 1.8 0 0 0 1.8 1.7h3.2a1.8 1.8 0 0 0 1.8-1.7L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Hapus</span>
+            </button>
+          </div>
+        </article>
+
+        <article class="venue-card" data-venue-card data-name="Cakra Event Center" data-address="Jl. Raya Darmo No. 20, Surabaya" data-city="Surabaya" data-seating="reserved">
+          <div class="venue-card-head">
+            <div class="venue-card-title-wrap">
+              <div class="venue-card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+              </div>
+              <div class="venue-meta-stack">
+              <h3 class="venue-name">Cakra Event Center</h3>
+              <p class="venue-meta">Jl. Raya Darmo No. 20, Surabaya</p>
+              </div>
+            </div>
+            <span class="venue-chip">Reserved</span>
+          </div>
+          <div class="venue-detail-line">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11h10a2 2 0 0 1 2 2v2H5v-2a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11V8.8A1.8 1.8 0 0 1 9.8 7h4.4A1.8 1.8 0 0 1 16 8.8V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 15v2.2M17 15v2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>900 seat</span>
+          </div>
+          <div class="venue-card-actions">
+            <button type="button" class="venue-button-edit" data-open-venue-modal="edit" data-venue-name="Cakra Event Center" data-venue-address="Jl. Raya Darmo No. 20, Surabaya" data-venue-city="Surabaya" data-venue-capacity="900" data-venue-seating="reserved">
+              <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 20h4l10.5-10.5a1.8 1.8 0 0 0 0-2.5l-1.5-1.5a1.8 1.8 0 0 0-2.5 0L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M13.5 6.5 17.5 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Edit</span>
+            </button>
+            <button type="button" class="venue-button-delete" data-open-delete-modal data-venue-name="Cakra Event Center">
+              <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7m-7 0 .6 11a1.8 1.8 0 0 0 1.8 1.7h3.2a1.8 1.8 0 0 0 1.8-1.7L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Hapus</span>
+            </button>
+          </div>
+        </article>
+
+        <article class="venue-card" data-venue-card data-name="Kelana Studio Hall" data-address="Jl. Dipati Ukur No. 17, Bandung" data-city="Bandung" data-seating="free">
+          <div class="venue-card-head">
+            <div class="venue-card-title-wrap">
+              <div class="venue-card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+              </div>
+              <div class="venue-meta-stack">
+              <h3 class="venue-name">Kelana Studio Hall</h3>
+              <p class="venue-meta">Jl. Dipati Ukur No. 17, Bandung</p>
+              </div>
+            </div>
+            <span class="venue-chip">Free seating</span>
+          </div>
+          <div class="venue-detail-line">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11h10a2 2 0 0 1 2 2v2H5v-2a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11V8.8A1.8 1.8 0 0 1 9.8 7h4.4A1.8 1.8 0 0 1 16 8.8V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 15v2.2M17 15v2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>600 seat</span>
+          </div>
+          <div class="venue-card-actions">
+            <button type="button" class="venue-button-edit" data-open-venue-modal="edit" data-venue-name="Kelana Studio Hall" data-venue-address="Jl. Dipati Ukur No. 17, Bandung" data-venue-city="Bandung" data-venue-capacity="600" data-venue-seating="free">
+              <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 20h4l10.5-10.5a1.8 1.8 0 0 0 0-2.5l-1.5-1.5a1.8 1.8 0 0 0-2.5 0L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M13.5 6.5 17.5 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Edit</span>
+            </button>
+            <button type="button" class="venue-button-delete" data-open-delete-modal data-venue-name="Kelana Studio Hall">
+              <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7m-7 0 .6 11a1.8 1.8 0 0 0 1.8 1.7h3.2a1.8 1.8 0 0 0 1.8-1.7L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Hapus</span>
+            </button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </section>
+</main>
+
+<div class="venue-modal" id="venue-modal" aria-hidden="true">
+  <div class="venue-modal-backdrop" data-close-venue-modal></div>
+  <div class="venue-modal-panel" role="dialog" aria-modal="true" aria-labelledby="venue-modal-title">
+    <div class="venue-modal-head">
+      <div>
+        <h2 class="venue-modal-title" id="venue-modal-title">Tambah Venue</h2>
+        <p class="venue-modal-copy" id="venue-modal-copy">Isi data venue baru dengan rapi agar daftar tetap mudah dibaca dan profesional.</p>
+      </div>
+      <button type="button" class="venue-modal-close" data-close-venue-modal aria-label="Tutup">x</button>
+    </div>
+
+    <form class="venue-modal-body" id="venue-form">
+      <input type="hidden" id="venue-form-mode" value="create">
+      <input type="hidden" id="venue-original-name" value="">
+
+      <div class="venue-form-grid">
+        <div class="venue-form-field">
+          <label for="venue-name">Nama Venue</label>
+          <input id="venue-name" class="form-input" type="text" placeholder="Masukkan nama venue" required>
+        </div>
+        <div class="venue-form-field">
+          <label for="venue-city">Kota</label>
+          <input id="venue-city" class="form-input" type="text" placeholder="Masukkan nama kota" required>
+        </div>
+        <div class="venue-form-field venue-form-field-full">
+          <label for="venue-address">Alamat</label>
+          <textarea id="venue-address" class="form-input venue-textarea" placeholder="Masukkan alamat lengkap venue" required></textarea>
+        </div>
+        <div class="venue-form-field">
+          <label for="venue-capacity">Kapasitas</label>
+          <input id="venue-capacity" class="form-input" type="number" min="1" placeholder="Contoh: 1200" required>
+        </div>
+        <div class="venue-form-field">
+          <label for="venue-seating">Jenis Seating</label>
+          <div class="venue-form-field-inline inline-check">
+            <input id="venue-seating" type="checkbox">
+            <label for="venue-seating">This venue has reserved seating</label>
+          </div>
+        </div>
+        <div class="venue-modal-actions">
+          <button type="button" class="venue-button-ghost" data-close-venue-modal>Batal</button>
+          <button type="submit" class="btn-primary venue-button" id="venue-submit-button">Simpan</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="venue-modal" id="delete-modal" aria-hidden="true">
+  <div class="venue-modal-backdrop" data-close-delete-modal></div>
+  <div class="venue-modal-panel" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <div class="venue-modal-head">
+      <div>
+        <h2 class="venue-modal-title" id="delete-modal-title">Hapus Venue</h2>
+        <p class="venue-modal-copy">Konfirmasi penghapusan agar data tidak terhapus tanpa sengaja.</p>
+      </div>
+      <button type="button" class="venue-modal-close" data-close-delete-modal aria-label="Tutup">x</button>
+    </div>
+
+    <div class="venue-modal-body">
+      <div class="venue-delete-preview" id="delete-preview-text">
+        Anda akan menghapus venue ini dari daftar.
+      </div>
+      <div class="venue-modal-actions">
+          <button type="button" class="venue-button-secondary" data-close-delete-modal>Batal</button>
+          <button type="button" class="venue-button-delete-solid" id="confirm-delete-button">
+            <svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7m-7 0 .6 11a1.8 1.8 0 0 0 1.8 1.7h3.2a1.8 1.8 0 0 0 1.8-1.7L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Hapus</span>
+          </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="venue-toast" id="venue-toast" aria-live="polite" aria-atomic="true">
+  <div class="venue-toast-dot"></div>
+  <div>
+    <div class="venue-toast-title" id="venue-toast-title">Berhasil</div>
+    <div class="venue-toast-copy" id="venue-toast-copy">Data venue berhasil dihapus.</div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const venueModal = document.getElementById('venue-modal');
+    const deleteModal = document.getElementById('delete-modal');
+    const venueForm = document.getElementById('venue-form');
+    const venueModalTitle = document.getElementById('venue-modal-title');
+    const venueModalCopy = document.getElementById('venue-modal-copy');
+    const venueSubmitButton = document.getElementById('venue-submit-button');
+    const venueFormMode = document.getElementById('venue-form-mode');
+    const venueOriginalName = document.getElementById('venue-original-name');
+    const venueNameField = document.getElementById('venue-name');
+    const venueCityField = document.getElementById('venue-city');
+    const venueAddressField = document.getElementById('venue-address');
+    const venueCapacityField = document.getElementById('venue-capacity');
+    const venueSeatingField = document.getElementById('venue-seating');
+    const deletePreviewText = document.getElementById('delete-preview-text');
+    const confirmDeleteButton = document.getElementById('confirm-delete-button');
+    const venueToast = document.getElementById('venue-toast');
+    const venueToastTitle = document.getElementById('venue-toast-title');
+    const venueToastCopy = document.getElementById('venue-toast-copy');
+    const venueGrid = document.querySelector('[data-venue-grid]');
+    const searchField = document.querySelector('[data-venue-search]');
+    const cityFilter = document.querySelector('[data-filter-city]');
+    const seatingFilter = document.querySelector('[data-filter-seating]');
+    const clearFiltersButton = document.querySelector('[data-clear-filters]');
+    const scrollToListButton = document.querySelector('[data-scroll-to-list]');
+    const totalStat = document.querySelector('[data-stat-total]');
+    const reservedStat = document.querySelector('[data-stat-reserved]');
+    const freeStat = document.querySelector('[data-stat-free]');
+    const closeModalButtons = document.querySelectorAll('[data-close-venue-modal]');
+    const closeDeleteButtons = document.querySelectorAll('[data-close-delete-modal]');
+    const body = document.body;
+
+    let deleteTargetCard = null;
+    let toastTimer = null;
+
+    const setBodyScroll = function () {
+      const modalOpen = venueModal.classList.contains('is-open') || deleteModal.classList.contains('is-open');
+      body.style.overflow = modalOpen ? 'hidden' : '';
+    };
+
+    const openVenueModal = function (mode, trigger) {
+      venueFormMode.value = mode;
+      venueModalTitle.textContent = mode === 'edit' ? 'Edit Venue' : 'Tambah Venue';
+      venueModalCopy.textContent = mode === 'edit'
+        ? 'Perbarui data venue yang sudah ada tanpa mengubah ritme visual halaman.'
+        : 'Isi data venue baru dengan rapi agar daftar tetap mudah dibaca dan profesional.';
+      venueSubmitButton.textContent = mode === 'edit' ? 'Simpan Perubahan' : 'Simpan';
+
+      if (mode === 'edit' && trigger) {
+        venueOriginalName.value = trigger.dataset.venueName || '';
+        venueNameField.value = trigger.dataset.venueName || '';
+        venueAddressField.value = trigger.dataset.venueAddress || '';
+        venueCityField.value = trigger.dataset.venueCity || '';
+        venueCapacityField.value = trigger.dataset.venueCapacity || '';
+        venueSeatingField.checked = (trigger.dataset.venueSeating || '') === 'reserved';
+      } else {
+        venueOriginalName.value = '';
+        venueForm.reset();
+      }
+
+      venueModal.classList.add('is-open');
+      venueModal.setAttribute('aria-hidden', 'false');
+      setBodyScroll();
+      venueNameField.focus();
+    };
+
+    const closeVenueModal = function () {
+      venueModal.classList.remove('is-open');
+      venueModal.setAttribute('aria-hidden', 'true');
+      setBodyScroll();
+    };
+
+    const openDeleteModal = function (trigger) {
+      deleteTargetCard = trigger.closest('[data-venue-card]');
+      const venueName = trigger.dataset.venueName || 'venue ini';
+      deletePreviewText.textContent = 'Anda akan menghapus ' + venueName + ' dari daftar venue. Tindakan ini tidak dapat dibatalkan.';
+      confirmDeleteButton.dataset.venueName = venueName;
+      deleteModal.classList.add('is-open');
+      deleteModal.setAttribute('aria-hidden', 'false');
+      setBodyScroll();
+    };
+
+    const closeDeleteModal = function () {
+      deleteModal.classList.remove('is-open');
+      deleteModal.setAttribute('aria-hidden', 'true');
+      setBodyScroll();
+      deleteTargetCard = null;
+      confirmDeleteButton.dataset.venueName = '';
+    };
+
+    const showToast = function (title, message) {
+      venueToastTitle.textContent = title;
+      venueToastCopy.textContent = message;
+      venueToast.classList.add('is-visible');
+
+      if (toastTimer) {
+        window.clearTimeout(toastTimer);
+      }
+
+      toastTimer = window.setTimeout(function () {
+        venueToast.classList.remove('is-visible');
+      }, 2600);
+    };
+
+    const refreshTotalStat = function () {
+      const allCards = venueGrid.querySelectorAll('[data-venue-card]');
+      let reservedCount = 0;
+      let freeCount = 0;
+
+      allCards.forEach(function (card) {
+        if ((card.dataset.seating || '').toLowerCase() === 'reserved') {
+          reservedCount += 1;
+        } else {
+          freeCount += 1;
+        }
+      });
+
+      totalStat.textContent = String(allCards.length);
+
+      if (reservedStat) {
+        reservedStat.textContent = String(reservedCount);
+      }
+
+      if (freeStat) {
+        freeStat.textContent = String(freeCount);
+      }
+    };
+
+    const applyFilters = function () {
+      const searchValue = searchField.value.trim().toLowerCase();
+      const selectedCity = cityFilter.value;
+      const selectedSeating = seatingFilter.value;
+
+      venueGrid.querySelectorAll('[data-venue-card]').forEach(function (card) {
+        const cardName = (card.dataset.name || '').toLowerCase();
+        const cardAddress = (card.dataset.address || '').toLowerCase();
+        const cardCity = card.dataset.city || '';
+        const cardSeating = card.dataset.seating || '';
+
+        const matchesSearch = !searchValue || cardName.includes(searchValue) || cardAddress.includes(searchValue);
+        const matchesCity = selectedCity === 'all' || cardCity === selectedCity;
+        const matchesSeating = selectedSeating === 'all' || cardSeating === selectedSeating;
+
+        card.hidden = !(matchesSearch && matchesCity && matchesSeating);
+      });
+
+      refreshTotalStat();
+    };
+
+    document.addEventListener('click', function (event) {
+      const venueTrigger = event.target.closest('[data-open-venue-modal]');
+      const deleteButton = event.target.closest('[data-open-delete-modal]');
+
+      if (venueTrigger) {
+        openVenueModal(venueTrigger.dataset.openVenueModal, venueTrigger);
+      }
+
+      if (deleteButton) {
+        openDeleteModal(deleteButton);
+      }
+    });
+
+    closeModalButtons.forEach(function (button) {
+      button.addEventListener('click', closeVenueModal);
+    });
+
+    closeDeleteButtons.forEach(function (button) {
+      button.addEventListener('click', closeDeleteModal);
+    });
+
+    venueForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const mode = venueFormMode.value;
+      const venueData = {
+        name: venueNameField.value.trim(),
+        address: venueAddressField.value.trim(),
+        city: venueCityField.value,
+        capacity: venueCapacityField.value.trim(),
+        seating: venueSeatingField.checked ? 'reserved' : 'free',
+      };
+
+      if (mode === 'edit' && venueOriginalName.value && deleteTargetCard) {
+        // no-op path reserved for edit state tracking; actual card update happens below
+      }
+
+      if (mode === 'edit') {
+        const targetCard = Array.from(venueGrid.querySelectorAll('[data-venue-card]')).find(function (card) {
+          return card.dataset.name === venueOriginalName.value;
+        });
+
+        if (targetCard) {
+          targetCard.dataset.name = venueData.name;
+          targetCard.dataset.address = venueData.address;
+          targetCard.dataset.city = venueData.city;
+          targetCard.dataset.seating = venueData.seating;
+
+          targetCard.querySelector('.venue-name').textContent = venueData.name;
+          targetCard.querySelector('.venue-meta').textContent = venueData.address;
+          targetCard.querySelector('.venue-chip').textContent = venueData.seating === 'reserved' ? 'Reserved' : 'Free seating';
+          targetCard.querySelector('.venue-detail-line span').textContent = venueData.capacity + ' seat';
+          targetCard.querySelector('.venue-card-actions [data-open-venue-modal]').dataset.venueName = venueData.name;
+          targetCard.querySelector('.venue-card-actions [data-open-venue-modal]').dataset.venueAddress = venueData.address;
+          targetCard.querySelector('.venue-card-actions [data-open-venue-modal]').dataset.venueCity = venueData.city;
+          targetCard.querySelector('.venue-card-actions [data-open-venue-modal]').dataset.venueCapacity = venueData.capacity;
+          targetCard.querySelector('.venue-card-actions [data-open-venue-modal]').dataset.venueSeating = venueData.seating;
+          targetCard.querySelector('.venue-card-actions [data-open-delete-modal]').dataset.venueName = venueData.name;
+          targetCard.querySelector('.venue-card-actions [data-open-venue-modal]').setAttribute('data-venue-name', venueData.name);
+          targetCard.querySelector('.venue-card-actions [data-open-delete-modal]').setAttribute('data-venue-name', venueData.name);
+        }
+
+        showToast('Venue diperbarui', 'Data venue berhasil disimpan dengan tampilan yang konsisten.');
+      } else {
+        const newCard = document.createElement('article');
+        newCard.className = 'venue-card';
+        newCard.dataset.venueCard = '';
+        newCard.dataset.name = venueData.name;
+        newCard.dataset.address = venueData.address;
+        newCard.dataset.city = venueData.city;
+        newCard.dataset.seating = venueData.seating;
+        newCard.innerHTML = [
+          '<div class="venue-card-head">',
+          '  <div class="venue-card-title-wrap">',
+          '    <div class="venue-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/></svg></div>',
+          '    <div class="venue-meta-stack">',
+          '      <h3 class="venue-name">' + venueData.name + '</h3>',
+          '      <p class="venue-meta">' + venueData.address + '</p>',
+          '    </div>',
+          '  </div>',
+          '  <span class="venue-chip">' + (venueData.seating === 'reserved' ? 'Reserved' : 'Free seating') + '</span>',
+          '</div>',
+          '<div class="venue-detail-line">',
+          '  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11h10a2 2 0 0 1 2 2v2H5v-2a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11V8.8A1.8 1.8 0 0 1 9.8 7h4.4A1.8 1.8 0 0 1 16 8.8V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 15v2.2M17 15v2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+          '  <span>' + venueData.capacity + ' seat</span>',
+          '</div>',
+          '<div class="venue-card-actions">',
+          '  <button type="button" class="venue-button-edit" data-open-venue-modal="edit" data-venue-name="' + venueData.name + '" data-venue-address="' + venueData.address + '" data-venue-city="' + venueData.city + '" data-venue-capacity="' + venueData.capacity + '" data-venue-seating="' + venueData.seating + '"><svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20h4l10.5-10.5a1.8 1.8 0 0 0 0-2.5l-1.5-1.5a1.8 1.8 0 0 0-2.5 0L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M13.5 6.5 17.5 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Edit</span></button>',
+          '  <button type="button" class="venue-button-delete" data-open-delete-modal data-venue-name="' + venueData.name + '"><svg class="venue-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7m-7 0 .6 11a1.8 1.8 0 0 0 1.8 1.7h3.2a1.8 1.8 0 0 0 1.8-1.7L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Hapus</span></button>',
+          '</div>',
+        ].join('');
+
+        venueGrid.prepend(newCard);
+        refreshTotalStat();
+        showToast('Venue ditambahkan', 'Venue baru berhasil masuk ke daftar.');
+      }
+
+      closeVenueModal();
+      applyFilters();
+    });
+
+    confirmDeleteButton.addEventListener('click', function () {
+      if (deleteTargetCard) {
+        deleteTargetCard.remove();
+        refreshTotalStat();
+      }
+
+      closeDeleteModal();
+      showToast('Venue dihapus', 'Data venue berhasil dihapus dari daftar.');
+      applyFilters();
+    });
+
+    searchField.addEventListener('input', applyFilters);
+    cityFilter.addEventListener('change', applyFilters);
+    seatingFilter.addEventListener('change', applyFilters);
+
+    clearFiltersButton.addEventListener('click', function () {
+      searchField.value = '';
+      cityFilter.value = 'all';
+      seatingFilter.value = 'all';
+      applyFilters();
+    });
+
+    scrollToListButton.addEventListener('click', function () {
+      document.getElementById('venue-list-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      if (venueModal.classList.contains('is-open')) {
+        closeVenueModal();
+      }
+
+      if (deleteModal.classList.contains('is-open')) {
+        closeDeleteModal();
+      }
+    });
+
+    refreshTotalStat();
+  })();
+</script>
+{% endblock %}

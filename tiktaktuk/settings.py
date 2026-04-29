@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 from dotenv import load_dotenv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts',
+    'main',
 ]
 
 MIDDLEWARE = [
@@ -88,16 +89,11 @@ if database_url:
         db_options['sslmode'] = query_params['sslmode'][0]
 
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': unquote(parsed_url.path.lstrip('/')),
-            'USER': unquote(parsed_url.username or ''),
-            'PASSWORD': unquote(parsed_url.password or ''),
-            'HOST': parsed_url.hostname,
-            'PORT': parsed_url.port or 5432,
-            'OPTIONS': db_options,
-            'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
-        }
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
 else:
     DATABASES = {
