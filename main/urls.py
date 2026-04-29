@@ -17,7 +17,7 @@ urlpatterns = [
     
     path('venue/', TemplateView.as_view(template_name='venue_management.html'), name='venue_management'),
     path('manajemen/artis/', TemplateView.as_view(template_name='manajemen_artis.html'), name='manajemen_artis'),
-    path('manajemen/tiket/', TemplateView.as_view(template_name='my_tickets.html'), name='manajemen_tiket'),
+    path('manajemen/tiket/', TemplateView.as_view(template_name='manajemen_tiket.html'), name='manajemen_tiket'),
     path('my-tickets-cust/', TemplateView.as_view(template_name='my_tickets.html', extra_context={'role': 'cust'}), name='my_tickets_cust'),
     path('my-tickets-org/', TemplateView.as_view(template_name='my_tickets.html', extra_context={'role': 'org'}), name='my_tickets_org'),
     path('my-tickets-admin/', TemplateView.as_view(template_name='my_tickets.html', extra_context={'role': 'admin'}), name='my_tickets_admin'),
