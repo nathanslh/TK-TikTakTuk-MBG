@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Organizer Dashboard - TikTakTuk{% endblock %}
+
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style="font-family: 'Inter', sans-serif;">
+    <div class="bg-[#8f6031] text-white rounded-xl p-8 flex justify-between items-center shadow-sm mb-8">
+        <div>
+            <p class="text-[10px] font-bold text-stone-200 uppercase tracking-widest mb-1">Dashboard Penyelenggara</p>
+            <h1 class="text-3xl font-bold mb-2">Andi Wijaya</h1>
+            <p class="text-sm text-stone-100">Kelola 3 acara aktif Anda</p>
+        </div>
+        <div class="flex gap-3">
+            <button class="bg-white text-[#8f6031] px-6 py-2 rounded-md font-bold text-xs hover:bg-stone-100 transition shadow-sm">Kelola Acara</button>
+            <button class="bg-[#7a5028] text-white px-6 py-2 rounded-md font-bold text-xs border border-[#9f7040] hover:bg-[#6a4620] transition shadow-sm">Venue</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm text-center">
+            <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">ACARA AKTIF</h3>
+            <p class="text-2xl font-bold text-[#5c4a3d]">3</p>
+            <p class="text-[10px] text-stone-500 mt-1 uppercase">Dalam koordinasi</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm text-center">
+            <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">TIKET TERJUAL</h3>
+            <p class="text-2xl font-bold text-[#5c4a3d]">1,243</p>
+            <p class="text-[10px] text-stone-500 mt-1 uppercase">Total terjual</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm text-center">
+            <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">REVENUE</h3>
+            <p class="text-2xl font-bold text-[#5c4a3d]">Rp 4.8M</p>
+            <p class="text-[10px] text-stone-500 mt-1 uppercase">Bulan ini</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm text-center">
+            <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">VENUE MITRA</h3>
+            <p class="text-2xl font-bold text-[#5c4a3d]">3</p>
+            <p class="text-[10px] text-stone-500 mt-1 uppercase">Lokasi aktif</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg border border-[#e8e4dc] p-6 shadow-sm">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h3 class="text-lg font-bold text-[#5c4a3d]">Performa Acara</h3>
+                <p class="text-xs text-stone-500">Status acara yang Anda kelola</p>
+            </div>
+            <a href="#" class="text-[#8f6031] text-xs font-bold hover:underline">Lihat Semua</a>
+        </div>
+        <div class="space-y-3">
+            <div class="flex justify-between items-center p-4 bg-[#fcfbf9] border border-[#f5f3ef] rounded-lg">
+                <div>
+                    <h4 class="font-bold text-[#5c4a3d] flex items-center gap-2">Konser Melodi Senja <span class="bg-[#d4c5a9] text-[#8f6031] text-[8px] font-black px-2 py-0.5 rounded uppercase">LIVE</span></h4>
+                    <p class="text-[10px] text-stone-400 mt-1 uppercase font-bold tracking-tight">↗ 85% terjual • Jakarta Convention Center</p>
+                </div>
+                <div class="text-stone-300">›</div>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-[#fcfbf9] border border-[#f5f3ef] rounded-lg">
+                <div>
+                    <h4 class="font-bold text-[#5c4a3d] flex items-center gap-2">Festival Seni Budaya <span class="bg-[#d4c5a9] text-[#8f6031] text-[8px] font-black px-2 py-0.5 rounded uppercase">LIVE</span></h4>
+                    <p class="text-[10px] text-stone-400 mt-1 uppercase font-bold tracking-tight">↗ 85% terjual • Taman Impian Jayakarta</p>
+                </div>
+                <div class="text-stone-300">›</div>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-[#fcfbf9] border border-[#f5f3ef] rounded-lg">
+                <div>
+                    <h4 class="font-bold text-[#5c4a3d] flex items-center gap-2">Malam Akustik Bandung <span class="bg-[#d4c5a9] text-[#8f6031] text-[8px] font-black px-2 py-0.5 rounded uppercase">LIVE</span></h4>
+                    <p class="text-[10px] text-stone-400 mt-1 uppercase font-bold tracking-tight">↗ 85% terjual • Bandung Hall Center</p>
+                </div>
+                <div class="text-stone-300">›</div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

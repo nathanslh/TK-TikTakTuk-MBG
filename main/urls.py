@@ -4,6 +4,10 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('dashboard/admin/', TemplateView.as_view(template_name='dashboard_admin.html'), name='dashboard_admin'),
+    path('dashboard/customer/', TemplateView.as_view(template_name='dashboard_customer.html'), name='dashboard_customer'),
+    path('dashboard/organizer/', TemplateView.as_view(template_name='dashboard_organizer.html'), name='dashboard_organizer'),
+    
     path('my-tickets-admin/', TemplateView.as_view(template_name='my_tickets.html'), name='my_tickets_admin'),
     path('my-tickets-org/', TemplateView.as_view(template_name='my_tickets.html'), name='my_tickets_org'),
     path('my-tickets-cust/', TemplateView.as_view(template_name='my_tickets.html'), name='my_tickets_cust'),
@@ -18,9 +22,6 @@ urlpatterns = [
     path('manajemen/event/', TemplateView.as_view(template_name='event_management.html'), name='event_management'),
     path('manajemen/artis/', TemplateView.as_view(template_name='manajemen_artis.html'), name='manajemen_artis'),
     path('manajemen/tiket/', TemplateView.as_view(template_name='manajemen_tiket.html'), name='manajemen_tiket'),
-    path('my-tickets-cust/', TemplateView.as_view(template_name='my_tickets.html', extra_context={'role': 'cust'}), name='my_tickets_cust'),
-    path('my-tickets-org/', TemplateView.as_view(template_name='my_tickets.html', extra_context={'role': 'org'}), name='my_tickets_org'),
-    path('my-tickets-admin/', TemplateView.as_view(template_name='my_tickets.html', extra_context={'role': 'admin'}), name='my_tickets_admin'),
     path('seats-cust/', TemplateView.as_view(template_name='seats.html', extra_context={'role': 'cust'}), name='seats_cust'),
     path('seats-org/', TemplateView.as_view(template_name='seats.html', extra_context={'role': 'org'}), name='seats_org'),
     path('seats-admin/', TemplateView.as_view(template_name='seats.html', extra_context={'role': 'admin'}), name='seats_admin'),
