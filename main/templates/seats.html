@@ -155,14 +155,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const isReadOnly = window.SEATS_PAGE_ROLE === 'cust';
-
-  if (isReadOnly) {
-    const addButton = document.getElementById('btn-add-seat');
-    const actionsHeader = document.getElementById('actions-header');
-    if (addButton) addButton.style.display = 'none';
-    if (actionsHeader) actionsHeader.style.display = 'none';
-  }
+  const isReadOnly = false;
 
   // ============================================================
   // DATA DUMMY — nanti ganti dengan fetch dari API
@@ -404,14 +397,6 @@
   // INIT
   // ============================================================
   renderTable();
-  if (isReadOnly) {
-    const createModal = document.getElementById('modal-create');
-    const editModal = document.getElementById('modal-edit');
-    const deleteModal = document.getElementById('modal-delete');
-    if (createModal) createModal.remove();
-    if (editModal) editModal.remove();
-    if (deleteModal) deleteModal.remove();
-  }
 </script>
 
 {% endblock %}
