@@ -7,25 +7,35 @@
   <section class="auth-brand">
     <div class="auth-logo">TT</div>
     <h1 class="auth-title">TikTakTuk</h1>
-    <p class="auth-subtitle">Halaman admin yang lebih tenang, bersih, dan terstruktur</p>
+    <p class="auth-subtitle">Daftar sebagai admin</p>
   </section>
 
   <section class="auth-card">
-    <div class="page-heading">
-      <span class="page-badge">Admin</span>
-      <p class="page-copy">Area admin dipresentasikan lebih ringkas agar tetap terasa formal dan tidak mengganggu fokus pengguna.</p>
-    </div>
-
     <p><a class="auth-link" href="{% url 'register' %}">← Kembali</a></p>
     <h2 class="auth-section-title section-spacer">Registrasi Admin</h2>
-    <p class="auth-muted">Akun Admin digunakan untuk keperluan internal sistem.</p>
-    <div class="role-grid">
-      <div class="role-card">
-        <h3 class="role-name">Akses Terbatas</h3>
-        <p class="role-desc">Frontend ini disiapkan untuk preview desain. Aktivasi akun Admin dapat dihubungkan ke backend pada tahap implementasi berikutnya.</p>
+    <p class="auth-muted">Akun admin digunakan untuk kebutuhan pengelolaan internal sistem.</p>
+
+    <form class="form-grid" action="#" method="post">
+      {% csrf_token %}
+      <div>
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" id="username" name="username" type="text" placeholder="Masukkan username admin" required>
       </div>
-    </div>
-    <p class="surface-link-row"><button type="button" data-open-login-modal class="auth-link">Buka Login</button></p>
+
+      <div>
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" id="password" name="password" type="password" placeholder="Masukkan password" required>
+      </div>
+
+      <label class="inline-check">
+        <input id="terms" name="terms" type="checkbox" required>
+        <span>Saya setuju dengan <a class="auth-link" href="#">Syarat & Ketentuan</a></span>
+      </label>
+
+      <button class="btn-primary" type="submit">Daftar</button>
+    </form>
   </section>
+
+  <p class="auth-footer">Sudah punya akun? <button type="button" data-open-login-modal class="auth-link">Login di sini</button></p>
 </main>
 {% endblock %}

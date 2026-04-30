@@ -1,0 +1,1624 @@
+{% extends 'base.html' %}
+
+{% block title %}Manajemen Event - TikTakTuk{% endblock %}
+
+{% block content %}
+<style>
+  .event-page {
+    max-width: 1280px;
+    margin: 1.35rem auto 2.75rem;
+    padding: 0 1rem 2rem;
+  }
+
+  .event-shell {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .event-hero,
+  .event-panel,
+  .event-modal-panel,
+  .event-delete-panel,
+  .event-toast {
+    background: rgba(255, 252, 246, 0.96);
+    border: 1px solid rgba(168, 140, 111, 0.16);
+    box-shadow: 0 18px 36px rgba(100, 80, 60, 0.08);
+    backdrop-filter: blur(8px);
+  }
+
+  .event-hero {
+    border-radius: 28px;
+    padding: 1.4rem;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.9fr);
+    align-items: stretch;
+  }
+
+  .event-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(168, 140, 111, 0.12);
+    color: #7a6757;
+    font-size: 0.83rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .event-title {
+    margin-top: 0.8rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.08;
+    color: #3d322a;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .event-copy {
+    margin-top: 0.65rem;
+    max-width: 68ch;
+    color: #7c6c60;
+    line-height: 1.68;
+  }
+
+  .event-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.15rem;
+  }
+
+  .event-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 0.76rem 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, border-color 140ms ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    line-height: 1;
+  }
+
+  .event-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .event-btn-primary {
+    background: linear-gradient(145deg, #bfa485 0%, #9b8263 100%);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(120, 100, 80, 0.18);
+  }
+
+  .event-btn-primary:hover {
+    background: linear-gradient(145deg, #b29573 0%, #8b7257 100%);
+  }
+
+  .event-btn-secondary {
+    background: rgba(255, 255, 255, 0.84);
+    border: 1px solid rgba(168, 140, 111, 0.22);
+    color: #5a4f48;
+  }
+
+  .event-btn-secondary:hover {
+    background: rgba(245, 240, 233, 0.96);
+  }
+
+  .event-btn-soft {
+    background: rgba(243, 237, 230, 0.86);
+    border: 1px solid rgba(168, 140, 111, 0.16);
+    color: #5a4f48;
+  }
+
+  .event-btn-danger {
+    background: #fff5f4;
+    border: 1px solid rgba(241, 89, 78, 0.34);
+    color: #f04b3d;
+  }
+
+  .event-btn-danger:hover {
+    background: #ffeceb;
+  }
+
+  .event-hero-panel {
+    border-radius: 24px;
+    padding: 1rem;
+    background:
+      radial-gradient(circle at top right, rgba(185, 133, 78, 0.12), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 242, 234, 0.92));
+    border: 1px solid rgba(168, 140, 111, 0.16);
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .event-hero-panel-copy {
+    color: #7c6c60;
+    line-height: 1.6;
+  }
+
+  .event-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .event-stat {
+    border-radius: 18px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(168, 140, 111, 0.12);
+  }
+
+  .event-stat-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8b7d6f;
+  }
+
+  .event-stat-value {
+    margin-top: 0.35rem;
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #3d322a;
+  }
+
+  .event-panel {
+    border-radius: 28px;
+    padding: 1.2rem;
+  }
+
+  .event-panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .event-panel-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #3d322a;
+    letter-spacing: -0.02em;
+  }
+
+  .event-panel-copy {
+    margin-top: 0.25rem;
+    color: #7c6c60;
+  }
+
+  .event-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)) auto;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .event-toolbar .form-input,
+  .event-toolbar .event-select {
+    width: 100%;
+    border: 1px solid rgba(168, 140, 111, 0.22);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #3d322a;
+    padding: 0.78rem 0.95rem;
+    outline: none;
+  }
+
+  .event-toolbar .form-input:focus,
+  .event-toolbar .event-select:focus {
+    border-color: rgba(168, 140, 111, 0.55);
+    box-shadow: 0 0 0 4px rgba(168, 140, 111, 0.14);
+  }
+
+  .event-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.95rem;
+  }
+
+  .event-card {
+    border-radius: 24px;
+    padding: 1rem;
+    display: grid;
+    gap: 0.95rem;
+  }
+
+  .event-card-hidden {
+    display: none;
+  }
+
+  .event-card-top {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .event-card-visual {
+    min-height: 166px;
+    border-radius: 20px;
+    padding: 1rem;
+    background:
+      linear-gradient(145deg, rgba(185, 133, 78, 0.16), rgba(185, 133, 78, 0.04)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(248, 243, 236, 0.9));
+    border: 1px solid rgba(168, 140, 111, 0.16);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .event-card-visual::after {
+    content: '';
+    position: absolute;
+    inset: auto -18% -42% auto;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(185, 133, 78, 0.22), transparent 68%);
+  }
+
+  .event-card-visual-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.42rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(168, 140, 111, 0.16);
+    color: #725f4d;
+    font-size: 0.8rem;
+    font-weight: 800;
+    position: relative;
+    z-index: 1;
+  }
+
+  .event-card-visual-title {
+    margin-top: 0.7rem;
+    max-width: 12ch;
+    font-size: 1.55rem;
+    line-height: 1.04;
+    font-weight: 800;
+    color: #3d322a;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .event-card-visual-copy {
+    margin-top: 0.45rem;
+    max-width: 34ch;
+    color: #6f5d50;
+    position: relative;
+    z-index: 1;
+  }
+
+  .event-card-meta {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .event-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(168, 140, 111, 0.11);
+    color: #6b5a4c;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .event-card-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #3d322a;
+  }
+
+  .event-card-id {
+    color: #8c7a6a;
+    font-size: 0.84rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  .event-card-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1rem;
+    align-items: center;
+    color: #6f5d50;
+    font-size: 0.94rem;
+    line-height: 1.45;
+  }
+
+  .event-card-info-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .event-card-info-item svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex: 0 0 auto;
+    color: #8b6f55;
+  }
+
+  .event-card-artist-chips {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.7rem;
+  }
+
+  .event-detail-grid {
+    display: grid;
+    gap: 0.4rem;
+    color: #6f5d50;
+    line-height: 1.55;
+  }
+
+  .event-detail-grid strong {
+    color: #4a3d33;
+  }
+
+  .event-card-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .event-card-actions .event-btn {
+    padding: 0.58rem 0.82rem;
+    font-size: 0.9rem;
+    border-radius: 12px;
+  }
+
+  .event-empty-state {
+    border-radius: 22px;
+    padding: 1rem;
+    border: 1px dashed rgba(168, 140, 111, 0.3);
+    color: #7c6c60;
+    background: rgba(255, 255, 255, 0.64);
+    display: none;
+  }
+
+  .event-modal,
+  .event-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: none;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+
+  .event-modal.is-open,
+  .event-delete-modal.is-open {
+    display: grid;
+  }
+
+  .event-modal-backdrop,
+  .event-delete-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(61, 50, 42, 0.36);
+    backdrop-filter: blur(7px);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .event-modal-panel,
+  .event-delete-panel {
+    position: relative;
+    width: min(860px, calc(100% - 1.1rem));
+    margin: auto;
+    border-radius: 26px;
+    padding: 1.15rem;
+    max-height: calc(100vh - 2rem);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: auto;
+    isolation: isolate;
+  }
+
+  .event-delete-panel {
+    width: min(560px, calc(100% - 1.1rem));
+  }
+
+  .event-modal-head,
+  .event-delete-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(168, 140, 111, 0.16);
+    padding-bottom: 0.9rem;
+  }
+
+  .event-modal-title,
+  .event-delete-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #3d322a;
+    letter-spacing: -0.02em;
+  }
+
+  .event-modal-copy,
+  .event-delete-copy {
+    margin-top: 0.25rem;
+    color: #7c6c60;
+    max-width: 64ch;
+    line-height: 1.55;
+  }
+
+  .event-modal-close,
+  .event-delete-close {
+    position: relative;
+    z-index: 2;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(168, 140, 111, 0.18);
+    background: rgba(255, 255, 255, 0.86);
+    color: #8b7d6f;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .event-modal-body,
+  .event-delete-body {
+    padding-top: 1rem;
+    overflow-y: auto;
+    min-height: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .event-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    overflow-y: auto;
+    min-height: 0;
+    padding-top: 1rem;
+  }
+
+  .event-ticket-section {
+    grid-column: 1 / -1;
+    border: 1px solid rgba(168, 140, 111, 0.16);
+    border-radius: 20px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.78);
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .event-ticket-section-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .event-ticket-section-title {
+    font-size: 0.98rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #5f4f42;
+  }
+
+  .event-ticket-section-copy {
+    margin-top: 0.25rem;
+    color: #7c6c60;
+    line-height: 1.5;
+  }
+
+  .event-ticket-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .event-ticket-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) repeat(2, minmax(140px, 0.7fr)) auto;
+    gap: 0.7rem;
+    align-items: end;
+    padding: 0.85rem;
+    border-radius: 16px;
+    border: 1px solid rgba(168, 140, 111, 0.14);
+    background: rgba(249, 245, 239, 0.82);
+  }
+
+  .event-ticket-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .event-ticket-field label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #7a6757;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .event-ticket-row .form-input {
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .event-ticket-remove {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid rgba(241, 89, 78, 0.26);
+    background: rgba(255, 245, 244, 0.95);
+    color: #f04b3d;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+  }
+
+  .event-ticket-remove:hover {
+    transform: translateY(-1px);
+    background: #ffeceb;
+    border-color: rgba(241, 89, 78, 0.38);
+  }
+
+  .event-ticket-add {
+    justify-self: start;
+    border: none;
+    background: transparent;
+    color: #8f6031;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.1rem 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .event-ticket-add:hover {
+    color: #b9854e;
+  }
+
+  .event-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .event-field label {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #5f4f42;
+  }
+
+  .event-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .event-textarea {
+    min-height: 110px;
+    resize: vertical;
+  }
+
+  .event-modal-actions,
+  .event-delete-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    margin-top: 0.15rem;
+  }
+
+  .event-delete-preview {
+    border-radius: 18px;
+    padding: 0.95rem;
+    background: rgba(243, 237, 230, 0.8);
+    border: 1px solid rgba(168, 140, 111, 0.14);
+    color: #5a4f48;
+    line-height: 1.62;
+  }
+
+  .event-toast {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 140;
+    width: min(380px, calc(100% - 2rem));
+    border-radius: 18px;
+    padding: 0.95rem 1rem;
+    display: none;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .event-toast.is-visible {
+    display: flex;
+  }
+
+  .event-toast-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 999px;
+    margin-top: 0.28rem;
+    background: #a88c6f;
+    flex: 0 0 auto;
+  }
+
+  .event-toast-title {
+    font-weight: 800;
+    color: #3d322a;
+  }
+
+  .event-toast-copy {
+    margin-top: 0.2rem;
+    color: #7c6c60;
+  }
+
+  @media (max-width: 1080px) {
+    .event-hero,
+    .event-toolbar,
+    .event-grid,
+    .event-form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .event-page {
+      margin-top: 1rem;
+      padding-inline: 0.75rem;
+    }
+
+    .event-hero,
+    .event-panel,
+    .event-modal-panel,
+    .event-delete-panel {
+      border-radius: 20px;
+      padding: 1rem;
+    }
+
+    .event-title {
+      font-size: 1.75rem;
+    }
+
+    .event-panel-title,
+    .event-modal-title,
+    .event-delete-title {
+      font-size: 1.18rem;
+    }
+
+    .event-modal-actions,
+    .event-delete-actions,
+    .event-hero-actions,
+    .event-card-actions {
+      width: 100%;
+    }
+
+    .event-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<main class="event-page">
+  <section class="event-shell">
+    <header class="event-hero auth-card">
+      <div>
+        <span class="event-kicker">Admin / Organizer</span>
+        <h1 class="event-title">Manajemen Event</h1>
+        <p class="event-copy">
+          Kelola data acara yang tampil di TikTakTuk. Halaman ini disiapkan untuk demo antarmuka dengan aksi tambah, ubah, dan hapus yang tampil seperti alur kerja aslinya.
+        </p>
+
+        <div class="event-hero-actions">
+          <button type="button" class="event-btn event-btn-primary" data-open-event-modal="create">Buat Acara</button>
+          <button type="button" class="event-btn event-btn-secondary" data-scroll-to-list>Ke Daftar Event</button>
+        </div>
+      </div>
+
+      <div class="event-hero-panel">
+        <div>
+          <h2 class="event-panel-title">Ringkasan Data</h2>
+          <p class="event-hero-panel-copy">Konten di bawah ini masih dummy, tetapi layout dan interaksinya sudah mendekati dashboard operasional.</p>
+        </div>
+
+        <div class="event-stats">
+          <div class="event-stat">
+            <div class="event-stat-label">Total Event</div>
+            <div class="event-stat-value" data-stat-total>4</div>
+          </div>
+          <div class="event-stat">
+            <div class="event-stat-label">Upcoming</div>
+            <div class="event-stat-value" data-stat-upcoming>3</div>
+          </div>
+          <div class="event-stat">
+            <div class="event-stat-label">Draft</div>
+            <div class="event-stat-value" data-stat-draft>1</div>
+          </div>
+          <div class="event-stat">
+            <div class="event-stat-label">Kategori</div>
+            <div class="event-stat-value">6</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="event-panel auth-card" id="event-list-section">
+      <div class="event-panel-head">
+        <div>
+          <h2 class="event-panel-title">Daftar Event</h2>
+          <p class="event-panel-copy">Cari berdasarkan judul atau artist, lalu filter berdasarkan venue, organizer, dan kategori tiket.</p>
+        </div>
+        <button type="button" class="event-btn event-btn-soft" data-open-event-modal="create">Tambah Event Baru</button>
+      </div>
+
+      <div class="event-toolbar">
+        <input class="form-input" type="search" placeholder="Cari judul event atau nama artist" data-event-search>
+        <select class="event-select" data-filter-venue>
+          <option value="all">Semua Venue</option>
+          <option value="Jakarta Convention Center">Jakarta Convention Center</option>
+          <option value="The Hall Bandung">The Hall Bandung</option>
+          <option value="Cakra Arena">Cakra Arena</option>
+        </select>
+        <select class="event-select" data-filter-organizer>
+          <option value="all">Semua Organizer</option>
+          <option value="TikTakTuk Studio">TikTakTuk Studio</option>
+          <option value="Aurora Live">Aurora Live</option>
+          <option value="Nusantara Stage">Nusantara Stage</option>
+        </select>
+        <select class="event-select" data-filter-category>
+          <option value="all">Semua Kategori</option>
+          <option value="Festival">Festival</option>
+          <option value="Konser">Konser</option>
+          <option value="Talkshow">Talkshow</option>
+          <option value="Workshop">Workshop</option>
+        </select>
+        <button type="button" class="event-btn event-btn-secondary" data-clear-filters>Reset Filter</button>
+      </div>
+
+      <div class="event-empty-state" data-empty-state>
+        Tidak ada event yang cocok dengan filter saat ini.
+      </div>
+
+      <div class="event-grid" data-event-grid>
+        <article class="event-card" data-event-card data-event-status="Upcoming" data-event-id="EVT-7A1C-2026" data-event-title="Nusantara Night Festival" data-event-date="12 Juni 2026" data-event-time="19.00 WIB" data-event-venue="Jakarta Convention Center" data-event-organizer="TikTakTuk Studio" data-event-artists="Rizky Febian, Isyana, GAC" data-event-category="Festival" data-event-description="Festival malam yang menggabungkan pertunjukan musik, instalasi visual, dan pengalaman panggung yang lebih intim." data-event-poster="Poster gradient preview">
+          <div class="event-card-top">
+            <div class="event-card-visual">
+              <span class="event-card-visual-label">Poster Acara</span>
+              <div class="event-card-visual-title">Nusantara Night Festival</div>
+              <p class="event-card-visual-copy">Tampilan poster placeholder untuk menjaga desain tetap kuat tanpa bergantung pada gambar asli.</p>
+            </div>
+            <div class="event-card-artist-chips">
+              <span class="event-chip">Rizky Febian</span>
+              <span class="event-chip">Isyana</span>
+              <span class="event-chip">GAC</span>
+            </div>
+          </div>
+          <div>
+            <div class="event-card-title">Nusantara Night Festival</div>
+            <div class="event-card-info-row">
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>12 Juni 2026</span>
+              </span>
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>19.00 WIB</span>
+              </span>
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>Jakarta Convention Center</span>
+              </span>
+            </div>
+          </div>
+          <p class="event-panel-copy">Festival dengan panggung utama, area kuliner, dan visual show yang disusun untuk penonton keluarga maupun komunitas musik.</p>
+          <div class="event-card-actions">
+            <button type="button" class="event-btn event-btn-secondary" data-open-event-modal="edit" data-event-id="EVT-7A1C-2026" data-event-title="Nusantara Night Festival" data-event-date="2026-06-12" data-event-time="19:00" data-event-venue="Jakarta Convention Center" data-event-organizer="TikTakTuk Studio" data-event-artists="Rizky Febian, Isyana, GAC" data-event-category="Festival" data-event-description="Festival malam yang menggabungkan pertunjukan musik, instalasi visual, dan pengalaman panggung yang lebih intim." data-event-poster="Poster gradient preview">Edit</button>
+            <button type="button" class="event-btn event-btn-danger" data-open-delete-modal data-event-id="EVT-7A1C-2026" data-event-title="Nusantara Night Festival">Delete</button>
+          </div>
+        </article>
+
+        <article class="event-card" data-event-card data-event-status="Draft" data-event-id="EVT-9C4F-2026" data-event-title="Creative Stage Talk" data-event-date="23 Juni 2026" data-event-time="14.00 WIB" data-event-venue="The Hall Bandung" data-event-organizer="Aurora Live" data-event-artists="Maja Labs, Rara Sekar" data-event-category="Talkshow" data-event-description="Forum kreatif yang mengundang pelaku industri untuk membahas produksi acara, branding, dan pengalaman audiens." data-event-poster="Poster gradient preview">
+          <div class="event-card-top">
+            <div class="event-card-visual">
+              <span class="event-card-visual-label">Poster Acara</span>
+              <div class="event-card-visual-title">Creative Stage Talk</div>
+              <p class="event-card-visual-copy">Area visual dibuat seperti poster editorial agar kesan profesional tetap terasa saat data masih dummy.</p>
+            </div>
+            <div class="event-card-artist-chips">
+              <span class="event-chip">Maja Labs</span>
+              <span class="event-chip">Rara Sekar</span>
+            </div>
+          </div>
+          <div>
+            <div class="event-card-title">Creative Stage Talk</div>
+            <div class="event-card-info-row">
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>23 Juni 2026</span>
+              </span>
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>14.00 WIB</span>
+              </span>
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>The Hall Bandung</span>
+              </span>
+            </div>
+          </div>
+          <p class="event-panel-copy">Sesi diskusi dan presentasi dengan fokus pada proses kreatif, produksi acara, dan peluang kolaborasi lintas komunitas.</p>
+          <div class="event-card-actions">
+            <button type="button" class="event-btn event-btn-secondary" data-open-event-modal="edit" data-event-id="EVT-9C4F-2026" data-event-title="Creative Stage Talk" data-event-date="2026-06-23" data-event-time="14:00" data-event-venue="The Hall Bandung" data-event-organizer="Aurora Live" data-event-artists="Maja Labs, Rara Sekar" data-event-category="Talkshow" data-event-description="Forum kreatif yang mengundang pelaku industri untuk membahas produksi acara, branding, dan pengalaman audiens." data-event-poster="Poster gradient preview">Edit</button>
+            <button type="button" class="event-btn event-btn-danger" data-open-delete-modal data-event-id="EVT-9C4F-2026" data-event-title="Creative Stage Talk">Delete</button>
+          </div>
+        </article>
+
+        <article class="event-card" data-event-card data-event-status="Upcoming" data-event-id="EVT-2D18-2026" data-event-title="Urban Rhythm Showcase" data-event-date="02 Juli 2026" data-event-time="20.00 WIB" data-event-venue="Cakra Arena" data-event-organizer="Nusantara Stage" data-event-artists="JKT48, Juicy Luicy" data-event-category="Konser" data-event-description="Pertunjukan musik malam hari dengan tata panggung yang energik, cocok untuk target audiens muda dan komunitas fanbase." data-event-poster="Poster gradient preview">
+          <div class="event-card-top">
+            <div class="event-card-visual">
+              <span class="event-card-visual-label">Poster Acara</span>
+              <div class="event-card-visual-title">Urban Rhythm Showcase</div>
+              <p class="event-card-visual-copy">Gaya visual diarahkan seperti poster konser modern untuk memperkuat kesan premium pada katalog event.</p>
+            </div>
+            <div class="event-card-artist-chips">
+              <span class="event-chip">JKT48</span>
+              <span class="event-chip">Juicy Luicy</span>
+            </div>
+          </div>
+          <div>
+            <div class="event-card-title">Urban Rhythm Showcase</div>
+            <div class="event-card-info-row">
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>02 Juli 2026</span>
+              </span>
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>20.00 WIB</span>
+              </span>
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>Cakra Arena</span>
+              </span>
+            </div>
+          </div>
+          <p class="event-panel-copy">Showcase musik dengan nuansa urban, highlight untuk jual tiket pre-sale dan kampanye promosi digital.</p>
+          <div class="event-card-actions">
+            <button type="button" class="event-btn event-btn-secondary" data-open-event-modal="edit" data-event-id="EVT-2D18-2026" data-event-title="Urban Rhythm Showcase" data-event-date="2026-07-02" data-event-time="20:00" data-event-venue="Cakra Arena" data-event-organizer="Nusantara Stage" data-event-artists="JKT48, Juicy Luicy" data-event-category="Konser" data-event-description="Pertunjukan musik malam hari dengan tata panggung yang energik, cocok untuk target audiens muda dan komunitas fanbase." data-event-poster="Poster gradient preview">Edit</button>
+            <button type="button" class="event-btn event-btn-danger" data-open-delete-modal data-event-id="EVT-2D18-2026" data-event-title="Urban Rhythm Showcase">Delete</button>
+          </div>
+        </article>
+
+        <article class="event-card" data-event-card data-event-status="Upcoming" data-event-id="EVT-4F90-2026" data-event-title="Hands-On Event Branding Workshop" data-event-date="18 Juli 2026" data-event-time="10.00 WIB" data-event-venue="Jakarta Convention Center" data-event-organizer="TikTakTuk Studio" data-event-artists="Studio Design Team" data-event-category="Workshop" data-event-description="Workshop praktis untuk memahami alur branding event, layout promosi, dan cara menyiapkan materi publikasi yang rapi." data-event-poster="Poster gradient preview">
+          <div class="event-card-top">
+            <div class="event-card-visual">
+              <span class="event-card-visual-label">Poster Acara</span>
+              <div class="event-card-visual-title">Branding Workshop</div>
+              <p class="event-card-visual-copy">Konten dummy dipresentasikan dengan visual workshop yang tenang, informatif, dan tetap premium.</p>
+            </div>
+            <div class="event-card-artist-chips">
+              <span class="event-chip">Studio Design Team</span>
+            </div>
+          </div>
+          <div>
+            <div class="event-card-title">Hands-On Event Branding Workshop</div>
+            <div class="event-card-info-row">
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>18 Juli 2026</span>
+              </span>
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>10.00 WIB</span>
+              </span>
+              <span class="event-card-info-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>Jakarta Convention Center</span>
+              </span>
+            </div>
+          </div>
+          <p class="event-panel-copy">Sesi workshop dengan fokus pada branding acara, struktur informasi, dan praktik pemilihan aset visual yang konsisten.</p>
+          <div class="event-card-actions">
+            <button type="button" class="event-btn event-btn-secondary" data-open-event-modal="edit" data-event-id="EVT-4F90-2026" data-event-title="Hands-On Event Branding Workshop" data-event-date="2026-07-18" data-event-time="10:00" data-event-venue="Jakarta Convention Center" data-event-organizer="TikTakTuk Studio" data-event-artists="Studio Design Team" data-event-category="Workshop" data-event-description="Workshop praktis untuk memahami alur branding event, layout promosi, dan cara menyiapkan materi publikasi yang rapi." data-event-poster="Poster gradient preview">Edit</button>
+            <button type="button" class="event-btn event-btn-danger" data-open-delete-modal data-event-id="EVT-4F90-2026" data-event-title="Hands-On Event Branding Workshop">Delete</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </section>
+</main>
+
+<div id="event-modal" class="event-modal" aria-hidden="true">
+  <div class="event-modal-backdrop" data-close-event-modal></div>
+  <div class="event-modal-panel" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+    <div class="event-modal-head">
+      <div>
+        <h2 id="event-modal-title" class="event-modal-title">Buat Event</h2>
+        <p id="event-modal-copy" class="event-modal-copy">Isi data acara berikut untuk menyiapkan event baru di katalog TikTakTuk.</p>
+      </div>
+      <button type="button" class="event-modal-close" data-close-event-modal aria-label="Tutup">x</button>
+    </div>
+
+    <form id="event-form" class="event-form-grid" action="#" method="post">
+      {% csrf_token %}
+      <input type="hidden" id="event-form-mode" name="mode" value="create">
+      <input type="hidden" id="event-form-target-id" name="target_id" value="">
+
+      <div class="event-field">
+        <label for="event-id">Event ID</label>
+        <input id="event-id" name="event_id" type="text" class="form-input" readonly>
+      </div>
+
+      <div class="event-field">
+        <label for="event-title-input">Judul Acara</label>
+        <input id="event-title-input" name="title" type="text" class="form-input" placeholder="Masukkan judul acara" required>
+      </div>
+
+      <div class="event-field">
+        <label for="event-date-input">Tanggal Acara</label>
+        <input id="event-date-input" name="date" type="date" class="form-input" required>
+      </div>
+
+      <div class="event-field">
+        <label for="event-time-input">Waktu Acara</label>
+        <input id="event-time-input" name="time" type="time" class="form-input" required>
+      </div>
+
+      <div class="event-field">
+        <label for="event-venue-input">Venue</label>
+        <input id="event-venue-input" name="venue" type="text" class="form-input" placeholder="Nama venue" required>
+      </div>
+
+      <div class="event-field event-field-full">
+        <label for="event-artists-input">Daftar Artist / Performer</label>
+        <input id="event-artists-input" name="artists" type="text" class="form-input" placeholder="Pisahkan dengan koma" required>
+      </div>
+
+      <div class="event-field">
+        <label for="event-poster-input">Gambar Acara</label>
+        <input id="event-poster-input" name="poster" type="text" class="form-input" placeholder="URL poster atau nama file">
+      </div>
+
+      <div class="event-ticket-section">
+        <div class="event-ticket-section-head">
+          <div>
+            <div class="event-ticket-section-title">Kategori tiket (ticket category)</div>
+          </div>
+        </div>
+
+        <input type="hidden" id="event-ticket-categories-json" name="ticket_categories_json" value="">
+
+        <div class="event-ticket-list" data-ticket-list></div>
+
+        <button type="button" class="event-ticket-add" data-add-ticket-row>+ Tambah Kategori</button>
+      </div>
+
+      <div class="event-field event-field-full">
+        <label for="event-description-input">Deskripsi Acara</label>
+        <textarea id="event-description-input" name="description" class="form-input event-textarea" placeholder="Tulis ringkasan singkat acara" required></textarea>
+      </div>
+
+      <div class="event-modal-actions">
+        <button type="button" class="event-btn event-btn-secondary" data-close-event-modal>Batal</button>
+        <button type="submit" class="event-btn event-btn-primary" id="event-submit-button">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="event-delete-modal" class="event-delete-modal" aria-hidden="true">
+  <div class="event-delete-backdrop" data-close-event-delete-modal></div>
+  <div class="event-delete-panel" role="dialog" aria-modal="true" aria-labelledby="event-delete-title">
+    <div class="event-delete-head">
+      <div>
+        <h2 id="event-delete-title" class="event-delete-title">Hapus Event</h2>
+        <p class="event-delete-copy">Konfirmasi ini hanya demo desain. Saat tombol diaktifkan, kartu event akan dihapus dari daftar sementara.</p>
+      </div>
+      <button type="button" class="event-delete-close" data-close-event-delete-modal aria-label="Tutup">x</button>
+    </div>
+
+    <div class="event-delete-body">
+      <div class="event-delete-preview" id="event-delete-preview">Pilih event yang ingin dihapus.</div>
+
+      <div class="event-delete-actions">
+        <button type="button" class="event-btn event-btn-secondary" data-close-event-delete-modal>Batal</button>
+        <button type="button" class="event-btn event-btn-danger" id="event-confirm-delete">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="event-toast" class="event-toast" aria-live="polite" aria-atomic="true">
+  <div class="event-toast-dot"></div>
+  <div>
+    <div class="event-toast-title" id="event-toast-title">Berhasil</div>
+    <div class="event-toast-copy" id="event-toast-copy">Data event tersimpan.</div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const eventPage = document.querySelector('.event-page');
+    if (!eventPage) {
+      return;
+    }
+
+    const grid = eventPage.querySelector('[data-event-grid]');
+    const cards = function () {
+      return Array.from(grid.querySelectorAll('[data-event-card]'));
+    };
+
+    const searchInput = eventPage.querySelector('[data-event-search]');
+    const venueFilter = eventPage.querySelector('[data-filter-venue]');
+    const organizerFilter = eventPage.querySelector('[data-filter-organizer]');
+    const categoryFilter = eventPage.querySelector('[data-filter-category]');
+    const clearFiltersButton = eventPage.querySelector('[data-clear-filters]');
+    const emptyState = eventPage.querySelector('[data-empty-state]');
+    const totalStat = eventPage.querySelector('[data-stat-total]');
+    const upcomingStat = eventPage.querySelector('[data-stat-upcoming]');
+    const draftStat = eventPage.querySelector('[data-stat-draft]');
+
+    const modal = document.getElementById('event-modal');
+    const deleteModal = document.getElementById('event-delete-modal');
+    const form = document.getElementById('event-form');
+    const submitButton = document.getElementById('event-submit-button');
+    const modalTitle = document.getElementById('event-modal-title');
+    const modalCopy = document.getElementById('event-modal-copy');
+    const eventModeInput = document.getElementById('event-form-mode');
+    const eventTargetIdInput = document.getElementById('event-form-target-id');
+    const eventIdInput = document.getElementById('event-id');
+    const eventTitleInput = document.getElementById('event-title-input');
+    const eventDateInput = document.getElementById('event-date-input');
+    const eventTimeInput = document.getElementById('event-time-input');
+    const eventVenueInput = document.getElementById('event-venue-input');
+    const eventArtistsInput = document.getElementById('event-artists-input');
+    const eventPosterInput = document.getElementById('event-poster-input');
+    const ticketList = document.querySelector('[data-ticket-list]');
+    const addTicketRowButton = document.querySelector('[data-add-ticket-row]');
+    const ticketCategoriesJsonInput = document.getElementById('event-ticket-categories-json');
+    const eventDescriptionInput = document.getElementById('event-description-input');
+    const deletePreview = document.getElementById('event-delete-preview');
+    const confirmDeleteButton = document.getElementById('event-confirm-delete');
+
+    const toast = document.getElementById('event-toast');
+    const toastTitle = document.getElementById('event-toast-title');
+    const toastCopy = document.getElementById('event-toast-copy');
+
+    const state = {
+      deleteTargetCard: null
+    };
+
+    let toastTimer = null;
+    const currentOrganizerName = 'Organizer Akun';
+
+    const defaultTicketRows = [
+      { name: 'VVIP', price: '1500000', quota: '50' },
+      { name: 'VIP', price: '750000', quota: '150' },
+      { name: 'Category 1', price: '450000', quota: '300' },
+      { name: 'Category 2', price: '250000', quota: '500' }
+    ];
+
+    const escapeAttr = function (value) {
+      return String(value || '').replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    };
+
+    const renderTicketRow = function (row) {
+      return (
+        '<div class="event-ticket-row" data-ticket-row>' +
+          '<div class="event-ticket-field">' +
+            '<label>Nama Kategori</label>' +
+            '<input type="text" class="form-input" data-ticket-name placeholder="cth. VVIP" value="' + escapeAttr(row.name) + '">' +
+          '</div>' +
+          '<div class="event-ticket-field">' +
+            '<label>Harga (Rp)</label>' +
+            '<input type="number" class="form-input" data-ticket-price placeholder="0" min="0" value="' + escapeAttr(row.price) + '">' +
+          '</div>' +
+          '<div class="event-ticket-field">' +
+            '<label>Kuota</label>' +
+            '<input type="number" class="form-input" data-ticket-quota placeholder="0" min="0" value="' + escapeAttr(row.quota) + '">' +
+          '</div>' +
+          '<button type="button" class="event-ticket-remove" data-remove-ticket-row aria-label="Hapus kategori">×</button>' +
+        '</div>'
+      );
+    };
+
+    const setTicketRows = function (rows) {
+      if (!ticketList) {
+        return;
+      }
+
+      ticketList.innerHTML = rows.map(function (row) {
+        return renderTicketRow(row);
+      }).join('');
+    };
+
+    const getTicketRows = function () {
+      if (!ticketList) {
+        return [];
+      }
+
+      return Array.from(ticketList.querySelectorAll('[data-ticket-row]')).map(function (row) {
+        const nameInput = row.querySelector('[data-ticket-name]');
+        const priceInput = row.querySelector('[data-ticket-price]');
+        const quotaInput = row.querySelector('[data-ticket-quota]');
+
+        return {
+          name: nameInput ? nameInput.value.trim() : '',
+          price: priceInput ? priceInput.value.trim() : '',
+          quota: quotaInput ? quotaInput.value.trim() : ''
+        };
+      }).filter(function (row) {
+        return row.name || row.price || row.quota;
+      });
+    };
+
+    const syncTicketRowsToHiddenInput = function () {
+      if (!ticketCategoriesJsonInput) {
+        return;
+      }
+
+      ticketCategoriesJsonInput.value = JSON.stringify(getTicketRows());
+    };
+
+    const updateStats = function () {
+      const visibleCards = cards().filter(function (card) {
+        return !card.classList.contains('event-card-hidden');
+      });
+
+      if (totalStat) {
+        totalStat.textContent = String(cards().length);
+      }
+
+      if (upcomingStat) {
+        upcomingStat.textContent = String(cards().filter(function (card) {
+          return card.dataset.eventStatus === 'Upcoming';
+        }).length);
+      }
+
+      if (draftStat) {
+        draftStat.textContent = String(cards().filter(function (card) {
+          return card.dataset.eventStatus === 'Draft';
+        }).length);
+      }
+    };
+
+    const formatDate = function (value) {
+      if (!value) {
+        return '';
+      }
+
+      const parts = value.split('-');
+      if (parts.length !== 3) {
+        return value;
+      }
+
+      const year = parts[0];
+      const month = parseInt(parts[1], 10);
+      const day = parts[2];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      return day + ' ' + monthNames[month - 1] + ' ' + year;
+    };
+
+    const formatTime = function (value) {
+      if (!value) {
+        return '';
+      }
+
+      return value.replace(':', '.');
+    };
+
+    const fallbackUuid = function () {
+      const suffix = Math.floor(Math.random() * 9000 + 1000).toString();
+      const head = Math.floor(Math.random() * 90 + 10).toString();
+      return 'EVT-' + head + 'C' + suffix + '-2026';
+    };
+
+    const generateEventId = function () {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return 'EVT-' + window.crypto.randomUUID().slice(0, 8).toUpperCase();
+      }
+
+      return fallbackUuid();
+    };
+
+    const showToast = function (title, message) {
+      toastTitle.textContent = title;
+      toastCopy.textContent = message;
+      toast.classList.add('is-visible');
+
+      if (toastTimer) {
+        window.clearTimeout(toastTimer);
+      }
+
+      toastTimer = window.setTimeout(function () {
+        toast.classList.remove('is-visible');
+      }, 2600);
+    };
+
+    const syncBodyScroll = function () {
+      const eventOpen = modal.getAttribute('aria-hidden') === 'false';
+      const deleteOpen = deleteModal.getAttribute('aria-hidden') === 'false';
+      document.body.style.overflow = eventOpen || deleteOpen ? 'hidden' : '';
+    };
+
+    const closeEventModal = function () {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      syncBodyScroll();
+    };
+
+    const closeDeleteModal = function () {
+      deleteModal.classList.remove('is-open');
+      deleteModal.setAttribute('aria-hidden', 'true');
+      state.deleteTargetCard = null;
+      syncBodyScroll();
+    };
+
+    const resetEventForm = function () {
+      form.reset();
+      eventTargetIdInput.value = '';
+    };
+
+    const openEventModal = function (mode, trigger) {
+      const isEdit = mode === 'edit';
+      eventModeInput.value = mode;
+      modalTitle.textContent = isEdit ? 'Edit Event' : 'Buat Event';
+      modalCopy.textContent = isEdit ? 'Perbarui data event yang sudah ada, lalu simpan untuk melihat perubahan pada kartu daftar.' : 'Isi data acara berikut untuk menambahkan event baru ke katalog TikTakTuk.';
+      submitButton.textContent = isEdit ? 'Simpan Perubahan' : 'Simpan Event';
+
+      if (isEdit && trigger) {
+        resetEventForm();
+        eventTargetIdInput.value = trigger.dataset.eventId || '';
+        eventIdInput.value = trigger.dataset.eventId || generateEventId();
+        eventTitleInput.value = trigger.dataset.eventTitle || '';
+        eventDateInput.value = trigger.dataset.eventDate || '';
+        eventTimeInput.value = trigger.dataset.eventTime || '';
+        eventVenueInput.value = trigger.dataset.eventVenue || '';
+        eventArtistsInput.value = trigger.dataset.eventArtists || '';
+        eventPosterInput.value = trigger.dataset.eventPoster || '';
+        eventDescriptionInput.value = trigger.dataset.eventDescription || '';
+      } else {
+        resetEventForm();
+        eventIdInput.value = generateEventId();
+      }
+
+      setTicketRows(defaultTicketRows);
+
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      syncBodyScroll();
+      eventTitleInput.focus();
+    };
+
+    const openDeleteModal = function (trigger) {
+      state.deleteTargetCard = trigger ? trigger.closest('[data-event-card]') : null;
+      deletePreview.textContent = 'Event "' + (trigger ? trigger.dataset.eventTitle : '') + '" akan dihapus dari daftar sementara. Aksi ini hanya demo desain, tetapi feedback dan alurnya sudah dibuat realistis.';
+      deleteModal.classList.add('is-open');
+      deleteModal.setAttribute('aria-hidden', 'false');
+      syncBodyScroll();
+    };
+
+    const buildCard = function (data) {
+      const article = document.createElement('article');
+      article.className = 'event-card';
+      article.setAttribute('data-event-card', '');
+      article.dataset.eventStatus = data.status;
+      article.dataset.eventId = data.eventId;
+      article.dataset.eventTitle = data.title;
+      article.dataset.eventDate = data.prettyDate;
+      article.dataset.eventTime = data.prettyTime;
+      article.dataset.eventVenue = data.venue;
+      article.dataset.eventOrganizer = data.organizer;
+      article.dataset.eventArtists = data.artists;
+      article.dataset.eventCategory = data.category;
+      article.dataset.eventDescription = data.description;
+      article.dataset.eventPoster = data.poster;
+
+      article.innerHTML =
+        '<div class="event-card-top">' +
+          '<div class="event-card-visual">' +
+            '<span class="event-card-visual-label">Poster Acara</span>' +
+            '<div class="event-card-visual-title">' + data.title + '</div>' +
+            '<p class="event-card-visual-copy">' + data.posterPreview + '</p>' +
+          '</div>' +
+          '<div class="event-card-artist-chips">' +
+            (data.artists ? data.artists.split(',').map(function (artist) { return '<span class="event-chip">' + artist.trim() + '</span>'; }).join('') : '') +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div class="event-card-title">' + data.title + '</div>' +
+          '<div class="event-card-info-row">' +
+            '<span class="event-card-info-item">' +
+              '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+              '<span>' + data.prettyDate + '</span>' +
+            '</span>' +
+            '<span class="event-card-info-item">' +
+              '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/></svg>' +
+              '<span>' + data.prettyTime + '</span>' +
+            '</span>' +
+            '<span class="event-card-info-item">' +
+              '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-4.6 6-10.2A6 6 0 1 0 6 10.8C6 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.2a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z" stroke="currentColor" stroke-width="1.8"/></svg>' +
+              '<span>' + data.venue + '</span>' +
+            '</span>' +
+          '</div>' +
+        '</div>' +
+        '<p class="event-panel-copy">' + data.description + '</p>' +
+        '<div class="event-card-actions">' +
+          '<button type="button" class="event-btn event-btn-secondary" data-open-event-modal="edit" data-event-id="' + data.eventId + '" data-event-title="' + data.title + '" data-event-date="' + data.date + '" data-event-time="' + data.time + '" data-event-venue="' + data.venue + '" data-event-organizer="' + data.organizer + '" data-event-artists="' + data.artists + '" data-event-category="' + data.category + '" data-event-description="' + data.description + '" data-event-poster="' + data.poster + '">Edit</button>' +
+          '<button type="button" class="event-btn event-btn-danger" data-open-delete-modal data-event-id="' + data.eventId + '" data-event-title="' + data.title + '">Delete</button>' +
+        '</div>';
+
+      return article;
+    };
+
+    const applyFilters = function () {
+      const searchTerm = (searchInput ? searchInput.value : '').trim().toLowerCase();
+      const venueValue = venueFilter ? venueFilter.value : 'all';
+      const organizerValue = organizerFilter ? organizerFilter.value : 'all';
+      const categoryValue = categoryFilter ? categoryFilter.value : 'all';
+
+      let visibleCount = 0;
+
+      cards().forEach(function (card) {
+        const text = [
+          card.dataset.eventTitle,
+          card.dataset.eventArtists,
+          card.dataset.eventVenue,
+          card.dataset.eventOrganizer,
+          card.dataset.eventCategory,
+          card.dataset.eventDescription
+        ].join(' ').toLowerCase();
+
+        const matchesSearch = !searchTerm || text.indexOf(searchTerm) !== -1;
+        const matchesVenue = venueValue === 'all' || card.dataset.eventVenue === venueValue;
+        const matchesOrganizer = organizerValue === 'all' || card.dataset.eventOrganizer === organizerValue;
+        const matchesCategory = categoryValue === 'all' || card.dataset.eventCategory === categoryValue;
+        const isVisible = matchesSearch && matchesVenue && matchesOrganizer && matchesCategory;
+
+        card.classList.toggle('event-card-hidden', !isVisible);
+
+        if (isVisible) {
+          visibleCount += 1;
+        }
+      });
+
+      if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+
+      updateStats();
+    };
+
+    const getCardDataFromForm = function () {
+      const title = eventTitleInput.value.trim();
+      const date = eventDateInput.value;
+      const time = eventTimeInput.value;
+      const venue = eventVenueInput.value.trim();
+      const artists = eventArtistsInput.value.trim();
+      const poster = eventPosterInput.value.trim();
+      const description = eventDescriptionInput.value.trim();
+      const ticketRows = getTicketRows();
+      const primaryCategory = ticketRows.length > 0 ? ticketRows[0].name : '';
+
+      return {
+        eventId: eventIdInput.value.trim(),
+        title: title,
+        date: date,
+        prettyDate: formatDate(date),
+        time: time,
+        prettyTime: formatTime(time),
+        venue: venue,
+        organizer: currentOrganizerName,
+        artists: artists,
+        category: primaryCategory || 'VIP',
+        ticketCategories: ticketRows,
+        status: 'Upcoming',
+        poster: poster,
+        posterPreview: poster ? 'Poster: ' + poster : 'Poster placeholder untuk tampilan dummy ini.',
+        description: description
+      };
+    };
+
+    eventPage.addEventListener('click', function (event) {
+      const eventTrigger = event.target.closest('[data-open-event-modal]');
+      if (eventTrigger) {
+        openEventModal(eventTrigger.dataset.openEventModal, eventTrigger);
+        return;
+      }
+
+      const deleteTrigger = event.target.closest('[data-open-delete-modal]');
+      if (deleteTrigger) {
+        openDeleteModal(deleteTrigger);
+      }
+    });
+
+    document.querySelectorAll('[data-close-event-modal]').forEach(function (button) {
+      button.addEventListener('click', closeEventModal);
+    });
+
+    document.querySelectorAll('[data-close-event-delete-modal]').forEach(function (button) {
+      button.addEventListener('click', closeDeleteModal);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      if (modal.getAttribute('aria-hidden') === 'false') {
+        closeEventModal();
+      }
+
+      if (deleteModal.getAttribute('aria-hidden') === 'false') {
+        closeDeleteModal();
+      }
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const data = getCardDataFromForm();
+
+      if (!data.title || !data.date || !data.time || !data.venue || !data.artists || !data.description || data.ticketCategories.length === 0 || data.ticketCategories.some(function (row) {
+        return !row.name || !row.price || !row.quota;
+      })) {
+        showToast('Form belum lengkap', 'Lengkapi data event sebelum menyimpan.');
+        return;
+      }
+
+      syncTicketRowsToHiddenInput();
+
+      if (eventModeInput.value === 'edit') {
+        const targetCard = cards().find(function (card) {
+          return card.dataset.eventId === eventTargetIdInput.value;
+        });
+
+        if (targetCard) {
+          data.status = targetCard.dataset.eventStatus || 'Upcoming';
+          const newCard = buildCard(data);
+          targetCard.replaceWith(newCard);
+        }
+
+        showToast('Event diperbarui', 'Perubahan data event sudah diterapkan pada daftar sementara.');
+      } else {
+        const newCard = buildCard(data);
+        grid.prepend(newCard);
+        showToast('Event ditambahkan', 'Event baru berhasil masuk ke daftar sementara.');
+      }
+
+      closeEventModal();
+      applyFilters();
+      updateStats();
+    });
+
+    confirmDeleteButton.addEventListener('click', function () {
+      if (state.deleteTargetCard) {
+        state.deleteTargetCard.remove();
+        showToast('Event dihapus', 'Data event berhasil dihapus dari daftar sementara.');
+        closeDeleteModal();
+        applyFilters();
+        updateStats();
+      }
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+    }
+
+    [venueFilter, organizerFilter, categoryFilter].forEach(function (filter) {
+      if (filter) {
+        filter.addEventListener('change', applyFilters);
+      }
+    });
+
+    if (clearFiltersButton) {
+      clearFiltersButton.addEventListener('click', function () {
+        if (searchInput) {
+          searchInput.value = '';
+        }
+
+        if (venueFilter) {
+          venueFilter.value = 'all';
+        }
+
+        if (organizerFilter) {
+          organizerFilter.value = 'all';
+        }
+
+        if (categoryFilter) {
+          categoryFilter.value = 'all';
+        }
+
+        applyFilters();
+        showToast('Filter direset', 'Daftar event kembali ke tampilan lengkap.');
+      });
+    }
+
+    if (ticketList) {
+      ticketList.addEventListener('click', function (event) {
+        const removeButton = event.target.closest('[data-remove-ticket-row]');
+        if (!removeButton) {
+          return;
+        }
+
+        const row = removeButton.closest('[data-ticket-row]');
+        if (!row) {
+          return;
+        }
+
+        const rowCount = ticketList.querySelectorAll('[data-ticket-row]').length;
+        if (rowCount <= 1) {
+          showToast('Kategori minimal', 'Tambahkan kategori baru sebelum menghapus baris terakhir.');
+          return;
+        }
+
+        row.remove();
+        syncTicketRowsToHiddenInput();
+      });
+    }
+
+    if (addTicketRowButton) {
+      addTicketRowButton.addEventListener('click', function () {
+        if (!ticketList) {
+          return;
+        }
+
+        ticketList.insertAdjacentHTML('beforeend', renderTicketRow({ name: '', price: '', quota: '' }));
+        syncTicketRowsToHiddenInput();
+        showToast('Kategori ditambahkan', 'Baris kategori baru sudah muncul di form.');
+      });
+    }
+
+    if (modal) {
+      modal.addEventListener('click', function (event) {
+        if (event.target === modal) {
+          closeEventModal();
+        }
+      });
+    }
+
+    if (deleteModal) {
+      deleteModal.addEventListener('click', function (event) {
+        if (event.target === deleteModal) {
+          closeDeleteModal();
+        }
+      });
+    }
+
+    const scrollButton = eventPage.querySelector('[data-scroll-to-list]');
+    if (scrollButton) {
+      scrollButton.addEventListener('click', function () {
+        const section = document.getElementById('event-list-section');
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+
+    applyFilters();
+    updateStats();
+    setTicketRows(defaultTicketRows);
+    syncTicketRowsToHiddenInput();
+  })();
+</script>
+{% endblock %}
