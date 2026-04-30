@@ -1,0 +1,36 @@
+<div class="header-shell">
+  <header class="site-header sticky top-0 z-50">
+    <nav class="site-nav" aria-label="Navigasi utama">
+      <a href="{% url 'home' %}" class="brand-link">
+        <span class="brand-mark">TT</span>
+        <span class="brand-copy">
+          <span class="brand-name">TikTakTuk</span>
+        </span>
+      </a>
+
+      <div class="nav-group">
+        {% if user.is_authenticated %}
+          {% if user.is_staff %}
+            <a href="{% url 'home' %}" class="nav-link">Dashboard</a>
+            <a href="#" class="nav-link">Manajemen Venue</a>
+            <a href="#" class="nav-link">Manajemen Kursi</a>
+            <a href="#" class="nav-link">Kategori Tiket</a>
+            <a href="{% url 'my_tickets_admin' %}" class="nav-link">Manajemen Tiket</a>
+            <a href="#" class="nav-link">Semua Order</a>
+            <a href="#" class="nav-link">Tiket (Aset)</a>
+            <a href="#" class="nav-link">Order (Aset)</a>
+            <a href="#" class="nav-link">Profile</a>
+          {% else %}
+            <a href="{% url 'home' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'profile_customer' %}" class="nav-link">Profile</a>
+          {% endif %}
+
+          <a href="#" class="nav-link nav-link-ghost">Logout</a>
+        {% else %}
+          <button type="button" data-open-login-modal class="nav-link nav-toggle">Login</button>
+          <a href="{% url 'register' %}" class="nav-link nav-link-strong">Registrasi</a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+</div>

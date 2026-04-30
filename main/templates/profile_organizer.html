@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil Penyelenggara - TikTakTuk{% endblock %}
+
+{% block content %}
+<main class="profile-wrap">
+  <div class="profile-layout profile-layout-organizer">
+    <aside class="profile-sidebar profile-sidebar-organizer">
+      <div class="profile-sidebar-head">
+        <div class="profile-avatar profile-avatar-organizer" aria-hidden="true">A</div>
+        <div>
+          <p class="profile-kicker">Akun Penyelenggara</p>
+          <h1 class="profile-title profile-title-sidebar">Profil Saya</h1>
+          <p class="profile-subtitle profile-subtitle-sidebar">Kelola identitas organizer, kontak utama, dan informasi publik secara lebih terarah.</p>
+        </div>
+      </div>
+
+      <div class="profile-summary-card">
+        <div class="profile-summary-row">
+          <span>Brand</span>
+          <strong>Andi Wijaya Production</strong>
+        </div>
+        <div class="profile-summary-row">
+          <span>Email</span>
+          <strong>organizer1@example.com</strong>
+        </div>
+      </div>
+
+      <div class="profile-action-stack">
+        <button type="button" class="profile-btn profile-btn-secondary" data-open-password-modal data-password-title="Ubah Password" data-password-copy="Tetapkan password baru untuk menjaga akses tim organizer tetap aman.">Ubah Password</button>
+        <button type="button" class="profile-btn profile-btn-primary" data-start-edit>Edit Profil</button>
+      </div>
+    </aside>
+
+    <section class="profile-card profile-panel" id="organizer-profile-card">
+      <header class="profile-card-head profile-panel-head">
+        <div>
+          <p class="profile-panel-eyebrow">Informasi Profil</p>
+          <p class="profile-panel-copy">Fokus utama halaman ini adalah identitas organizer dan kontak bisnis. Tekan Edit Profil untuk mengubah data langsung di tempat.</p>
+        </div>
+        <span class="profile-role-badge profile-role-organizer">Penyelenggara</span>
+      </header>
+
+      <form action="#" method="post" class="profile-grid-form" data-inline-profile-form>
+        {% csrf_token %}
+        <div class="profile-field">
+          <label for="organizer-name">Nama Organizer</label>
+          <input id="organizer-name" name="organizer_name" type="text" value="Andi Wijaya Production" data-editable-field disabled>
+        </div>
+
+        <div class="profile-field">
+          <label for="organizer-email">Contact Email</label>
+          <input id="organizer-email" name="contact_email" type="email" value="organizer1@example.com" data-editable-field disabled>
+        </div>
+
+        <div class="profile-field">
+          <label for="organizer-phone">Nomor PIC</label>
+          <input id="organizer-phone" name="pic_phone" type="tel" value="+6289988776655" data-editable-field disabled>
+        </div>
+
+        <div class="profile-field">
+          <label for="organizer-instagram">Instagram</label>
+          <input id="organizer-instagram" name="instagram" type="text" value="@andi.showcase" data-editable-field disabled>
+        </div>
+
+        <div class="profile-field profile-field-full">
+          <label for="organizer-description">Deskripsi Singkat</label>
+          <textarea id="organizer-description" name="description" rows="3" data-editable-field disabled>Penyelenggara event musik dan pengalaman kreatif untuk segmen komunitas urban.</textarea>
+        </div>
+
+        <div class="profile-inline-actions" data-inline-actions hidden>
+          <button type="button" class="profile-btn profile-btn-ghost" data-cancel-edit>Batal</button>
+          <button type="submit" class="profile-btn profile-btn-primary">Simpan Perubahan</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</main>
+
+<script>
+  (function () {
+    const profileCard = document.getElementById('organizer-profile-card');
+    if (!profileCard) {
+      return;
+    }
+
+    const startEditButton = document.querySelector('[data-start-edit]');
+    const form = profileCard.querySelector('[data-inline-profile-form]');
+    const editableFields = form.querySelectorAll('[data-editable-field]');
+    const actions = form.querySelector('[data-inline-actions]');
+    const cancelEditButton = form.querySelector('[data-cancel-edit]');
+
+    const setEditState = function (isEditing) {
+      editableFields.forEach(function (field) {
+        if (isEditing) {
+          field.dataset.initialValue = field.value;
+          field.removeAttribute('disabled');
+        } else {
+          field.setAttribute('disabled', 'disabled');
+        }
+      });
+
+      actions.hidden = !isEditing;
+      startEditButton.hidden = isEditing;
+      profileCard.classList.toggle('profile-editing', isEditing);
+
+      if (isEditing && editableFields.length > 0) {
+        editableFields[0].focus();
+      }
+    };
+
+    startEditButton.addEventListener('click', function () {
+      setEditState(true);
+    });
+
+    cancelEditButton.addEventListener('click', function () {
+      editableFields.forEach(function (field) {
+        field.value = field.dataset.initialValue || field.value;
+      });
+      setEditState(false);
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      setEditState(false);
+    });
+  })();
+</script>
+{% endblock %}

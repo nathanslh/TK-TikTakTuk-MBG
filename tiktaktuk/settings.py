@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
-from urllib.parse import parse_qs, unquote, urlparse
 from dotenv import load_dotenv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts',
+    'main',
 ]
 
 MIDDLEWARE = [
@@ -77,35 +77,24 @@ WSGI_APPLICATION = 'tiktaktuk.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+default_sqlite_url = f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}"
 database_url = os.getenv('DATABASE_URL')
+use_database_url_in_dev = os.getenv('USE_DATABASE_URL_IN_DEV', 'False') == 'True'
+conn_max_age = int(os.getenv('DB_CONN_MAX_AGE', '600'))
 
-if database_url:
-    parsed_url = urlparse(database_url)
-    query_params = parse_qs(parsed_url.query)
+database_default_url = (
+    database_url
+    if database_url and (IS_PRODUCTION or use_database_url_in_dev)
+    else default_sqlite_url
+)
 
-    db_options = {}
-    if 'sslmode' in query_params and query_params['sslmode']:
-        db_options['sslmode'] = query_params['sslmode'][0]
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': unquote(parsed_url.path.lstrip('/')),
-            'USER': unquote(parsed_url.username or ''),
-            'PASSWORD': unquote(parsed_url.password or ''),
-            'HOST': parsed_url.hostname,
-            'PORT': parsed_url.port or 5432,
-            'OPTIONS': db_options,
-            'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+DATABASES = {
+    'default': dj_database_url.parse(
+        database_default_url,
+        conn_max_age=conn_max_age,
+        conn_health_checks=True,
+    )
+}
 
 
 # Password validation

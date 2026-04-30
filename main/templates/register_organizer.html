@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Daftar Penyelenggara - TikTakTuk{% endblock %}
+
+{% block content %}
+<main class="auth-wrap">
+  <section class="auth-brand">
+    <div class="auth-logo">TT</div>
+    <h1 class="auth-title">TikTakTuk</h1>
+    <p class="auth-subtitle">Daftar sebagai penyelenggara</p>
+  </section>
+
+  <section class="auth-card">
+    <p><a class="auth-link" href="{% url 'register' %}">← Kembali</a></p>
+    <h2 class="auth-section-title section-spacer">Daftar sebagai Penyelenggara</h2>
+
+    <form class="form-grid" action="#" method="post">
+      {% csrf_token %}
+      <div>
+        <label class="form-label" for="full_name">Nama Lengkap</label>
+        <input class="form-input" id="full_name" name="full_name" type="text" placeholder="Masukkan nama lengkap" required>
+      </div>
+      <div>
+        <label class="form-label" for="email">Email</label>
+        <input class="form-input" id="email" name="email" type="email" placeholder="Masukkan email" required>
+      </div>
+      <div>
+        <label class="form-label" for="phone">Nomor Telepon</label>
+        <input class="form-input" id="phone" name="phone" type="tel" placeholder="Masukkan nomor telepon" required>
+      </div>
+      <div>
+        <label class="form-label" for="organization">Nama Organizer / Perusahaan</label>
+        <input class="form-input" id="organization" name="organization" type="text" placeholder="Masukkan nama organizer" required>
+      </div>
+      <div>
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" id="username" name="username" type="text" placeholder="Pilih username" required>
+      </div>
+      <div>
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" id="password" name="password" type="password" placeholder="Minimal 6 karakter" required>
+      </div>
+      <div>
+        <label class="form-label" for="confirm_password">Konfirmasi Password</label>
+        <input class="form-input" id="confirm_password" name="confirm_password" type="password" placeholder="Konfirmasi password" required>
+      </div>
+
+      <label class="inline-check">
+        <input type="checkbox" required>
+        <span>Saya setuju dengan <a class="auth-link" href="#">Syarat & Ketentuan</a></span>
+      </label>
+
+      <button class="btn-primary" type="submit">Daftar</button>
+    </form>
+  </section>
+
+  <p class="auth-footer">Sudah punya akun? <button type="button" data-open-login-modal class="auth-link">Login di sini</button></p>
+</main>
+{% endblock %}
