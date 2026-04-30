@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - TikTakTuk{% endblock %}
+
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style="font-family: 'Inter', sans-serif;">
+    <div class="bg-[#8f6031] text-white rounded-xl p-8 flex justify-between items-center shadow-sm mb-8">
+        <div>
+            <p class="text-[10px] font-bold text-stone-200 uppercase tracking-widest mb-1">Administrator</p>
+            <h1 class="text-3xl font-bold mb-2">System Console</h1>
+            <p class="text-sm text-stone-100">Pantau dan kelola platform TikTakTuk</p>
+        </div>
+        <button class="bg-white text-[#8f6031] px-6 py-2 rounded-md font-bold text-xs hover:bg-stone-100 transition shadow-sm">Promosi</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm">
+            <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">TOTAL PENGGUNA</h3>
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-2xl font-bold text-[#5c4a3d]">2,543</p>
+                    <p class="text-[10px] text-stone-500 mt-1">Pengguna aktif</p>
+                </div>
+                <div class="text-[#8f6031] bg-[#ead8be] p-2 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm">
+            <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">TOTAL ACARA</h3>
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-2xl font-bold text-[#5c4a3d]">156</p>
+                    <p class="text-[10px] text-stone-500 mt-1">Bulan Ini</p>
+                </div>
+                <div class="text-[#7a5028] bg-[#d4c5a9] p-2 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm">
+            <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">OMZET PLATFORM</h3>
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-2xl font-bold text-[#5c4a3d]">Rp 52.4M</p>
+                    <p class="text-[10px] text-stone-500 mt-1">Gross volume</p>
+                </div>
+                <div class="text-[#6a4620] bg-[#e8d9c3] p-2 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm">
+            <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">PROMOSI AKTIF</h3>
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-2xl font-bold text-[#5c4a3d]">3</p>
+                    <p class="text-[10px] text-stone-500 mt-1">Running campaigns</p>
+                </div>
+                <div class="text-[#8f6031] bg-[#f0e6d8] p-2 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm">
+            <h3 class="text-lg font-bold text-[#5c4a3d] mb-4 flex justify-between items-center">Infrastruktur Venue <span class="text-stone-300 text-sm">↗</span></h3>
+            <div class="space-y-3 text-sm text-stone-600">
+                <div class="flex justify-between border-b border-stone-50 pb-2"><span>Total Venue Terdaftar</span><span class="font-bold text-[#5c4a3d]">3 Lokasi</span></div>
+                <div class="flex justify-between border-b border-stone-50 pb-2"><span>Reserved Seating</span><span class="font-bold text-[#5c4a3d]">2 Venue</span></div>
+                <div class="flex justify-between pb-2"><span>Kapasitas Terbesar</span><span class="font-bold text-[#5c4a3d]">1,000 Kursi</span></div>
+            </div>
+            <button class="w-full mt-6 py-2.5 bg-white border border-[#e8e4dc] text-[#5c4a3d] text-xs font-bold rounded-md hover:bg-[#f5f3ef] transition uppercase tracking-widest">Kelola Venue</button>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-[#e8e4dc] shadow-sm">
+            <h3 class="text-lg font-bold text-[#5c4a3d] mb-4 flex justify-between items-center">Marketing & Promosi <span class="text-stone-300 text-sm">↗</span></h3>
+            <div class="space-y-3 text-sm text-stone-600">
+                <div class="flex justify-between border-b border-stone-50 pb-2"><span>Promo Persentase</span><span class="font-bold text-[#5c4a3d]">1 Aktif</span></div>
+                <div class="flex justify-between border-b border-stone-50 pb-2"><span>Promo Potongan Nominal</span><span class="font-bold text-[#5c4a3d]">1 Aktif</span></div>
+                <div class="flex justify-between pb-2"><span>Total Penggunaan</span><span class="font-bold text-[#5c4a3d]">57 Kali</span></div>
+            </div>
+            <button class="w-full mt-6 py-2.5 bg-white border border-[#e8e4dc] text-[#5c4a3d] text-xs font-bold rounded-md hover:bg-[#f5f3ef] transition uppercase tracking-widest">Kelola Promosi</button>
+        </div>
+    </div>
+</main>
+{% endblock %}
