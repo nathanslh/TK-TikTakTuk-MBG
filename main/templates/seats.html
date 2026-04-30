@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manajemen Kursi{% endblock %}
+
+{% block meta %}
+<link rel="stylesheet" href="{% static 'css/seats.css' %}" />
+{% endblock meta %}
+
+{% block content %}
+
+<div class="page">
+  <script>
+    window.SEATS_PAGE_ROLE = "{{ role|default:'admin'|escapejs }}";
+  </script>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Manajemen Kursi</h1>
+      <p>Kelola kursi dan denah tempat duduk venue</p>
+    </div>
+    <button class="btn-add" id="btn-add-seat" onclick="openCreate()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      Tambah Kursi
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Total Kursi</div>
+      <div class="value" id="stat-total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Tersedia</div>
+      <div class="value" id="stat-avail">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Terisi</div>
+      <div class="value" id="stat-occ">0</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <input type="text" id="search-input" placeholder="Cari section, baris, atau nomor..." oninput="renderTable()" />
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Section</th>
+          <th>Baris</th>
+          <th>No. Kursi</th>
+          <th>Venue</th>
+          <th>Status</th>
+          <th id="actions-header">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ===== MODAL: TAMBAH KURSI ===== -->
+<div class="overlay" id="modal-create">
+  <div class="modal">
+    <div class="modal-title">Tambah Kursi Baru</div>
+    <button class="modal-close" onclick="closeModal('modal-create')">&#215;</button>
+
+    <div class="field">
+      <label>Venue</label>
+      <select id="c-venue">
+        <option value="Jakarta Convention Center">Jakarta Convention Center</option>
+        <option value="Gelora Bung Karno">Gelora Bung Karno</option>
+        <option value="Bali Nusa Dua Convention Center">Bali Nusa Dua Convention Center</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Section</label>
+      <input type="text" id="c-section" placeholder="cth. WVIP" />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Baris</label>
+        <input type="text" id="c-row" placeholder="cth. A" />
+      </div>
+      <div class="field">
+        <label>No. Kursi</label>
+        <input type="text" id="c-num" placeholder="cth. 1" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-create')">Batal</button>
+      <button class="btn-save" onclick="createSeat()">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: EDIT KURSI ===== -->
+<div class="overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-title">Edit Kursi</div>
+    <button class="modal-close" onclick="closeModal('modal-edit')">&#215;</button>
+
+    <div class="field">
+      <label>Venue</label>
+      <select id="e-venue">
+        <option value="Jakarta Convention Center">Jakarta Convention Center</option>
+        <option value="Gelora Bung Karno">Gelora Bung Karno</option>
+        <option value="Bali Nusa Dua Convention Center">Bali Nusa Dua Convention Center</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Section</label>
+      <input type="text" id="e-section" />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Baris</label>
+        <input type="text" id="e-row" />
+      </div>
+      <div class="field">
+        <label>No. Kursi</label>
+        <input type="text" id="e-num" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit')">Batal</button>
+      <button class="btn-save" onclick="saveSeat()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: HAPUS KURSI ===== -->
+<div class="overlay" id="modal-delete">
+  <div class="modal del-modal">
+    <div class="modal-title">Hapus Kursi</div>
+    <button class="modal-close" onclick="closeModal('modal-delete')">&#215;</button>
+    <p>Apakah Anda yakin ingin menghapus kursi ini? Tindakan ini tidak dapat dibatalkan.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-delete')">Batal</button>
+      <button class="btn-hapus" onclick="confirmDelete()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notif -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const isReadOnly = window.SEATS_PAGE_ROLE === 'cust';
+
+  if (isReadOnly) {
+    const addButton = document.getElementById('btn-add-seat');
+    const actionsHeader = document.getElementById('actions-header');
+    if (addButton) addButton.style.display = 'none';
+    if (actionsHeader) actionsHeader.style.display = 'none';
+  }
+
+  // ============================================================
+  // DATA DUMMY — nanti ganti dengan fetch dari API
+  // ============================================================
+  let seats = [
+    { id: 1, section: 'WVIP', row: 'A', num: '1', venue: 'Jakarta Convention Center', status: 'occupied' },
+    { id: 2, section: 'WVIP', row: 'A', num: '2', venue: 'Jakarta Convention Center', status: 'available' },
+    { id: 3, section: 'WVIP', row: 'A', num: '3', venue: 'Jakarta Convention Center', status: 'available' },
+    { id: 4, section: 'VIP',  row: 'B', num: '1', venue: 'Jakarta Convention Center', status: 'occupied' },
+    { id: 5, section: 'VIP',  row: 'B', num: '2', venue: 'Jakarta Convention Center', status: 'occupied' },
+    { id: 6, section: 'VIP',  row: 'B', num: '3', venue: 'Jakarta Convention Center', status: 'available' },
+    { id: 7, section: 'Category 1', row: 'C', num: '1', venue: 'Jakarta Convention Center', status: 'available' },
+    { id: 8, section: 'Category 1', row: 'C', num: '2', venue: 'Jakarta Convention Center', status: 'available' },
+  ];
+
+  let nextId    = 9;
+  let editingId = null;
+  let deletingId = null;
+
+  // ============================================================
+  // RENDER TABLE
+  // ============================================================
+  function renderTable() {
+    const q     = document.getElementById('search-input').value.toLowerCase();
+    const tbody = document.getElementById('table-body');
+
+    const filtered = seats.filter(s =>
+      s.section.toLowerCase().includes(q) ||
+      s.row.toLowerCase().includes(q) ||
+      s.num.toLowerCase().includes(q)
+    );
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="' + (isReadOnly ? 5 : 6) + '">Tidak ada kursi ditemukan.</td></tr>';
+    } else {
+      tbody.innerHTML = filtered.map(s => `
+        <tr>
+          <td>
+            <div class="section-cell">
+              <svg class="seat-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="12" height="8" rx="2" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.2"/>
+                <rect x="4" y="11" width="3" height="3" rx="1" fill="#2563EB"/>
+                <rect x="9" y="11" width="3" height="3" rx="1" fill="#2563EB"/>
+              </svg>
+              ${escHtml(s.section)}
+            </div>
+          </td>
+          <td>${escHtml(s.row)}</td>
+          <td>${escHtml(s.num)}</td>
+          <td style="color:#6B7280">${escHtml(s.venue)}</td>
+          <td>${badgeHtml(s.status)}</td>
+          ${isReadOnly ? '' : `
+          <td>
+            <div class="actions">
+              <!-- Tombol Edit -->
+              <button class="btn-icon btn-edit" title="Edit kursi" onclick="openEdit(${s.id})">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                  <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <!-- Tombol Hapus: disabled jika sudah di-assign (status occupied) -->
+              <button
+                class="btn-icon btn-del ${s.status === 'occupied' ? 'disabled' : ''}"
+                title="${s.status === 'occupied' ? 'Kursi sudah di-assign ke tiket' : 'Hapus kursi'}"
+                onclick="${s.status === 'occupied' ? 'showAssignedError()' : 'openDelete(' + s.id + ')'}"
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 4h10M6 4V3h4v1M5 4v9h6V4H5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+          `}
+        </tr>
+      `).join('');
+    }
+
+    updateStats();
+  }
+
+  // ============================================================
+  // UPDATE STATS CARDS
+  // ============================================================
+  function updateStats() {
+    document.getElementById('stat-total').textContent = seats.length;
+    document.getElementById('stat-avail').textContent = seats.filter(s => s.status === 'available').length;
+    document.getElementById('stat-occ').textContent   = seats.filter(s => s.status === 'occupied').length;
+  }
+
+  // ============================================================
+  // CREATE
+  // ============================================================
+  function openCreate() {
+    if (isReadOnly) return;
+    document.getElementById('c-section').value = '';
+    document.getElementById('c-row').value     = '';
+    document.getElementById('c-num').value     = '';
+    document.getElementById('c-venue').selectedIndex = 0;
+    openModal('modal-create');
+  }
+
+  function createSeat() {
+    if (isReadOnly) return;
+    const section = document.getElementById('c-section').value.trim();
+    const row     = document.getElementById('c-row').value.trim();
+    const num     = document.getElementById('c-num').value.trim();
+    const venue   = document.getElementById('c-venue').value;
+
+    if (!section || !row || !num) {
+      showToast('Semua field wajib diisi.', true);
+      return;
+    }
+
+    // Cek duplikat
+    const duplicate = seats.find(s =>
+      s.venue === venue && s.section === section && s.row === row && s.num === num
+    );
+    if (duplicate) {
+      showToast('Kursi dengan kombinasi yang sama sudah ada.', true);
+      return;
+    }
+
+    seats.push({ id: nextId++, section, row, num, venue, status: 'available' });
+    closeModal('modal-create');
+    renderTable();
+    showToast('Kursi berhasil ditambahkan.');
+  }
+
+  // ============================================================
+  // EDIT / UPDATE
+  // ============================================================
+  function openEdit(id) {
+    if (isReadOnly) return;
+    const seat = seats.find(s => s.id === id);
+    if (!seat) return;
+    editingId = id;
+
+    document.getElementById('e-section').value = seat.section;
+    document.getElementById('e-row').value     = seat.row;
+    document.getElementById('e-num').value     = seat.num;
+    document.getElementById('e-venue').value   = seat.venue;
+
+    openModal('modal-edit');
+  }
+
+  function saveSeat() {
+    if (isReadOnly) return;
+    const section = document.getElementById('e-section').value.trim();
+    const row     = document.getElementById('e-row').value.trim();
+    const num     = document.getElementById('e-num').value.trim();
+    const venue   = document.getElementById('e-venue').value;
+
+    if (!section || !row || !num) {
+      showToast('Semua field wajib diisi.', true);
+      return;
+    }
+
+    const seat = seats.find(s => s.id === editingId);
+    if (seat) {
+      seat.section = section;
+      seat.row     = row;
+      seat.num     = num;
+      seat.venue   = venue;
+    }
+
+    closeModal('modal-edit');
+    renderTable();
+    showToast('Perubahan berhasil disimpan.');
+
+  }
+
+  // ============================================================
+  // DELETE
+  // ============================================================
+  function openDelete(id) {
+    if (isReadOnly) return;
+    deletingId = id;
+    openModal('modal-delete');
+  }
+
+  function confirmDelete() {
+    if (isReadOnly) return;
+    seats = seats.filter(s => s.id !== deletingId);
+    closeModal('modal-delete');
+    renderTable();
+    showToast('Kursi berhasil dihapus.');
+
+  }
+
+  function showAssignedError() {
+    showToast('Kursi ini sudah di-assign ke tiket dan tidak dapat dihapus. Hapus atau ubah tiket terlebih dahulu.', true);
+  }
+
+  // ============================================================
+  // MODAL HELPERS
+  // ============================================================
+  function openModal(id)  { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  // Tutup modal kalau klik di luar area modal
+  document.querySelectorAll('.overlay').forEach(overlay => {
+    overlay.addEventListener('click', function (e) {
+      if (e.target === this) closeModal(this.id);
+    });
+  });
+
+  // ============================================================
+  // TOAST NOTIFICATION
+  // ============================================================
+  let toastTimer = null;
+  function showToast(msg, isError = false) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.toggle('toast-error', isError);
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
+  // ============================================================
+  // UTILS
+  // ============================================================
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function badgeHtml(status) {
+    if (status === 'available') {
+      return '<span class="badge badge-available">&#9679; TERSEDIA</span>';
+    }
+    return '<span class="badge badge-occupied">&#9679; TERISI</span>';
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  renderTable();
+  if (isReadOnly) {
+    const createModal = document.getElementById('modal-create');
+    const editModal = document.getElementById('modal-edit');
+    const deleteModal = document.getElementById('modal-delete');
+    if (createModal) createModal.remove();
+    if (editModal) editModal.remove();
+    if (deleteModal) deleteModal.remove();
+  }
+</script>
+
+{% endblock %}

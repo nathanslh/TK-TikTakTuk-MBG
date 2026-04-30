@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil Pelanggan - TikTakTuk{% endblock %}
+
+{% block content %}
+<main class="profile-wrap">
+  <div class="profile-layout profile-layout-customer">
+    <aside class="profile-sidebar profile-sidebar-customer">
+      <div class="profile-sidebar-head">
+        <div class="profile-avatar profile-avatar-customer" aria-hidden="true">B</div>
+        <div>
+          <p class="profile-kicker">Akun Pelanggan</p>
+          <h1 class="profile-title profile-title-sidebar">Profil Saya</h1>
+          <p class="profile-subtitle profile-subtitle-sidebar">Kelola data pribadi dan preferensi akun Anda.</p>
+        </div>
+      </div>
+
+      <div class="profile-summary-card">
+        <div class="profile-summary-row">
+          <span>Username</span>
+          <strong>@customer1</strong>
+        </div>
+        <div class="profile-summary-row">
+          <span>Telepon</span>
+          <strong>+62812345678</strong>
+        </div>
+      </div>
+
+      <div class="profile-action-stack">
+        <button type="button" class="profile-btn profile-btn-secondary" data-open-password-modal data-password-title="Ubah Password" data-password-copy="Perbarui password untuk menjaga keamanan akun Anda.">Ubah Password</button>
+        <button type="button" class="profile-btn profile-btn-primary" data-start-edit>Edit Profil</button>
+      </div>
+    </aside>
+
+    <section class="profile-card profile-panel" id="customer-profile-card">
+      <header class="profile-card-head profile-panel-head">
+        <div>
+          <p class="profile-panel-eyebrow">Informasi Profil</p>
+          <p class="profile-panel-copy">Saat tombol Edit Profil ditekan, kolom bisa langsung diubah di tempat tanpa berpindah layar.</p>
+        </div>
+        <span class="profile-role-badge profile-role-customer">Pelanggan</span>
+      </header>
+
+      <form action="#" method="post" class="profile-grid-form" data-inline-profile-form>
+        {% csrf_token %}
+        <div class="profile-field">
+          <label for="customer-full-name">Nama Lengkap</label>
+          <input id="customer-full-name" name="full_name" type="text" value="Budi Santoso" data-editable-field disabled>
+        </div>
+
+        <div class="profile-field">
+          <label for="customer-phone">Nomor Telepon</label>
+          <input id="customer-phone" name="phone_number" type="tel" value="+62812345678" data-editable-field disabled>
+        </div>
+
+        <div class="profile-field">
+          <label for="customer-email">Email</label>
+          <input id="customer-email" name="email" type="email" value="budi.customer@example.com" data-editable-field disabled>
+        </div>
+
+        <div class="profile-field">
+          <label for="customer-city">Kota Domisili</label>
+          <input id="customer-city" name="city" type="text" value="Bandung" data-editable-field disabled>
+        </div>
+
+        <div class="profile-field profile-field-full">
+          <label for="customer-address">Alamat</label>
+          <textarea id="customer-address" name="address" rows="3" data-editable-field disabled>Jl. Anggrek No. 21, Coblong</textarea>
+        </div>
+
+        <div class="profile-inline-actions" data-inline-actions hidden>
+          <button type="button" class="profile-btn profile-btn-ghost" data-cancel-edit>Batal</button>
+          <button type="submit" class="profile-btn profile-btn-primary">Simpan Perubahan</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</main>
+
+<script>
+  (function () {
+    const profileCard = document.getElementById('customer-profile-card');
+    if (!profileCard) {
+      return;
+    }
+
+    const startEditButton = document.querySelector('[data-start-edit]');
+    const form = profileCard.querySelector('[data-inline-profile-form]');
+    const editableFields = form.querySelectorAll('[data-editable-field]');
+    const actions = form.querySelector('[data-inline-actions]');
+    const cancelEditButton = form.querySelector('[data-cancel-edit]');
+
+    const setEditState = function (isEditing) {
+      editableFields.forEach(function (field) {
+        if (isEditing) {
+          field.dataset.initialValue = field.value;
+          field.removeAttribute('disabled');
+        } else {
+          field.setAttribute('disabled', 'disabled');
+        }
+      });
+
+      actions.hidden = !isEditing;
+      startEditButton.hidden = isEditing;
+      profileCard.classList.toggle('profile-editing', isEditing);
+
+      if (isEditing && editableFields.length > 0) {
+        editableFields[0].focus();
+      }
+    };
+
+    startEditButton.addEventListener('click', function () {
+      setEditState(true);
+    });
+
+    cancelEditButton.addEventListener('click', function () {
+      editableFields.forEach(function (field) {
+        field.value = field.dataset.initialValue || field.value;
+      });
+      setEditState(false);
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      setEditState(false);
+    });
+  })();
+</script>
+{% endblock %}

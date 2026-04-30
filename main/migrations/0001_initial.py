@@ -77,8 +77,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('role', models.CharField(blank=True, max_length=100, null=True)),
-                ('artist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.artist')),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.event')),
+                ('artist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.artist')),
+                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.event')),
             ],
             options={
                 'unique_together': {('event', 'artist')},
@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='artist',
             name='events',
-            field=models.ManyToManyField(through='accounts.EventArtist', to='accounts.event'),
+            field=models.ManyToManyField(through='main.EventArtist', to='main.event'),
         ),
         migrations.CreateModel(
             name='Order',
@@ -96,13 +96,13 @@ class Migration(migrations.Migration):
                 ('order_date', models.DateTimeField()),
                 ('payment_status', models.CharField(max_length=20)),
                 ('total_amount', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('customer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.customer')),
+                ('customer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.customer')),
             ],
         ),
         migrations.AddField(
             model_name='event',
             name='organizer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.organizer'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.organizer'),
         ),
         migrations.CreateModel(
             name='Promotion',
@@ -114,7 +114,7 @@ class Migration(migrations.Migration):
                 ('start_date', models.DateField()),
                 ('end_date', models.DateField()),
                 ('usage_limit', models.PositiveIntegerField()),
-                ('orders', models.ManyToManyField(related_name='promotions', to='accounts.order')),
+                ('orders', models.ManyToManyField(related_name='promotions', to='main.order')),
             ],
         ),
         migrations.CreateModel(
@@ -124,7 +124,7 @@ class Migration(migrations.Migration):
                 ('category_name', models.CharField(max_length=50)),
                 ('quota', models.PositiveIntegerField()),
                 ('price', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.event')),
+                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.event')),
             ],
         ),
         migrations.CreateModel(
@@ -132,9 +132,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('ticket_id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('ticket_code', models.CharField(max_length=100, unique=True)),
-                ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.order')),
-                ('seats', models.ManyToManyField(related_name='tickets', to='accounts.seat')),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.ticketcategory')),
+                ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.order')),
+                ('seats', models.ManyToManyField(related_name='tickets', to='main.seat')),
+                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.ticketcategory')),
             ],
         ),
         migrations.CreateModel(
@@ -143,27 +143,27 @@ class Migration(migrations.Migration):
                 ('user_id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('username', models.CharField(max_length=100, unique=True)),
                 ('password', models.CharField(max_length=255)),
-                ('roles', models.ManyToManyField(related_name='users', to='accounts.role')),
+                ('roles', models.ManyToManyField(related_name='users', to='main.role')),
             ],
         ),
         migrations.AddField(
             model_name='organizer',
             name='user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='accounts.useraccount'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='main.useraccount'),
         ),
         migrations.AddField(
             model_name='customer',
             name='user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='accounts.useraccount'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='main.useraccount'),
         ),
         migrations.AddField(
             model_name='seat',
             name='venue',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.venue'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.venue'),
         ),
         migrations.AddField(
             model_name='event',
             name='venue',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.venue'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.venue'),
         ),
     ]
