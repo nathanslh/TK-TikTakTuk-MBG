@@ -1,0 +1,374 @@
+<%- include('partials/header', { title: 'Daftar Order - TikTakTuk' }) %>
+
+<% 
+  const isAdmin = user.role === 'ADMIN';
+  const isOrganizer = user.role === 'ORGANIZER';
+  const isCustomer = user.role === 'CUSTOMER';
+  
+  const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+  const formatTanggal = (dateString) => {
+    const d = new Date(dateString);
+    return d.getFullYear() + '-' + 
+      String(d.getMonth()+1).padStart(2,'0') + '-' + 
+      String(d.getDate()).padStart(2,'0') + ' ' + 
+      String(d.getHours()).padStart(2,'0') + ':' + 
+      String(d.getMinutes()).padStart(2,'0');
+  };
+%>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style="min-height: calc(100vh - 120px);">
+    <!-- Page Header -->
+    <div class="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-[#5c4a3d] tracking-tight mb-1">Daftar Order</h1>
+            <p class="text-stone-500 text-sm font-medium">
+                <% if (isAdmin) { %>Kelola dan pantau seluruh transaksi penjualan tiket TikTakTuk.
+                <% } else if (isOrganizer) { %>Kelola pesanan dari event-event yang Anda selenggarakan.
+                <% } else { %>Riwayat pemesanan dan pembelian tiket Anda.<% } %>
+            </p>
+        </div>
+    </div>
+
+    <!-- Summary Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <!-- Total Orders Card -->
+        <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Total Order</span>
+                <div class="w-8 h-8 rounded-lg bg-[#faf9f5] flex items-center justify-center text-[#7f6c56]">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                </div>
+            </div>
+            <div class="text-3xl font-extrabold text-[#5c4a3d]"><%= summary.total %></div>
+            <p class="text-[10px] text-stone-500 mt-1">Order masuk di sistem</p>
+        </div>
+
+        <!-- Paid Card -->
+        <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Lunas</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+            <div class="text-3xl font-extrabold text-[#5c4a3d]"><%= summary.lunas %></div>
+            <p class="text-[10px] text-stone-500 mt-1">Pembayaran lunas</p>
+        </div>
+
+        <!-- Pending Card -->
+        <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Pending</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+            <div class="text-3xl font-extrabold text-[#5c4a3d]"><%= summary.pending %></div>
+            <p class="text-[10px] text-stone-500 mt-1">Menunggu pembayaran</p>
+        </div>
+
+        <!-- Revenue Card (Admin/Organizer only) -->
+        <% if (isAdmin || isOrganizer) { %>
+        <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Total Pendapatan</span>
+                <div class="w-8 h-8 rounded-lg bg-[#7f6c56]/10 flex items-center justify-center text-[#7f6c56]">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 14a2 2 0 110-4h1.414"/></svg>
+                </div>
+            </div>
+            <div class="text-2xl font-extrabold text-[#7f6c56] truncate"><%= formatter.format(summary.revenue) %></div>
+            <p class="text-[10px] text-stone-500 mt-1.5">Dari transaksi berstatus Lunas</p>
+        </div>
+        <% } else { %>
+        <!-- Empty Filler Card for Customer layout balance -->
+        <div class="bg-gradient-to-br from-[#7f6c56]/5 to-[#5c4a3d]/5 rounded-2xl border border-[#e8e4dc]/50 p-6 shadow-sm flex flex-col justify-center">
+            <p class="text-xs font-bold text-[#7f6c56] mb-1">Terima kasih telah memesan!</p>
+            <p class="text-[10px] text-stone-500 leading-relaxed">Nikmati pertunjukan musik terbaik dari artis favorit Anda hanya di platform TikTakTuk.</p>
+        </div>
+        <% } %>
+    </div>
+
+    <!-- Toolbar Filters -->
+    <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-4 shadow-sm mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <!-- Search bar -->
+        <div class="relative w-full sm:w-96">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+                <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <input type="text" id="search-input" placeholder="<%= isCustomer ? 'Cari order ID...' : 'Cari ID atau pelanggan...' %>" class="pl-10.5 w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all">
+        </div>
+
+        <!-- Filter Dropdown -->
+        <div class="w-full sm:w-auto flex justify-end">
+            <select id="status-filter" class="w-full sm:w-auto px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm text-stone-600 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] font-semibold cursor-pointer">
+                <option value="all">Semua Status</option>
+                <option value="lunas">Lunas</option>
+                <option value="pending">Pending</option>
+                <option value="dibatalkan">Dibatalkan</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[800px]" id="order-table">
+                <thead>
+                    <tr class="bg-[#faf9f5] text-xs font-bold text-stone-500 uppercase tracking-wider border-b border-[#e8e4dc]/70">
+                        <th class="px-6 py-4.5">ORDER ID</th>
+                        <% if (!isCustomer) { %><th class="px-6 py-4.5">PELANGGAN</th><% } %>
+                        <th class="px-6 py-4.5">TANGGAL</th>
+                        <th class="px-6 py-4.5">STATUS</th>
+                        <th class="px-6 py-4.5 text-right">TOTAL</th>
+                        <% if (isAdmin) { %><th class="px-6 py-4.5 text-center">AKSI</th><% } %>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#e8e4dc]/50 text-sm text-stone-600">
+                    <% if (orders && orders.length > 0) { %>
+                        <% orders.forEach(o => { 
+                            let s = o.payment_status.toLowerCase();
+                            let badgeClass = "";
+                            let statusText = o.payment_status.toUpperCase();
+                            let icon = "";
+                            
+                            if (s === 'paid' || s === 'lunas') {
+                                statusText = "LUNAS";
+                                badgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-100";
+                                icon = `<svg class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>`;
+                            } else if (s === 'pending') {
+                                statusText = "PENDING";
+                                badgeClass = "bg-amber-50 text-amber-700 border border-amber-100";
+                                icon = `<svg class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+                            } else {
+                                statusText = "DIBATALKAN";
+                                badgeClass = "bg-red-50 text-red-700 border border-red-100";
+                                icon = `<svg class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+                            }
+                        %>
+                        <tr class="order-row transition-colors hover:bg-[#faf9f5]/30" data-id="<%= o.order_id %>" data-status="<%= statusText.toLowerCase() %>" data-customer="<%= (o.customer_name||'').toLowerCase() %>">
+                            <td class="px-6 py-5 font-mono text-stone-400 text-xs font-semibold select-all">
+                                <%= o.order_id.substring(0,8).toUpperCase() %>...
+                            </td>
+                            <% if (!isCustomer) { %>
+                            <td class="px-6 py-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-[#7f6c56]/10 text-[#7f6c56] font-bold flex items-center justify-center text-xs shadow-inner">
+                                        <%= (o.customer_name||'U').charAt(0).toUpperCase() %>
+                                    </div>
+                                    <span class="font-bold text-stone-800"><%= o.customer_name || 'User' %></span>
+                                </div>
+                            </td>
+                            <% } %>
+                            <td class="px-6 py-5 text-stone-500 font-medium">
+                                <%= formatTanggal(o.order_date) %>
+                            </td>
+                            <td class="px-6 py-5">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide <%- badgeClass %> shadow-sm">
+                                    <%- icon %><%= statusText %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-5 text-right font-extrabold text-stone-800">
+                                <%= formatter.format(o.total_amount) %>
+                            </td>
+                            <% if (isAdmin) { %>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-3 text-stone-400">
+                                    <button onclick="openEditModal('<%= o.order_id %>', '<%= statusText %>')" class="hover:text-[#7f6c56] transition-colors p-1 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200" title="Update status pembayaran">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                    </button>
+                                    <button onclick="openDeleteModal('<%= o.order_id %>')" class="hover:text-red-600 transition-colors p-1 bg-red-50/50 hover:bg-red-50 rounded-lg border border-red-100 hover:border-red-200" title="Hapus order">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+                            </td>
+                            <% } %>
+                        </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="<%= isAdmin ? 6 : isCustomer ? 4 : 5 %>" class="px-6 py-16 text-center text-stone-400 font-medium">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <svg class="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <span>Belum ada data order yang terdaftar.</span>
+                                </div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<% if (isAdmin) { %>
+<!-- Update Modal -->
+<div id="modal-update" class="fixed inset-0 z-50 hidden bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-[#e8e4dc]">
+        <div class="px-6 py-4.5 border-b border-[#e8e4dc]/70 flex justify-between items-center bg-[#faf9f5]">
+            <h3 class="font-bold text-[#5c4a3d] text-base">Update Status Order</h3>
+            <button onclick="closeModal('modal-update')" class="text-stone-400 hover:text-stone-600 transition-colors bg-white hover:bg-stone-50 border border-stone-200 w-7 h-7 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <div class="p-6">
+            <div class="mb-4">
+                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">ORDER ID</span>
+                <p id="upd-order-id" class="text-sm font-mono font-bold text-[#5c4a3d] mt-0.5 select-all"></p>
+            </div>
+            <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">PAYMENT STATUS</label>
+            <select id="upd-status" class="w-full px-4 py-3 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm text-stone-700 font-semibold focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all mb-6 cursor-pointer">
+                <option value="PAID">Lunas</option>
+                <option value="PENDING">Pending</option>
+                <option value="FAILED">Dibatalkan</option>
+            </select>
+            <div class="flex justify-end gap-3 pt-4 border-t border-[#e8e4dc]/70">
+                <button onclick="closeModal('modal-update')" class="px-5 py-2.5 rounded-xl border border-[#e8e4dc] bg-white text-stone-600 font-bold hover:bg-[#faf9f5] text-xs transition-all">Batal</button>
+                <button onclick="submitUpdate()" class="px-5 py-2.5 rounded-xl bg-[#7f6c56] hover:bg-[#6b5a47] text-white font-bold text-xs shadow-sm transition-all">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="modal-delete" class="fixed inset-0 z-50 hidden bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-red-100">
+        <div class="px-6 py-4.5 border-b border-red-100 flex justify-between items-center bg-red-50/30">
+            <h3 class="font-bold text-red-600 text-base">Hapus Order</h3>
+            <button onclick="closeModal('modal-delete')" class="text-stone-400 hover:text-stone-600 transition-colors bg-white hover:bg-stone-50 border border-stone-200 w-7 h-7 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <div class="p-6">
+            <p class="text-stone-600 text-sm leading-relaxed mb-6 font-medium">
+                Apakah Anda yakin ingin menghapus catatan order <strong id="del-order-id" class="text-stone-900 select-all font-mono"></strong>? Tindakan ini tidak dapat dibatalkan dan akan menghapus semua tiket serta relasi terkait.
+            </p>
+            <div class="flex justify-end gap-3 pt-4 border-t border-[#e8e4dc]/70">
+                <button onclick="closeModal('modal-delete')" class="px-5 py-2.5 rounded-xl border border-[#e8e4dc] bg-white text-stone-600 font-bold hover:bg-[#faf9f5] text-xs transition-all">Batal</button>
+                <button onclick="submitDelete()" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-all">Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentOrderId = '';
+
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    
+    function openEditModal(id, status) {
+        currentOrderId = id;
+        document.getElementById('upd-order-id').textContent = id.toUpperCase();
+        
+        let select = document.getElementById('upd-status');
+        if(status === 'LUNAS') select.value = 'PAID';
+        else if(status === 'PENDING') select.value = 'PENDING';
+        else select.value = 'FAILED';
+        
+        openModal('modal-update');
+    }
+
+    function openDeleteModal(id) {
+        currentOrderId = id;
+        document.getElementById('del-order-id').textContent = id.toUpperCase();
+        openModal('modal-delete');
+    }
+
+    async function submitUpdate() {
+        const val = document.getElementById('upd-status').value;
+        try {
+            const res = await fetch(`/api/orders/${currentOrderId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payment_status: val })
+            });
+            const data = await res.json();
+            if(data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Gagal update status');
+            }
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function submitDelete() {
+        try {
+            const res = await fetch(`/api/orders/${currentOrderId}`, { method: 'DELETE' });
+            const data = await res.json();
+            if(data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Gagal menghapus order');
+            }
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    // Search and Filter
+    {
+        const searchInput = document.getElementById('search-input');
+        const statusFilter = document.getElementById('status-filter');
+        const rows = document.querySelectorAll('.order-row');
+
+        function filterTable() {
+            const query = searchInput.value.toLowerCase().trim();
+            const status = statusFilter.value.toLowerCase();
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id').toLowerCase();
+                const cust = row.getAttribute('data-customer');
+                const rowStatus = row.getAttribute('data-status');
+
+                const matchSearch = id.includes(query) || cust.includes(query);
+                const matchStatus = status === 'all' || rowStatus === status;
+
+                if(matchSearch && matchStatus) row.style.display = '';
+                else row.style.display = 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+    }
+
+    // ESC Close Modals
+    document.addEventListener('keydown', function(e) {
+        if(e.key === 'Escape') {
+            closeModal('modal-update');
+            closeModal('modal-delete');
+        }
+    });
+</script>
+<% } else { %>
+<script>
+    // Search and Filter for non-admin
+    {
+        const searchInput = document.getElementById('search-input');
+        const statusFilter = document.getElementById('status-filter');
+        const rows = document.querySelectorAll('.order-row');
+
+        function filterTable() {
+            const query = searchInput.value.toLowerCase().trim();
+            const status = statusFilter.value.toLowerCase();
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id').toLowerCase();
+                const cust = row.getAttribute('data-customer') || '';
+                const rowStatus = row.getAttribute('data-status');
+
+                const matchSearch = id.includes(query) || cust.includes(query);
+                const matchStatus = status === 'all' || rowStatus === status;
+
+                if(matchSearch && matchStatus) row.style.display = '';
+                else row.style.display = 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+    }
+</script>
+<% } %>
+
+<%- include('partials/footer') %>

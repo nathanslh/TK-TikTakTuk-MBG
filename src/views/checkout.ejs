@@ -1,0 +1,419 @@
+<%- include('partials/header', { title: 'Checkout Tiket - TikTakTuk' }) %>
+
+<% 
+  const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+  const formatTanggal = (dateString) => {
+    const d = new Date(dateString);
+    return d.getFullYear() + '-' + 
+      String(d.getMonth()+1).padStart(2,'0') + '-' + 
+      String(d.getDate()).padStart(2,'0') + ' ' + 
+      String(d.getHours()).padStart(2,'0') + ':' + 
+      String(d.getMinutes()).padStart(2,'0');
+  };
+%>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style="background-color: #faf9f5; min-height: calc(100vh - 64px);">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+    <h1 class="text-3xl font-bold text-[#5c4a3d]">Checkout Tiket</h1>
+    <div class="text-sm font-medium mt-4 sm:mt-0">
+      <span class="text-[#7f6c56]">Pilih</span>
+      <span class="text-stone-300 mx-2">&gt;</span>
+      <span class="text-[#7f6c56] font-bold">Bayar</span>
+      <span class="text-stone-300 mx-2">&gt;</span>
+      <span class="text-stone-400">Selesai</span>
+    </div>
+  </div>
+
+  <form id="checkout-form" class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative">
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- Event Info -->
+      <div class="bg-white rounded-xl border border-[#e8e4dc] p-6 flex items-start gap-5 shadow-sm">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-[#7f6c56] rounded-xl flex items-center justify-center text-white flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-[#5c4a3d]"><%= event.event_title %></h2>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <% if(event.artists) { 
+                event.artists.split(', ').forEach(a => { %>
+                  <span class="px-2.5 py-1 bg-[#f5f3ef] border border-[#e8e4dc] text-xs font-semibold text-stone-600 rounded-md"><%= a %></span>
+            <%  }); 
+               } %>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5 text-sm text-stone-500 mt-4">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span><%= formatTanggal(event.event_datetime) %></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span><%= event.venue_name || 'Lokasi Belum Ditentukan' %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticket Categories -->
+      <div class="bg-white rounded-xl border border-[#e8e4dc] p-6 shadow-sm">
+        <h3 class="font-bold text-lg text-[#5c4a3d] mb-1">Pilih Kategori Tiket</h3>
+        <p class="text-sm text-stone-500 mb-5">Setiap kategori memiliki fasilitas dan akses yang berbeda</p>
+        <div class="space-y-4">
+          <% categories.forEach((cat, idx) => { 
+             const sisa = cat.sisa !== undefined && cat.sisa !== null ? Number(cat.sisa) : Number(cat.quota);
+             const disabled = sisa <= 0;
+          %>
+          <label class="flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-colors relative 
+            <%= disabled ? 'opacity-50 cursor-not-allowed border-stone-200 bg-stone-50' : 'border-[#e8e4dc] hover:border-[#7f6c56] cat-label' %>">
+            <div>
+              <div class="font-bold text-stone-800 text-base"><%= cat.category_name %></div>
+              <div class="text-xs text-stone-500 mt-1">Sisa Kuota: <%= sisa %> tiket</div>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="font-bold text-[#5c4a3d] text-lg"><%= formatter.format(cat.price) %></span>
+              <% if (!disabled) { %>
+                <div class="cat-check w-6 h-6 rounded-full flex items-center justify-center text-white hidden bg-[#7f6c56]">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                </div>
+              <% } else { %>
+                <span class="text-xs font-bold text-red-500 uppercase">Habis</span>
+              <% } %>
+            </div>
+            <input type="radio" name="ticket_category" value="<%= cat.category_id %>" data-price="<%= cat.price %>" data-name="<%= cat.category_name %>" data-max="<%= sisa > 10 ? 10 : sisa %>" <%= disabled ? 'disabled' : '' %> class="hidden" onchange="updateSelection(this)">
+          </label>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Quantity -->
+        <div class="bg-white rounded-xl border border-[#e8e4dc] p-6 shadow-sm flex flex-col justify-center">
+          <h3 class="font-bold text-lg text-[#5c4a3d] mb-6">Jumlah Tiket</h3>
+          <div class="flex items-center justify-center gap-6">
+            <button type="button" onclick="changeQty(-1)" class="w-12 h-12 rounded-full border border-[#e8e4dc] flex items-center justify-center text-xl text-stone-500 hover:bg-[#f5f3ef] hover:text-stone-800 transition-colors">-</button>
+            <input type="number" id="inp-qty" name="quantity" value="1" min="1" max="10" readonly class="w-16 text-center text-3xl font-bold text-stone-800 bg-transparent border-none focus:ring-0 p-0">
+            <button type="button" onclick="changeQty(1)" class="w-12 h-12 rounded-full border border-[#e8e4dc] flex items-center justify-center text-xl text-stone-500 hover:bg-[#f5f3ef] hover:text-stone-800 transition-colors">+</button>
+          </div>
+          <p class="text-center text-xs text-stone-400 mt-6" id="max-qty-text">Max 10 tiket per transaksi</p>
+        </div>
+
+        <!-- Promo -->
+        <div class="bg-white rounded-xl border border-[#e8e4dc] p-6 shadow-sm flex flex-col justify-center">
+          <h3 class="font-bold text-lg text-[#5c4a3d] mb-4">Kode Promo</h3>
+          <div class="relative flex items-center w-full">
+            <input type="text" id="inp-promo" placeholder="CONTOH: MERDEKA17" class="w-full bg-white border border-[#e8e4dc] text-stone-800 rounded-lg pl-4 pr-28 py-3 uppercase focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-colors font-medium">
+            <button type="button" onclick="applyPromo()" class="absolute right-1.5 top-1.5 bottom-1.5 bg-[#7f6c56] hover:bg-[#6b5a47] text-white px-5 rounded-md font-semibold text-sm transition-colors shadow-sm hover:shadow active:scale-95">Terapkan</button>
+          </div>
+          <p id="promo-msg" class="text-sm mt-2 font-medium hidden"></p>
+        </div>
+      </div>
+
+      <!-- Seats (Full Width) -->
+      <div class="bg-white rounded-xl border border-[#e8e4dc] p-6 shadow-sm">
+        <h3 class="font-bold text-lg text-[#5c4a3d] mb-1">Pilih Kursi</h3>
+        <p class="text-xs text-stone-500 mb-6">Jumlah kursi yang Anda pilih harus sama dengan jumlah tiket (<span class="font-bold text-[#7f6c56]" id="selected-seat-count">0</span>/<span class="font-bold text-[#7f6c56]" id="required-seat-count">1</span>)</p>
+        
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3 p-5 bg-[#faf9f5] rounded-2xl border border-[#e8e4dc]">
+          <% seats.forEach(s => { 
+              const seatName = `${s.section}-${s.row_number}${s.seat_number}`;
+              const isOccupied = s.is_occupied === true || s.is_occupied === 'true';
+          %>
+              <button type="button" 
+                      class="seat-btn flex flex-col items-center justify-center p-3 rounded-xl transition-all relative border 
+                      <%= isOccupied ? 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed opacity-50' : 'bg-white text-stone-700 border-stone-300 hover:border-[#7f6c56] hover:bg-[#faf9f7] hover:shadow-md' %>" 
+                      data-id="<%= s.seat_id %>"
+                      data-name="<%= seatName %>"
+                      <%= isOccupied ? 'disabled' : '' %>>
+                  <span class="text-[0.65rem] opacity-70 uppercase font-semibold text-stone-500 mb-0.5"><%= s.section %></span>
+                  <span class="text-base font-black"><%= s.row_number %><%= s.seat_number %></span>
+              </button>
+          <% }) %>
+        </div>
+        
+        <div class="flex flex-wrap gap-4 mt-6 text-xs font-semibold justify-center">
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-md border border-stone-300 bg-white inline-block"></span>
+            <span class="text-stone-600">Tersedia</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-md bg-[#7f6c56] border border-[#7f6c56] inline-block"></span>
+            <span class="text-[#7f6c56]">Dipilih</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-md bg-stone-100 border border-stone-200 opacity-50 inline-block"></span>
+            <span class="text-stone-400">Terisi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-xl border border-[#e8e4dc] p-6 shadow-sm sticky top-24">
+        <h3 class="font-bold text-lg text-[#5c4a3d] mb-6">Ringkasan Pesanan</h3>
+        <div class="space-y-4 border-b border-[#e8e4dc] pb-6 mb-6">
+          <div class="flex justify-between items-center text-sm font-medium text-stone-600">
+              <span id="sum-cat">Pilih Kategori × 1</span>
+              <span id="sum-price" class="text-stone-800">Rp 0</span>
+          </div>
+          <div id="sum-discount-row" class="flex justify-between items-center text-sm font-medium text-emerald-600 hidden">
+              <span>Diskon Promo</span>
+              <span id="sum-discount">-Rp 0</span>
+          </div>
+          <div class="flex justify-between items-center text-sm font-medium text-stone-600">
+              <span>Biaya Layanan</span><span class="text-stone-800">Rp 0</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-end mb-8">
+            <span class="font-bold text-stone-800 text-lg">Total</span>
+            <span id="sum-total" class="text-2xl font-bold text-[#5c4a3d]">Rp 0</span>
+        </div>
+
+        <button type="button" onclick="submitCheckout()" id="btn-submit" class="w-full bg-[#7f6c56] hover:bg-[#6b5a47] text-white py-4 rounded-xl font-bold text-lg transition-colors shadow-sm mb-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Bayar Sekarang</button>
+        <p class="text-center text-xs text-stone-400">Konfirmasi tiket akan dikirim ke akun Anda.</p>
+      </div>
+    </div>
+  </form>
+</main>
+
+<script>
+    const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+    
+    let state = {
+        categoryId: null,
+        categoryName: '',
+        price: 0,
+        maxQty: 10,
+        qty: 1,
+        discountVal: 0,
+        discountType: '',
+        promoCode: ''
+    };
+
+    let selectedSeats = [];
+
+    function resetSeats() {
+        selectedSeats = [];
+        document.querySelectorAll('.seat-btn').forEach(btn => {
+            if (!btn.disabled) {
+                btn.className = "seat-btn flex flex-col items-center justify-center p-2 rounded-xl transition-all relative border bg-white text-stone-700 border-stone-300 hover:border-[#7f6c56] hover:bg-[#faf9f7] hover:shadow-sm";
+            }
+        });
+        document.getElementById('selected-seat-count').textContent = '0';
+    }
+
+    function updateSelection(radio) {
+        // Reset styles
+        document.querySelectorAll('.cat-label').forEach(l => {
+            l.classList.remove('border-2', 'border-[#7f6c56]', 'bg-[#faf9f7]');
+            l.querySelector('.cat-check')?.classList.add('hidden');
+        });
+
+        // Add active style
+        const label = radio.closest('label');
+        label.classList.add('border-2', 'border-[#7f6c56]', 'bg-[#faf9f7]');
+        label.querySelector('.cat-check')?.classList.remove('hidden');
+
+        // Update state
+        state.categoryId = radio.value;
+        state.price = Number(radio.dataset.price);
+        state.categoryName = radio.dataset.name;
+        state.maxQty = Number(radio.dataset.max);
+        
+        if (state.qty > state.maxQty) {
+            state.qty = state.maxQty;
+            document.getElementById('inp-qty').value = state.qty;
+        }
+        
+        document.getElementById('max-qty-text').textContent = `Max ${state.maxQty} tiket per transaksi`;
+        document.getElementById('required-seat-count').textContent = state.qty;
+        
+        resetSeats();
+        recalc();
+    }
+
+    function changeQty(delta) {
+        if (!state.categoryId) {
+            showErrorToast('Pilih kategori tiket terlebih dahulu.');
+            return;
+        }
+        
+        let newQty = state.qty + delta;
+        if (newQty >= 1 && newQty <= state.maxQty && newQty <= 10) {
+            state.qty = newQty;
+            document.getElementById('inp-qty').value = state.qty;
+            document.getElementById('required-seat-count').textContent = state.qty;
+            resetSeats();
+            recalc();
+        }
+    }
+
+    async function applyPromo() {
+        if (!state.categoryId) {
+            showErrorToast('Pilih kategori tiket terlebih dahulu.');
+            return;
+        }
+
+        const code = document.getElementById('inp-promo').value.trim();
+        const msg = document.getElementById('promo-msg');
+        
+        if (!code) return;
+
+        try {
+            const res = await fetch('/api/checkout/validate-promo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                state.promoCode = code;
+                state.discountType = data.promo.discount_type;
+                state.discountVal = Number(data.promo.discount_value);
+                
+                msg.textContent = `Promo "${code}" berhasil digunakan!`;
+                msg.classList.remove('hidden', 'text-red-500');
+                msg.classList.add('text-emerald-500');
+                
+                recalc();
+            } else {
+                state.promoCode = '';
+                state.discountVal = 0;
+                
+                msg.textContent = data.message;
+                msg.classList.remove('hidden', 'text-emerald-500');
+                msg.classList.add('text-red-500');
+                
+                recalc();
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function recalc() {
+        if (!state.categoryId) return;
+
+        const subtotal = state.price * state.qty;
+        let discount = 0;
+
+        if (state.discountType === 'PERCENTAGE') {
+            discount = subtotal * (state.discountVal / 100);
+        } else if (state.discountType === 'FIXED_AMOUNT') {
+            discount = state.discountVal;
+        }
+
+        if (discount > subtotal) discount = subtotal; // Can't be negative
+
+        const total = subtotal - discount;
+
+        document.getElementById('sum-cat').textContent = `${state.categoryName} × ${state.qty}`;
+        document.getElementById('sum-price').textContent = formatter.format(subtotal);
+        
+        if (discount > 0) {
+            document.getElementById('sum-discount-row').classList.remove('hidden');
+            document.getElementById('sum-discount').textContent = `-${formatter.format(discount)}`;
+        } else {
+            document.getElementById('sum-discount-row').classList.add('hidden');
+        }
+
+        document.getElementById('sum-total').textContent = formatter.format(total);
+    }
+
+    // Seat selection
+    document.querySelectorAll('.seat-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!state.categoryId) {
+                showErrorToast('Pilih kategori tiket terlebih dahulu.');
+                return;
+            }
+
+            const seatId = this.getAttribute('data-id');
+            const index = selectedSeats.indexOf(seatId);
+
+            if (index > -1) {
+                // Already selected, unselect it
+                selectedSeats.splice(index, 1);
+                this.className = "seat-btn flex flex-col items-center justify-center p-2 rounded-xl transition-all relative border bg-white text-stone-700 border-stone-300 hover:border-[#7f6c56] hover:bg-[#faf9f7] hover:shadow-sm";
+            } else {
+                // Check if max selection reached
+                if (selectedSeats.length >= state.qty) {
+                    showErrorToast(`Anda hanya dapat memilih maksimal ${state.qty} kursi sesuai jumlah tiket yang dibeli.`);
+                    return;
+                }
+                
+                // Select it
+                selectedSeats.push(seatId);
+                this.className = "seat-btn flex flex-col items-center justify-center p-2 rounded-xl transition-all relative border bg-[#7f6c56] text-white border-[#7f6c56] shadow-sm";
+            }
+
+            document.getElementById('selected-seat-count').textContent = selectedSeats.length;
+        });
+    });
+
+    async function submitCheckout() {
+        if (!state.categoryId) {
+            showErrorToast('Pilih kategori tiket terlebih dahulu.');
+            return;
+        }
+
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+
+        const subtotal = state.price * state.qty;
+        let discount = 0;
+        if (state.discountType === 'PERCENTAGE') discount = subtotal * (state.discountVal / 100);
+        else if (state.discountType === 'FIXED_AMOUNT') discount = state.discountVal;
+        if (discount > subtotal) discount = subtotal;
+        
+        const total_amount = subtotal - discount;
+
+        // Seat Validation: If they choose some seats, they must choose exactly state.qty seats
+        if (selectedSeats.length > 0 && selectedSeats.length !== state.qty) {
+            showErrorToast(`Silakan pilih kursi sejumlah ${state.qty} kursi (saat ini terpilih ${selectedSeats.length}), atau kosongkan pilihan kursi.`);
+            btn.disabled = false;
+            btn.textContent = 'Bayar Sekarang';
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/checkout/process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    category_id: state.categoryId,
+                    quantity: state.qty,
+                    promo_code: state.promoCode,
+                    total_amount: total_amount,
+                    customer_id: '<%= user.id %>',
+                    selected_seats: selectedSeats
+                })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                showSuccessToast('Pesanan berhasil dibuat! Anda akan diarahkan ke Daftar Order.');
+                setTimeout(() => {
+                    window.location.href = '/orders?username=<%= encodeURIComponent(user.username) %>';
+                }, 1500);
+            } else {
+                showErrorToast(data.message);
+                btn.disabled = false;
+                btn.textContent = 'Bayar Sekarang';
+            }
+        } catch(e) {
+            showErrorToast('Error: ' + e.message);
+            btn.disabled = false;
+            btn.textContent = 'Bayar Sekarang';
+        }
+    }
+</script>
+
+<%- include('partials/footer') %>
