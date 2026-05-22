@@ -1,0 +1,478 @@
+<%- include('partials/header', { title: 'Manajemen Kursi', styles: ['/css/seats.css'] }) %>
+
+<style>
+  /* Ensure the disabled delete button remains clickable so it can trigger the toast error */
+  .btn-icon.disabled {
+    pointer-events: auto !important;
+  }
+</style>
+
+<div class="seat-page">
+  <div class="seat-shell">
+    <script>
+      window.SEATS_PAGE_ROLE = JSON.parse(decodeURIComponent(`<%- encodeURIComponent(JSON.stringify(typeof role !== 'undefined' ? role : 'admin')) %>`));
+    </script>
+
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+      <div>
+        <h1 style="font-size:clamp(1.6rem,3vw,2.2rem); font-weight:800; color:var(--ink); letter-spacing:-0.03em; line-height:1.2;">Manajemen Kursi</h1>
+        <p class="auth-muted" style="margin-top:0.3rem;">Kelola kursi dan denah tempat duduk venue</p>
+      </div>
+      <% if (!isReadOnly) { %>
+      <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm text-white" style="background:linear-gradient(145deg,var(--accent),#a87542); box-shadow:0 10px 20px rgba(131,88,42,.16); border:none; cursor:pointer;" id="btn-add-seat" onclick="openCreate()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Tambah Kursi
+      </button>
+      <% } %>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem;">
+      <article class="tickets-stat-card">
+        <span class="tickets-stat-label">Total Kursi</span>
+        <strong id="stat-total" class="tickets-stat-value">0</strong>
+      </article>
+      <article class="tickets-stat-card">
+        <span class="tickets-stat-label">Tersedia</span>
+        <strong id="stat-avail" class="tickets-stat-value">0</strong>
+      </article>
+      <article class="tickets-stat-card">
+        <span class="tickets-stat-label">Terisi</span>
+        <strong id="stat-occ" class="tickets-stat-value">0</strong>
+      </article>
+    </div>
+
+    <!-- Search & Filter -->
+    <div style="display:flex; gap:12px; margin-bottom:1.5rem; align-items:center;">
+      <div style="position:relative; flex:1; max-width:320px;">
+        <svg style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); width:16px; height:16px; color:#a0aec0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" id="search-input" placeholder="Cari section, baris, atau nomor..." oninput="renderTable()" style="width:100%; padding:0.75rem 1rem 0.75rem 2.5rem; border-radius:0.75rem; border:1px solid var(--border); font-size:0.9rem; outline:none; background:white; color:var(--ink);" />
+      </div>
+      <select id="venue-filter" onchange="renderTable()" style="padding:0.75rem 1rem; border-radius:0.75rem; border:1px solid var(--border); font-size:0.9rem; outline:none; background:white; color:var(--ink); font-weight:600; min-width:180px; cursor:pointer;">
+        <option value="">Semua Venue</option>
+        <% venues.forEach(v => { %>
+          <option value="<%= v.id %>"><%= v.name %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="seat-card" style="padding:0; overflow:hidden; border:1px solid var(--border); border-radius:1rem; box-shadow:0 4px 15px rgba(0,0,0,0.02);" id="seat-list">
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; text-align:left;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border); background:#F9FAFB;">
+              <th style="padding:1rem; font-weight:700; color:var(--muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em;">Section</th>
+              <th style="padding:1rem; font-weight:700; color:var(--muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em;">Baris</th>
+              <th style="padding:1rem; font-weight:700; color:var(--muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em;">No. Kursi</th>
+              <th style="padding:1rem; font-weight:700; color:var(--muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em;">Venue</th>
+              <th style="padding:1rem; font-weight:700; color:var(--muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em;">Status</th>
+              <% if (!isReadOnly) { %>
+              <th style="padding:1rem; font-weight:700; color:var(--muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; text-align:center;">Aksi</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH KURSI ===== -->
+<div class="overlay" id="modal-create">
+  <div class="modal">
+    <div class="modal-title">Tambah Kursi Baru</div>
+    <button class="modal-close" onclick="closeModal('modal-create')">&#215;</button>
+
+    <div class="field">
+      <label>Venue</label>
+      <select id="c-venue">
+        <% venues.forEach(v => { %>
+          <option value="<%= v.id %>"><%= v.name %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="field">
+      <label>Section</label>
+      <input type="text" id="c-section" placeholder="cth. WVIP" />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Baris</label>
+        <input type="text" id="c-row" placeholder="cth. A" />
+      </div>
+      <div class="field">
+        <label>No. Kursi</label>
+        <input type="text" id="c-num" placeholder="cth. 1" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-create')">Batal</button>
+      <button class="btn-save" onclick="createSeat()">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: EDIT KURSI ===== -->
+<div class="overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-title">Edit Kursi</div>
+    <button class="modal-close" onclick="closeModal('modal-edit')">&#215;</button>
+
+    <div class="field">
+      <label>Venue</label>
+      <select id="e-venue">
+        <% venues.forEach(v => { %>
+          <option value="<%= v.id %>"><%= v.name %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="field">
+      <label>Section</label>
+      <input type="text" id="e-section" />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Baris</label>
+        <input type="text" id="e-row" />
+      </div>
+      <div class="field">
+        <label>No. Kursi</label>
+        <input type="text" id="e-num" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit')">Batal</button>
+      <button class="btn-save" onclick="saveSeat()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: HAPUS KURSI ===== -->
+<div class="overlay" id="modal-delete">
+  <div class="modal del-modal">
+    <div class="modal-title">Hapus Kursi</div>
+    <button class="modal-close" onclick="closeModal('modal-delete')">&#215;</button>
+    <p>Apakah Anda yakin ingin menghapus kursi ini? Tindakan ini tidak dapat dibatalkan.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-delete')">Batal</button>
+      <button class="btn-hapus" onclick="confirmDelete()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notif -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const isReadOnly = `<%- isReadOnly %>` === 'true';
+
+  // DB-sourced seats array
+  let seats = JSON.parse(decodeURIComponent(`<%- encodeURIComponent(JSON.stringify(seats)) %>`));
+
+  let editingId = null;
+  let deletingId = null;
+
+  // ============================================================
+  // RENDER TABLE
+  // ============================================================
+  function renderTable() {
+    const q     = document.getElementById('search-input').value.toLowerCase();
+    const venueFilter = document.getElementById('venue-filter').value;
+    const tbody = document.getElementById('table-body');
+
+    const filtered = seats.filter(s => {
+      const matchesSearch = s.section.toLowerCase().includes(q) ||
+        s.row.toLowerCase().includes(q) ||
+        s.num.toLowerCase().includes(q);
+      const matchesVenue = !venueFilter || String(s.venue_id) === String(venueFilter);
+      return matchesSearch && matchesVenue;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="' + (isReadOnly ? 5 : 6) + '">Tidak ada kursi ditemukan.</td></tr>';
+    } else {
+      tbody.innerHTML = filtered.map(s => `
+        <tr style="border-bottom:1px solid var(--border); transition:background 0.2s;" onmouseover="this.style.background='rgba(185,133,78,.03)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:1rem; font-weight:600; color:var(--ink);">
+            <div class="section-cell">
+              <svg class="seat-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="12" height="8" rx="2" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.2"/>
+                <rect x="4" y="11" width="3" height="3" rx="1" fill="#2563EB"/>
+                <rect x="9" y="11" width="3" height="3" rx="1" fill="#2563EB"/>
+              </svg>
+              ${escHtml(s.section)}
+            </div>
+          </td>
+          <td style="padding:1rem; color:var(--ink); font-weight:500;">${escHtml(s.row)}</td>
+          <td style="padding:1rem; color:var(--ink); font-weight:500;">${escHtml(s.num)}</td>
+          <td style="padding:1rem; color:var(--muted);">${escHtml(s.venue)}</td>
+          <td style="padding:1rem;">${badgeHtml(s.status)}</td>
+          ${isReadOnly ? '' : `
+          <td style="padding:1rem; text-align:center;">
+            <div style="display:flex; gap:0.5rem; justify-content:center; align-items:center;">
+              <!-- Tombol Edit -->
+              <button class="btn-edit-premium" onclick="openEdit('${s.id}')" style="margin:0;">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                Edit
+              </button>
+              <!-- Tombol Hapus -->
+              <button
+                class="btn-hapus-premium"
+                style="margin:0;"
+                onclick="openDelete('${s.id}')"
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v9h6V4H5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                Hapus
+              </button>
+            </div>
+          </td>
+          `}
+        </tr>
+      `).join('');
+    }
+
+    updateStats();
+  }
+
+  // ============================================================
+  // UPDATE STATS CARDS
+  // ============================================================
+  function updateStats() {
+    document.getElementById('stat-total').textContent = seats.length;
+    document.getElementById('stat-avail').textContent = seats.filter(s => s.status === 'available').length;
+    document.getElementById('stat-occ').textContent   = seats.filter(s => s.status === 'occupied').length;
+  }
+
+  // ============================================================
+  // CREATE
+  // ============================================================
+  function openCreate() {
+    if (isReadOnly) return;
+    document.getElementById('c-section').value = '';
+    document.getElementById('c-row').value     = '';
+    document.getElementById('c-num').value     = '';
+    document.getElementById('c-venue').selectedIndex = 0;
+    openModal('modal-create');
+  }
+
+  async function createSeat() {
+    if (isReadOnly) return;
+    const section = document.getElementById('c-section').value.trim();
+    const row     = document.getElementById('c-row').value.trim();
+    const num     = document.getElementById('c-num').value.trim();
+    const venue_id = document.getElementById('c-venue').value;
+
+    if (!section || !row || !num || !venue_id) {
+      showToast('Semua field wajib diisi.', true);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/seats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          venue_id,
+          section,
+          row_number: row,
+          seat_number: num
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        showToast(data.message || 'Gagal menambahkan kursi.', true);
+        return;
+      }
+
+      // Add to our local seats array to avoid page reload
+      const venueSelect = document.getElementById('c-venue');
+      const venueName = venueSelect.options[venueSelect.selectedIndex].text;
+
+      seats.push({
+        id: data.seat_id,
+        section,
+        row,
+        num,
+        venue_id,
+        venue: venueName,
+        status: 'available'
+      });
+
+      closeModal('modal-create');
+      renderTable();
+      showToast(data.message || 'Kursi berhasil ditambahkan.');
+    } catch (err) {
+      console.error(err);
+      showToast('Terjadi kesalahan pada server.', true);
+    }
+  }
+
+  // ============================================================
+  // EDIT / UPDATE
+  // ============================================================
+  function openEdit(id) {
+    if (isReadOnly) return;
+    const seat = seats.find(s => String(s.id) === String(id));
+    if (!seat) return;
+    editingId = id;
+
+    document.getElementById('e-section').value = seat.section;
+    document.getElementById('e-row').value     = seat.row;
+    document.getElementById('e-num').value     = seat.num;
+    document.getElementById('e-venue').value   = seat.venue_id;
+
+    openModal('modal-edit');
+  }
+
+  async function saveSeat() {
+    if (isReadOnly) return;
+    const section = document.getElementById('e-section').value.trim();
+    const row     = document.getElementById('e-row').value.trim();
+    const num     = document.getElementById('e-num').value.trim();
+    const venue_id = document.getElementById('e-venue').value;
+
+    if (!section || !row || !num || !venue_id) {
+      showToast('Semua field wajib diisi.', true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/seats/${editingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          venue_id,
+          section,
+          row_number: row,
+          seat_number: num
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        showToast(data.message || 'Gagal menyimpan perubahan.', true);
+        return;
+      }
+
+      const seatIndex = seats.findIndex(s => String(s.id) === String(editingId));
+      if (seatIndex !== -1) {
+        const venueSelect = document.getElementById('e-venue');
+        const venueName = venueSelect.options[venueSelect.selectedIndex].text;
+
+        seats[seatIndex].section = section;
+        seats[seatIndex].row = row;
+        seats[seatIndex].num = num;
+        seats[seatIndex].venue_id = venue_id;
+        seats[seatIndex].venue = venueName;
+      }
+
+      closeModal('modal-edit');
+      renderTable();
+      showToast(data.message || 'Perubahan berhasil disimpan.');
+    } catch (err) {
+      console.error(err);
+      showToast('Terjadi kesalahan pada server.', true);
+    }
+  }
+
+  // ============================================================
+  // DELETE
+  // ============================================================
+  function openDelete(id) {
+    if (isReadOnly) return;
+    deletingId = id;
+    openModal('modal-delete');
+  }
+
+  async function confirmDelete() {
+    if (isReadOnly) return;
+    if (!deletingId) return;
+
+    try {
+      const response = await fetch(`/api/seats/${deletingId}`, {
+        method: 'DELETE'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        showToast(data.message || 'Gagal menghapus kursi.', true);
+        return;
+      }
+
+      seats = seats.filter(s => String(s.id) !== String(deletingId));
+      closeModal('modal-delete');
+      renderTable();
+      showToast(data.message || 'Kursi berhasil dihapus.');
+    } catch (err) {
+      console.error(err);
+      showToast('Terjadi kesalahan pada server.', true);
+    }
+  }
+
+  // ============================================================
+  // MODAL HELPERS
+  // ============================================================
+  function openModal(id)  { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  // Tutup modal kalau klik di luar area modal
+  document.querySelectorAll('.overlay').forEach(overlay => {
+    overlay.addEventListener('click', function (e) {
+      if (e.target === this) closeModal(this.id);
+    });
+  });
+
+  // ============================================================
+  // TOAST NOTIFICATION
+  // ============================================================
+  let toastTimer = null;
+  function showToast(msg, isError = false) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.toggle('toast-error', isError);
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
+  // ============================================================
+  // UTILS
+  // ============================================================
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function badgeHtml(status) {
+    if (status === 'available') {
+      return '<span class="badge badge-available">&#9679; TERSEDIA</span>';
+    }
+    return '<span class="badge badge-occupied">&#9679; TERISI</span>';
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  renderTable();
+</script>
+
+<%- include('partials/footer') %>

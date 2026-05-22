@@ -1,0 +1,360 @@
+<%- include('partials/header', { title: 'Manajemen Kategori Tiket - TikTakTuk' }) %>
+
+<%
+  let totalKategori = 0;
+  let totalKuota = 0;
+  let hargaTertinggi = 0;
+  if (typeof categories !== 'undefined' && categories.length > 0) {
+    totalKategori = categories.length;
+    categories.forEach(c => {
+      totalKuota += (c.quota || 0);
+      if (c.price > hargaTertinggi) hargaTertinggi = c.price;
+    });
+  }
+%>
+
+<div class="seat-page">
+  <div class="seat-shell">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div class="page-heading">
+        <h1 style="font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:var(--ink);letter-spacing:-0.03em;line-height:1.2;">Kategori Tiket</h1>
+        <p class="auth-muted" style="margin-top:0.3rem;">Kelola kategori dan harga tiket per acara</p>
+      </div>
+      <div class="flex gap-3">
+        <% if (user && (user.role === 'ADMIN' || user.role === 'ORGANIZER')) { %>
+          <button type="button" onclick="openAddModal()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm text-white" style="background:var(--accent-strong);box-shadow:0 4px 12px rgba(185,133,78,.2);">
+            <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+            Tambah Kategori
+          </button>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Metric Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem;">
+      <div style="background:white;padding:1.5rem;border-radius:1rem;box-shadow:0 2px 10px rgba(0,0,0,0.03);border:1px solid rgba(185,133,78,.1);">
+        <p style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Total Kategori</p>
+        <p style="font-size:1.5rem;font-weight:800;color:var(--ink);"><%= totalKategori %></p>
+      </div>
+      <div style="background:white;padding:1.5rem;border-radius:1rem;box-shadow:0 2px 10px rgba(0,0,0,0.03);border:1px solid rgba(185,133,78,.1);">
+        <p style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Total Kuota</p>
+        <p style="font-size:1.5rem;font-weight:800;color:var(--ink);"><%= new Intl.NumberFormat('id-ID').format(totalKuota) %></p>
+      </div>
+      <div style="background:white;padding:1.5rem;border-radius:1rem;box-shadow:0 2px 10px rgba(0,0,0,0.03);border:1px solid rgba(185,133,78,.1);">
+        <p style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Harga Tertinggi</p>
+        <p style="font-size:1.5rem;font-weight:800;color:var(--ink);"><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(hargaTertinggi) %></p>
+      </div>
+    </div>
+
+    <!-- Toolbar: Search & Filter -->
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:1.5rem;gap:1rem;">
+      <div style="display:flex;gap:1rem;flex:1;min-width:300px;">
+        <div style="position:relative;flex:1;max-width:300px;">
+          <svg style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#a0aec0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" id="tc-search" placeholder="Cari kategori..." style="width:100%;padding:0.75rem 1rem 0.75rem 2.5rem;border-radius:0.75rem;border:1px solid var(--border);font-size:0.9rem;outline:none;">
+        </div>
+        <select id="tc-event-filter" style="padding:0.75rem 1rem;border-radius:0.75rem;border:1px solid var(--border);font-size:0.9rem;outline:none;background:white;color:var(--ink);font-weight:600;min-width:180px;">
+          <option value="">Semua Acara</option>
+          <% if (typeof events !== 'undefined' && events.length > 0) { %>
+            <% events.forEach(function(e) { %>
+              <option value="<%= e.event_id %>"><%= e.event_title %></option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <span id="tc-count-label" style="font-size:0.85rem;color:var(--muted);"><%= totalKategori %> kategori ditemukan</span>
+      </div>
+    </div>
+
+    <!-- Daftar Ticket Category -->
+    <div class="seat-card" style="padding:0;overflow:hidden;border:1px solid var(--border);border-radius:1rem;box-shadow:0 4px 15px rgba(0,0,0,0.02);" id="tc-list">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left" style="min-width:800px;border-collapse:collapse;">
+          <thead style="background:#fafafa;">
+            <tr>
+              <th style="padding:1.25rem 1.5rem;font-weight:700;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">Kategori</th>
+              <th style="padding:1.25rem 1.5rem;font-weight:700;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">Acara</th>
+              <th style="padding:1.25rem 1.5rem;font-weight:700;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">Harga</th>
+              <th style="padding:1.25rem 1.5rem;font-weight:700;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">Total Kuota</th>
+              <th style="padding:1.25rem 1.5rem;font-weight:700;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">Sisa Kuota</th>
+              <% if (user && (user.role === 'ADMIN' || user.role === 'ORGANIZER')) { %>
+                <th style="padding:1.25rem 1.5rem;font-weight:700;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;text-align:center;border-bottom:1px solid var(--border);">Aksi</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody style="background:white;">
+            <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
+              <% categories.forEach(function(cat) { %>
+                <tr data-event-id="<%= cat.tevent_id %>" data-category-name="<%= cat.category_name.toLowerCase() %>" style="border-bottom:1px solid var(--border);transition:background 0.2s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='white'">
+                  <td style="padding:1.25rem 1.5rem;font-weight:700;color:var(--ink);font-size:0.95rem;"><%= cat.category_name %></td>
+                  <td style="padding:1.25rem 1.5rem;color:var(--muted);font-size:0.95rem;"><%= cat.event_name %></td>
+                  <td style="padding:1.25rem 1.5rem;font-weight:700;color:#3b82f6;font-size:0.95rem;"><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(cat.price) %></td>
+                  <td style="padding:1.25rem 1.5rem;color:var(--muted);font-size:0.95rem;"><%= new Intl.NumberFormat('id-ID').format(cat.quota) %></td>
+                  <td style="padding:1.25rem 1.5rem;font-weight:700;font-size:0.95rem;">
+                    <% const sisa = (cat.sisa_kuota !== undefined && cat.sisa_kuota !== null) ? Number(cat.sisa_kuota) : Number(cat.quota); %>
+                    <% if (isNaN(sisa) || sisa <= 0) { %>
+                      <span style="color:#ef4444;background:#fef2f2;padding:0.25rem 0.6rem;border-radius:999px;font-size:0.8rem;">Habis Terjual</span>
+                    <% } else { %>
+                      <span style="color:var(--accent-strong);">Tersedia <%= new Intl.NumberFormat('id-ID').format(sisa) %></span>
+                    <% } %>
+                  </td>
+                  <% if (user && (user.role === 'ADMIN' || user.role === 'ORGANIZER')) { %>
+                    <td style="padding:1.25rem 1.5rem;text-align:center;">
+                      <div style="display:flex;gap:0.75rem;justify-content:center;">
+                        <button type="button" data-cat="<%= JSON.stringify({id:cat.category_id, event_id:cat.tevent_id, name:cat.category_name, price:cat.price, quota:cat.quota, event_name:cat.event_name}) %>" onclick="openEditModal(JSON.parse(this.dataset.cat))" class="btn-edit-premium">
+                          <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                          Edit
+                        </button>
+                        <button type="button" data-cat="<%= JSON.stringify({id:cat.category_id, name:cat.category_name}) %>" onclick="openDeleteModal(JSON.parse(this.dataset.cat))" class="btn-hapus-premium">
+                          <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          Hapus
+                        </button>
+                      </div>
+                    </td>
+                  <% } %>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="<%= (user && (user.role === 'ADMIN' || user.role === 'ORGANIZER')) ? 6 : 5 %>" style="text-align:center;padding:3rem;color:var(--muted);">Belum ada kategori tiket terdaftar.</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Create/Update Ticket Category -->
+<div class="seat-modal" id="modal-tc-form">
+  <div class="seat-modal-panel" style="max-width:500px;">
+    <div style="padding:1.25rem;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(185,133,78,.14);">
+      <div>
+        <h2 id="tc-modal-title" style="font-size:1.35rem;font-weight:800;color:var(--ink);">Tambah Kategori Baru</h2>
+        <p id="tc-modal-desc" class="auth-muted" style="margin-top:0.3rem;">Isi form berikut untuk menambahkan kategori tiket baru.</p>
+      </div>
+      <button type="button" onclick="closeModal('modal-tc-form')" class="auth-modal-close">x</button>
+    </div>
+    <form id="form-tc" style="padding:1.25rem;">
+      <input type="hidden" name="category_id" id="ftc-id">
+      <input type="hidden" name="mode" id="ftc-mode" value="create">
+
+      <div class="seat-form-grid" style="grid-template-columns:1fr;">
+        <div>
+          <label class="seat-form-label">Acara <span style="color:var(--accent-strong);">*</span></label>
+          <select name="tevent_id" id="ftc-event" class="form-input" required>
+            <option value="">Pilih Event</option>
+            <% if (typeof events !== 'undefined' && events.length > 0) { %>
+              <% events.forEach(function(e) { %>
+                <option value="<%= e.event_id %>"><%= e.event_title %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div>
+          <label class="seat-form-label">Nama Kategori <span style="color:var(--accent-strong);">*</span></label>
+          <input type="text" name="category_name" id="ftc-name" class="form-input" placeholder="cth. WVIP" required>
+        </div>
+        <div>
+          <label class="seat-form-label">Kuota <span style="color:var(--accent-strong);">*</span></label>
+          <input type="number" name="quota" id="ftc-quota" class="form-input" placeholder="100" min="1" required>
+        </div>
+        <div>
+          <label class="seat-form-label">Harga (Rp) <span style="color:var(--accent-strong);">*</span></label>
+          <input type="number" name="price" id="ftc-price" class="form-input" placeholder="750000" min="0" required>
+        </div>
+      </div>
+
+      <div style="margin-top:2rem;display:flex;justify-content:flex-end;gap:1rem;">
+        <button type="button" onclick="closeModal('modal-tc-form')" class="px-5 py-2.5 rounded-xl font-bold text-sm" style="color:var(--ink);background:rgba(255,255,255,.6);border:1px solid var(--border);">Batal</button>
+        <button type="submit" id="btn-submit-tc" class="px-5 py-2.5 rounded-xl font-bold text-sm text-white" style="background:linear-gradient(145deg,var(--accent),#a87542);box-shadow:0 8px 16px rgba(131,88,42,.2);">Tambah</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Delete Ticket Category -->
+<div class="seat-modal" id="modal-delete-tc">
+  <div class="seat-modal-panel" style="max-width:400px;text-align:center;">
+    <div style="padding:2rem 1.5rem;">
+      <div style="width:60px;height:60px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+        <svg style="width:30px;height:30px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <h2 style="font-size:1.35rem;font-weight:800;color:var(--ink);margin-bottom:0.5rem;">Hapus Kategori Tiket</h2>
+      <p class="auth-muted" style="font-size:0.95rem;margin-bottom:1rem;">Apakah Anda yakin ingin menghapus kategori tiket ini? Tindakan ini tidak dapat dibatalkan.</p>
+      
+      <div style="background:#f8f9fa;border-radius:8px;padding:1rem;margin-bottom:1.5rem;text-align:left;">
+        <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.2rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Category ID</p>
+        <p id="del-tc-id-disp" style="font-family:monospace;font-size:0.85rem;color:var(--ink);margin-bottom:0.8rem;word-break:break-all;"></p>
+        
+        <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.2rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Category Name</p>
+        <p id="del-tc-name" style="font-size:0.95rem;font-weight:700;color:var(--ink);"></p>
+      </div>
+
+      <input type="hidden" id="del-tc-id">
+      
+      <div style="display:flex;gap:1rem;">
+        <button type="button" onclick="closeModal('modal-delete-tc')" style="flex:1;padding:0.75rem;border-radius:12px;font-weight:700;color:var(--ink);background:var(--card-bg);border:1px solid var(--border);">Batal</button>
+        <button type="button" onclick="confirmDeleteTC()" style="flex:1;padding:0.75rem;border-radius:12px;font-weight:700;color:white;background:#dc2626;border:none;box-shadow:0 4px 12px rgba(220,38,38,.2);">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(id) {
+  document.getElementById(id).classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+
+function openAddModal() {
+  document.getElementById('form-tc').reset();
+  document.getElementById('ftc-mode').value = 'create';
+  document.getElementById('ftc-id').value = '';
+  document.getElementById('tc-modal-title').textContent = 'Tambah Kategori Baru';
+  document.getElementById('tc-modal-desc').textContent = 'Isi form berikut untuk menambahkan kategori tiket baru.';
+  document.getElementById('btn-submit-tc').textContent = 'Tambah';
+  openModal('modal-tc-form');
+}
+
+function openEditModal(cat) {
+  document.getElementById('form-tc').reset();
+  document.getElementById('ftc-mode').value = 'update';
+  document.getElementById('ftc-id').value = cat.id;
+  document.getElementById('ftc-event').value = cat.event_id;
+  document.getElementById('ftc-name').value = cat.name;
+  document.getElementById('ftc-price').value = cat.price;
+  document.getElementById('ftc-quota').value = cat.quota;
+  document.getElementById('tc-modal-title').textContent = 'Edit Kategori';
+  document.getElementById('tc-modal-desc').textContent = 'Ubah detail kategori tiket yang sudah ada.';
+  document.getElementById('btn-submit-tc').textContent = 'Simpan';
+  openModal('modal-tc-form');
+}
+
+function openDeleteModal(cat) {
+  document.getElementById('del-tc-id').value = cat.id;
+  document.getElementById('del-tc-id-disp').textContent = cat.id;
+  document.getElementById('del-tc-name').textContent = cat.name;
+  openModal('modal-delete-tc');
+}
+
+document.getElementById('form-tc').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const mode = document.getElementById('ftc-mode').value;
+  const id = document.getElementById('ftc-id').value;
+  
+  const payload = {
+    tevent_id: document.getElementById('ftc-event').value,
+    category_name: document.getElementById('ftc-name').value.trim(),
+    quota: parseInt(document.getElementById('ftc-quota').value, 10),
+    price: parseInt(document.getElementById('ftc-price').value, 10)
+  };
+
+  if (!payload.tevent_id || !payload.category_name || isNaN(payload.quota) || isNaN(payload.price)) {
+    showToast('Semua field wajib diisi.', 'error');
+    return;
+  }
+  if (payload.quota <= 0) {
+    showToast('Quota harus bilangan bulat positif (> 0).', 'error');
+    return;
+  }
+  if (payload.price < 0) {
+    showToast('Price harus bilangan tidak negatif (>= 0).', 'error');
+    return;
+  }
+
+  const url = mode === 'create' ? '/api/ticket-categories' : `/api/ticket-categories/${id}`;
+  const method = mode === 'create' ? 'POST' : 'PUT';
+  const btn = document.getElementById('btn-submit-tc');
+  const originalText = btn.textContent;
+
+  try {
+    btn.textContent = 'Menyimpan...';
+    btn.disabled = true;
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      closeModal('modal-tc-form');
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch (err) {
+    showToast('Terjadi kesalahan sistem.', 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+});
+
+async function confirmDeleteTC() {
+  const id = document.getElementById('del-tc-id').value;
+  try {
+    const res = await fetch(`/api/ticket-categories/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      closeModal('modal-delete-tc');
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch (err) {
+    showToast('Terjadi kesalahan sistem.', 'error');
+  }
+}
+// --- Filter & Search ---
+(function() {
+  const filterSelect = document.getElementById('tc-event-filter');
+  const searchInput = document.getElementById('tc-search');
+  const countLabel = document.getElementById('tc-count-label');
+  const tbody = document.querySelector('#tc-list tbody');
+  if (!tbody) return;
+
+  function applyFilters() {
+    const selectedEvent = filterSelect ? filterSelect.value : '';
+    const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const rows = tbody.querySelectorAll('tr[data-event-id]');
+    let visible = 0;
+
+    rows.forEach(function(row) {
+      const eventId = row.getAttribute('data-event-id') || '';
+      const catName = row.getAttribute('data-category-name') || '';
+      const rowText = row.textContent.toLowerCase();
+
+      const matchEvent = !selectedEvent || eventId === selectedEvent;
+      const matchSearch = !searchTerm || catName.includes(searchTerm) || rowText.includes(searchTerm);
+
+      if (matchEvent && matchSearch) {
+        row.style.display = '';
+        visible++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    if (countLabel) {
+      countLabel.textContent = visible + ' kategori ditemukan';
+    }
+  }
+
+  if (filterSelect) filterSelect.addEventListener('change', applyFilters);
+  if (searchInput) searchInput.addEventListener('input', applyFilters);
+})();
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,545 @@
+<%- include('partials/header', { title: 'Manajemen Promosi - TikTakTuk' }) %>
+
+<% 
+  const isAdmin = user && user.role === 'ADMIN';
+  const currentUsername = user && user.username ? encodeURIComponent(user.username) : '';
+
+  const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+  
+  const formatDateInput = (dateVal) => {
+    if (!dateVal) return '';
+    const d = new Date(dateVal);
+    return d.getFullYear() + '-' + 
+      String(d.getMonth()+1).padStart(2,'0') + '-' + 
+      String(d.getDate()).padStart(2,'0');
+  };
+
+  const formatDateDisplay = (dateVal) => {
+    if (!dateVal) return '-';
+    const d = new Date(dateVal);
+    return d.getFullYear() + '-' + 
+      String(d.getMonth()+1).padStart(2,'0') + '-' + 
+      String(d.getDate()).padStart(2,'0');
+  };
+%>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style="min-height: calc(100vh - 120px);">
+    <!-- Page Header -->
+    <div class="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-[#5c4a3d] tracking-tight mb-1">Manajemen Promosi</h1>
+            <p class="text-stone-500 text-sm font-medium">
+                <%= isAdmin ? 'Kelola kode promo dan kampanye diskon di sistem TikTakTuk.' : 'Lihat daftar kode promo dan diskon aktif yang bisa Anda gunakan.' %>
+            </p>
+        </div>
+        <% if (isAdmin) { %>
+        <button type="button" onclick="openCreateModal()" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#7f6c56] hover:bg-[#6b5a47] text-white text-sm font-semibold rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
+            <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+            Buat Promo
+        </button>
+        <% } %>
+    </div>
+
+    <!-- Summary Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+        <!-- Total Promo -->
+        <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Total Promo</span>
+                <div class="w-8 h-8 rounded-lg bg-[#faf9f5] flex items-center justify-center text-[#7f6c56]">
+                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+                </div>
+            </div>
+            <div class="text-3xl font-extrabold text-[#5c4a3d]"><%= stats.totalPromo %></div>
+            <p class="text-[10px] text-stone-500 mt-1">Kode kupon terdaftar</p>
+        </div>
+
+        <!-- Total Penggunaan -->
+        <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Total Penggunaan</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+                </div>
+            </div>
+            <div class="text-3xl font-extrabold text-[#5c4a3d]"><%= stats.totalUsage %><span class="text-base text-stone-400 font-semibold ml-0.5">x</span></div>
+            <p class="text-[10px] text-stone-500 mt-1">Kupon yang telah diklaim</p>
+        </div>
+
+        <!-- Tipe Persentase -->
+        <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Tipe Persentase</span>
+                <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center text-violet-600">
+                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                </div>
+            </div>
+            <div class="text-3xl font-extrabold text-[#5c4a3d]"><%= stats.totalPercentage %></div>
+            <p class="text-[10px] text-stone-500 mt-1">Diskon berbasis persentase</p>
+        </div>
+    </div>
+
+    <!-- Toolbar Filters -->
+    <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 p-4 shadow-sm mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <!-- Search bar -->
+        <div class="relative w-full sm:w-96">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+                <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <input type="text" id="search-input" placeholder="Cari kode promo..." class="pl-10.5 w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all">
+        </div>
+
+        <!-- Filter Tipe Diskon -->
+        <div class="w-full sm:w-auto">
+            <select id="type-filter" class="w-full sm:w-48 px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm text-stone-600 font-semibold focus:outline-none focus:border-[#7f6c56] transition-all cursor-pointer">
+                <option value="all">Semua Tipe</option>
+                <option value="PERCENTAGE">Persentase</option>
+                <option value="NOMINAL">Nominal</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="bg-white rounded-2xl border border-[#e8e4dc]/70 overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+                <thead>
+                    <tr class="bg-[#faf9f5] border-b border-[#e8e4dc]/70 text-xs font-bold text-stone-400 uppercase tracking-wider">
+                        <th class="px-6 py-4.5 font-extrabold">Kode Promo</th>
+                        <th class="px-6 py-4.5 font-extrabold text-center">Tipe</th>
+                        <th class="px-6 py-4.5 font-extrabold text-right">Nilai Diskon</th>
+                        <th class="px-6 py-4.5 font-extrabold text-center">Mulai</th>
+                        <th class="px-6 py-4.5 font-extrabold text-center">Berakhir</th>
+                        <th class="px-6 py-4.5 font-extrabold text-center">Penggunaan</th>
+                        <% if (isAdmin) { %>
+                        <th class="px-6 py-4.5 font-extrabold text-center">Aksi</th>
+                        <% } %>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#e8e4dc]/50 text-sm text-stone-600 font-medium">
+                    <% if (promotions && promotions.length > 0) { %>
+                        <% promotions.forEach(function(promo) { %>
+                            <tr class="promo-row hover:bg-[#faf9f5]/40 transition-colors" 
+                                data-id="<%= promo.promotion_id %>"
+                                data-code="<%= promo.promo_code %>"
+                                data-type="<%= promo.discount_type %>">
+                                
+                                <!-- Promo Code -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <span class="bg-[#faf9f5] border border-[#e8e4dc] text-[#5c4a3d] px-3.5 py-1.5 rounded-xl font-bold font-mono text-xs uppercase shadow-sm select-all">
+                                            <%= promo.promo_code %>
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <!-- Type -->
+                                <td class="px-6 py-4 text-center">
+                                    <% if (promo.discount_type === 'PERCENTAGE') { %>
+                                        <span class="inline-flex bg-violet-50 text-violet-700 border border-violet-100 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                                            Persentase
+                                        </span>
+                                    <% } else { %>
+                                        <span class="inline-flex bg-amber-50 text-amber-700 border border-amber-100 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                                            Nominal
+                                        </span>
+                                    <% } %>
+                                </td>
+
+                                <!-- Discount Value -->
+                                <td class="px-6 py-4 text-right font-bold text-stone-800">
+                                    <% if (promo.discount_type === 'PERCENTAGE') { %>
+                                        <span class="text-violet-600"><%= parseFloat(promo.discount_value) %>%</span>
+                                    <% } else { %>
+                                        <span class="text-amber-700"><%= formatter.format(promo.discount_value) %></span>
+                                    <% } %>
+                                </td>
+
+                                <!-- Start Date -->
+                                <td class="px-6 py-4 text-center text-xs font-semibold text-stone-500">
+                                    <%= formatDateDisplay(promo.start_date) %>
+                                </td>
+
+                                <!-- End Date -->
+                                <td class="px-6 py-4 text-center text-xs font-semibold text-stone-500">
+                                    <%= formatDateDisplay(promo.end_date) %>
+                                </td>
+
+                                <!-- Usage -->
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col items-center gap-1.5 max-w-[120px] mx-auto">
+                                        <div class="flex justify-between w-full text-xs font-bold text-stone-700">
+                                            <span><%= promo.usage_count %></span>
+                                            <span class="text-stone-300">/</span>
+                                            <span><%= promo.usage_limit %></span>
+                                        </div>
+                                        <% 
+                                          const pct = Math.min((promo.usage_count / promo.usage_limit) * 100, 100);
+                                          const barColor = pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-[#7f6c56]';
+                                          const pctStyle = `style="width: ${pct}%"`;
+                                        %>
+                                        <div class="w-full bg-[#faf9f5] border border-[#e8e4dc] rounded-full h-2 overflow-hidden shadow-inner">
+                                            <div class="<%= barColor %> h-full rounded-full transition-all duration-500" <%- pctStyle %>></div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Action Buttons (Admin only) -->
+                                <% if (isAdmin) { %>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="inline-flex items-center gap-2">
+                                        <!-- Edit button -->
+                                        <button type="button" 
+                                            data-promo='<%- JSON.stringify(promo).replace(/'/g, "&#39;") %>'
+                                            onclick="openEditModal(JSON.parse(this.dataset.promo))"
+                                            class="btn-edit-premium"
+                                            title="Edit Promosi">
+                                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                            Edit
+                                        </button>
+                                        <!-- Delete button -->
+                                        <button type="button" 
+                                            onclick="openDeleteModal('<%= promo.promotion_id %>', '<%= promo.promo_code %>')"
+                                            class="btn-hapus-premium"
+                                            title="Hapus Promosi">
+                                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            Hapus
+                                        </button>
+                                    </div>
+                                </td>
+                                <% } %>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="<%= isAdmin ? 7 : 6 %>" class="px-6 py-12 text-center text-stone-400 font-medium leading-relaxed">
+                                <svg class="w-12 h-12 text-stone-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                                Belum ada kode promosi yang terdaftar.
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<% if (isAdmin) { %>
+<!-- Create Promo Modal -->
+<div id="modal-create" class="fixed inset-0 z-50 hidden bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#e8e4dc]">
+        <div class="px-6 py-4.5 border-b border-[#e8e4dc]/70 flex justify-between items-center bg-[#faf9f5]">
+            <h3 class="font-bold text-[#5c4a3d] text-base">Buat Promo Baru</h3>
+            <button onclick="closeModal('modal-create')" class="text-stone-400 hover:text-stone-600 transition-colors bg-white hover:bg-stone-50 border border-stone-200 w-7 h-7 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <form id="form-create" onsubmit="submitCreate(event)" class="p-6">
+            <!-- Promo Code -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Kode Promo</label>
+                <input type="text" id="cre-code" name="promo_code" required placeholder="e.g. TIKTAK20" class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 uppercase focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all">
+            </div>
+
+            <!-- Discount Type -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Tipe Diskon</label>
+                <select id="cre-type" name="discount_type" required onchange="handleTypeChange('cre')" class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all cursor-pointer">
+                    <option value="PERCENTAGE">Persentase</option>
+                    <option value="NOMINAL">Nominal</option>
+                </select>
+            </div>
+
+            <!-- Discount Value -->
+            <div class="mb-4">
+                <label id="cre-value-label" class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Nilai Diskon (%)</label>
+                <input type="number" id="cre-value" name="discount_value" required min="1" step="any" placeholder="e.g. 20" class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all">
+            </div>
+
+            <!-- Usage Limit -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Batas Penggunaan</label>
+                <input type="number" id="cre-limit" name="usage_limit" required min="1" placeholder="e.g. 100" class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all">
+            </div>
+
+            <!-- Dates Row -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Mulai</label>
+                    <input type="date" id="cre-start" name="start_date" required class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Berakhir</label>
+                    <input type="date" id="cre-end" name="end_date" required class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-[#e8e4dc]/70">
+                <button type="button" onclick="closeModal('modal-create')" class="px-5 py-2.5 rounded-xl border border-[#e8e4dc] bg-white text-stone-600 font-bold hover:bg-[#faf9f5] text-xs transition-all">Batal</button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#7f6c56] hover:bg-[#6b5a47] text-white font-bold text-xs shadow-sm transition-all">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Update Promo Modal -->
+<div id="modal-update" class="fixed inset-0 z-50 hidden bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#e8e4dc]">
+        <div class="px-6 py-4.5 border-b border-[#e8e4dc]/70 flex justify-between items-center bg-[#faf9f5]">
+            <h3 class="font-bold text-[#5c4a3d] text-base">Edit Promosi</h3>
+            <button onclick="closeModal('modal-update')" class="text-stone-400 hover:text-stone-600 transition-colors bg-white hover:bg-stone-50 border border-stone-200 w-7 h-7 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <form id="form-update" onsubmit="submitUpdate(event)" class="p-6">
+            <!-- Promo Code -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Kode Promo</label>
+                <input type="text" id="upd-code" name="promo_code" required placeholder="e.g. TIKTAK20" class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 uppercase focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all">
+            </div>
+
+            <!-- Discount Type -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Tipe Diskon</label>
+                <select id="upd-type" name="discount_type" required onchange="handleTypeChange('upd')" class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all cursor-pointer">
+                    <option value="PERCENTAGE">Persentase</option>
+                    <option value="NOMINAL">Nominal</option>
+                </select>
+            </div>
+
+            <!-- Discount Value -->
+            <div class="mb-4">
+                <label id="upd-value-label" class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Nilai Diskon (%)</label>
+                <input type="number" id="upd-value" name="discount_value" required min="1" step="any" placeholder="e.g. 20" class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all">
+            </div>
+
+            <!-- Usage Limit -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Batas Penggunaan</label>
+                <input type="number" id="upd-limit" name="usage_limit" required min="1" placeholder="e.g. 100" class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all">
+            </div>
+
+            <!-- Dates Row -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Mulai</label>
+                    <input type="date" id="upd-start" name="start_date" required class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Berakhir</label>
+                    <input type="date" id="upd-end" name="end_date" required class="w-full px-4 py-2.5 bg-[#faf9f5] border border-[#e8e4dc] rounded-xl text-sm font-semibold text-stone-700 focus:outline-none focus:border-[#7f6c56] focus:ring-1 focus:ring-[#7f6c56] transition-all cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-[#e8e4dc]/70">
+                <button type="button" onclick="closeModal('modal-update')" class="px-5 py-2.5 rounded-xl border border-[#e8e4dc] bg-white text-stone-600 font-bold hover:bg-[#faf9f5] text-xs transition-all">Batal</button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#7f6c56] hover:bg-[#6b5a47] text-white font-bold text-xs shadow-sm transition-all">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Promo Modal -->
+<div id="modal-delete" class="fixed inset-0 z-50 hidden bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-red-100">
+        <div class="px-6 py-4.5 border-b border-red-100 flex justify-between items-center bg-red-50/30">
+            <h3 class="font-bold text-red-600 text-base">Hapus Promosi</h3>
+            <button onclick="closeModal('modal-delete')" class="text-stone-400 hover:text-stone-600 transition-colors bg-white hover:bg-stone-50 border border-stone-200 w-7 h-7 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <div class="p-6">
+            <p class="text-stone-600 text-sm leading-relaxed mb-6 font-medium">
+                Apakah Anda yakin ingin menghapus promosi <strong id="del-promo-code" class="text-stone-900 select-all font-mono"></strong>? Tindakan ini tidak dapat dibatalkan dan akan menghapus data penggunaan promosi terkait.
+            </p>
+            <div class="flex justify-end gap-3 pt-4 border-t border-[#e8e4dc]/70">
+                <button onclick="closeModal('modal-delete')" class="px-5 py-2.5 rounded-xl border border-[#e8e4dc] bg-white text-stone-600 font-bold hover:bg-[#faf9f5] text-xs transition-all">Batal</button>
+                <button onclick="submitDelete()" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-all">Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPromoId = '';
+
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    function handleTypeChange(prefix) {
+        const typeSelect = document.getElementById(prefix + '-type');
+        const valLabel = document.getElementById(prefix + '-value-label');
+        const valInput = document.getElementById(prefix + '-value');
+        
+        if (typeSelect.value === 'PERCENTAGE') {
+            valLabel.textContent = 'Nilai Diskon (%)';
+            valInput.placeholder = 'e.g. 20';
+            valInput.max = '100';
+        } else {
+            valLabel.textContent = 'Nilai Diskon (Rp)';
+            valInput.placeholder = 'e.g. 50000';
+            valInput.removeAttribute('max');
+        }
+    }
+
+    function openCreateModal() {
+        document.getElementById('form-create').reset();
+        handleTypeChange('cre');
+        openModal('modal-create');
+    }
+
+    function openEditModal(promo) {
+        currentPromoId = promo.promotion_id;
+        
+        document.getElementById('upd-code').value = promo.promo_code;
+        document.getElementById('upd-type').value = promo.discount_type;
+        document.getElementById('upd-value').value = parseFloat(promo.discount_value);
+        document.getElementById('upd-limit').value = promo.usage_limit;
+        
+        // Format dates correctly as YYYY-MM-DD
+        document.getElementById('upd-start').value = new Date(promo.start_date).getFullYear() + '-' +
+            String(new Date(promo.start_date).getMonth() + 1).padStart(2, '0') + '-' +
+            String(new Date(promo.start_date).getDate()).padStart(2, '0');
+            
+        document.getElementById('upd-end').value = new Date(promo.end_date).getFullYear() + '-' +
+            String(new Date(promo.end_date).getMonth() + 1).padStart(2, '0') + '-' +
+            String(new Date(promo.end_date).getDate()).padStart(2, '0');
+
+        handleTypeChange('upd');
+        openModal('modal-update');
+    }
+
+    function openDeleteModal(id, code) {
+        currentPromoId = id;
+        document.getElementById('del-promo-code').textContent = code;
+        openModal('modal-delete');
+    }
+
+    async function submitCreate(e) {
+        e.preventDefault();
+        const code = document.getElementById('cre-code').value;
+        const type = document.getElementById('cre-type').value;
+        const value = document.getElementById('cre-value').value;
+        const limit = document.getElementById('cre-limit').value;
+        const start = document.getElementById('cre-start').value;
+        const end = document.getElementById('cre-end').value;
+
+        try {
+            const res = await fetch('/api/promotions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    promo_code: code,
+                    discount_type: type,
+                    discount_value: value,
+                    usage_limit: limit,
+                    start_date: start,
+                    end_date: end
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Gagal menambahkan promosi');
+            }
+        } catch(err) {
+            alert('Error: ' + err.message);
+        }
+    }
+
+    async function submitUpdate(e) {
+        e.preventDefault();
+        const code = document.getElementById('upd-code').value;
+        const type = document.getElementById('upd-type').value;
+        const value = document.getElementById('upd-value').value;
+        const limit = document.getElementById('upd-limit').value;
+        const start = document.getElementById('upd-start').value;
+        const end = document.getElementById('upd-end').value;
+
+        try {
+            const res = await fetch(`/api/promotions/${currentPromoId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    promo_code: code,
+                    discount_type: type,
+                    discount_value: value,
+                    usage_limit: limit,
+                    start_date: start,
+                    end_date: end
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Gagal memperbarui promosi');
+            }
+        } catch(err) {
+            alert('Error: ' + err.message);
+        }
+    }
+
+    async function submitDelete() {
+        try {
+            const res = await fetch(`/api/promotions/${currentPromoId}`, {
+                method: 'DELETE'
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Gagal menghapus promosi');
+            }
+        } catch(err) {
+            alert('Error: ' + err.message);
+        }
+    }
+
+    // ESC Close Modals
+    document.addEventListener('keydown', function(e) {
+        if(e.key === 'Escape') {
+            closeModal('modal-create');
+            closeModal('modal-update');
+            closeModal('modal-delete');
+        }
+    });
+</script>
+<% } %>
+
+<script>
+    // Search and Filter logic (Unified)
+    document.addEventListener("DOMContentLoaded", () => {
+        const searchInput = document.getElementById('search-input');
+        const typeFilter = document.getElementById('type-filter');
+        const rows = document.querySelectorAll('.promo-row');
+
+        function filterTable() {
+            const query = searchInput.value.toLowerCase().trim();
+            const type = typeFilter.value;
+
+            rows.forEach(row => {
+                const code = row.getAttribute('data-code').toLowerCase();
+                const rowType = row.getAttribute('data-type'); // e.g. PERCENTAGE or NOMINAL
+
+                const matchSearch = code.includes(query);
+                const matchType = type === 'all' || rowType === type;
+
+                if (matchSearch && matchType) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterTable);
+        typeFilter.addEventListener('change', filterTable);
+    });
+</script>
+
+<%- include('partials/footer') %>
