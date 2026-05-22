@@ -1,0 +1,189 @@
+<%- include('partials/header', { title: 'Admin Dashboard - TikTakTuk' }) %>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header Card -->
+  <div class="bg-slate-900 rounded-2xl p-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center shadow-lg">
+    <div class="mb-6 md:mb-0">
+      <p class="text-slate-400 text-sm font-medium mb-1">Administrator</p>
+      <h1 class="text-3xl font-bold text-white mb-2">System Console</h1>
+      <p class="text-slate-400 text-sm">Pantau dan kelola platform TikTakTuk</p>
+    </div>
+    <div class="flex gap-3">
+      <a href="/admin/promotions" class="bg-white text-slate-900 px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-slate-100 transition-colors">
+        Promosi
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Pengguna -->
+    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pengguna</p>
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-slate-800 mb-1"><%= typeof totalUsers !== 'undefined' ? totalUsers : 0 %></p>
+      <p class="text-xs text-slate-500">Pengguna aktif</p>
+    </div>
+
+    <!-- Total Acara -->
+    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Acara</p>
+        <div class="w-10 h-10 rounded-xl bg-green-50 text-green-500 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-slate-800 mb-1"><%= typeof totalEvents !== 'undefined' ? totalEvents : 0 %></p>
+      <p class="text-xs text-slate-500">Bulan ini</p>
+    </div>
+
+    <!-- Omzet Platform -->
+    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Omzet Platform</p>
+        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-slate-800 mb-1"><%= typeof totalRevenue !== 'undefined' ? totalRevenue : 'Rp 0' %></p>
+      <p class="text-xs text-slate-500">Gross volume</p>
+    </div>
+
+    <!-- Promosi Aktif -->
+    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Promosi Aktif</p>
+        <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-slate-800 mb-1"><%= typeof activePromos !== 'undefined' ? activePromos : 0 %></p>
+      <p class="text-xs text-slate-500">Running campaigns</p>
+    </div>
+  </div>
+
+  <!-- Infrastruktur & Marketing -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <!-- Infrastruktur Venue -->
+    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-lg font-bold text-slate-800">Infrastruktur Venue</h2>
+        <a href="/admin/venues" class="text-slate-300 hover:text-slate-500 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+      </div>
+      <div class="space-y-4 mb-6">
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-500">Total Venue Terdaftar</span>
+          <span class="font-bold text-slate-800"><%= typeof totalEvents !== 'undefined' ? totalEvents : 0 %> Lokasi</span>
+        </div>
+        <div class="border-t border-slate-50"></div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-500">Reserved Seating</span>
+          <span class="font-bold text-slate-800"><%= typeof activePromos !== 'undefined' ? activePromos : 0 %> Venue</span>
+        </div>
+        <div class="border-t border-slate-50"></div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-500">Kapasitas Terbesar</span>
+          <span class="font-bold text-slate-800">1,000 Kursi</span>
+        </div>
+      </div>
+      <a href="/admin/venues" class="block w-full text-center py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+        Kelola Venue
+      </a>
+    </div>
+
+    <!-- Marketing & Promosi -->
+    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-lg font-bold text-slate-800">Marketing & Promosi</h2>
+        <a href="/admin/promotions" class="text-slate-300 hover:text-slate-500 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+      </div>
+      <div class="space-y-4 mb-6">
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-500">Promo Persentase</span>
+          <span class="font-bold text-slate-800">1 Aktif</span>
+        </div>
+        <div class="border-t border-slate-50"></div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-500">Promo Potongan Nominal</span>
+          <span class="font-bold text-slate-800">1 Aktif</span>
+        </div>
+        <div class="border-t border-slate-50"></div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-500">Total Penggunaan</span>
+          <span class="font-bold text-slate-800">57 Kali</span>
+        </div>
+      </div>
+      <a href="/admin/promotions" class="block w-full text-center py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+        Kelola Promosi
+      </a>
+    </div>
+  </div>
+
+  <!-- Order Terbaru -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="p-6 border-b border-slate-100 flex justify-between items-start md:items-center">
+      <div>
+        <h2 class="text-lg font-bold text-slate-800 mb-1">Order Terbaru</h2>
+        <p class="text-sm text-slate-500">Transaksi terbaru di platform</p>
+      </div>
+      <a href="/orders?username=<%= encodeURIComponent(user.username) %>" class="text-blue-600 font-semibold text-sm hover:text-blue-700">Lihat Semua</a>
+    </div>
+
+    <div class="divide-y divide-slate-100">
+      <% if (Array.isArray(recentOrders) && recentOrders.length > 0) { %>
+        <% recentOrders.forEach(function (order) { %>
+          <div class="p-6 hover:bg-slate-50 transition-colors flex justify-between items-center">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <h3 class="font-bold text-slate-800 text-base"><%= order.buyer_name %></h3>
+                <span class="text-xs text-slate-400">#<%= order.id %></span>
+                <% if (order.status && order.status.toUpperCase() === 'PAID') { %>
+                  <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">PAID</span>
+                <% } else { %>
+                  <span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider"><%= order.status %></span>
+                <% } %>
+              </div>
+              <div class="flex items-center text-sm text-slate-500 gap-4">
+                <span><%= order.event_name %></span>
+                <span>•</span>
+                <span><%= order.quantity %> tiket</span>
+                <span>•</span>
+                <span><%= order.date %></span>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-slate-800"><%= order.total %></p>
+              <p class="text-xs text-slate-400"><%= order.buyer_email %></p>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="p-8 text-center text-slate-500">
+          Belum ada order terbaru.
+        </div>
+      <% } %>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

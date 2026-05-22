@@ -1,0 +1,791 @@
+<%- include('partials/header', { title: title, styles: ['/css/tickets.css'] }) %>
+
+  <main class="header-shell pb-12" data-ticket-role="<%= ticketRole %>">
+    <section class="tickets-hero">
+      <div
+        style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 id="ticket-page-title" class="tickets-title">
+            <%= ticketRole==='customer' ? 'Tiket Saya' : 'Manajemen Tiket' %>
+          </h1>
+          <p id="ticket-page-copy" class="page-copy" style="margin-top: 0.3rem; color: var(--muted);">
+            <%= ticketRole==='customer' ? 'Kelola dan akses tiket pertunjukan Anda'
+              : 'Kelola tiket: tambah, ubah status, dan hapus tiket' %>
+          </p>
+        </div>
+        <button type="button" id="open-ticket-modal"
+          class="tickets-add-btn <%= (ticketRole === 'admin' || ticketRole === 'organizer') ? '' : 'hidden' %>">+ Tambah
+          Tiket</button>
+      </div>
+
+      <div class="tickets-stats-grid">
+        <article class="tickets-stat-card">
+          <span class="tickets-stat-label">Total Tiket</span>
+          <strong id="total-tickets" class="tickets-stat-value">
+            <%= ticketCount %>
+          </strong>
+        </article>
+        <article class="tickets-stat-card">
+          <span class="tickets-stat-label">Valid</span>
+          <strong id="unique-orders" class="tickets-stat-value">
+            <%= upcomingCount %>
+          </strong>
+        </article>
+        <article class="tickets-stat-card">
+          <span class="tickets-stat-label">Terpakai</span>
+          <strong id="reserved-count" class="tickets-stat-value">
+            <%= completedCount %>
+          </strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="tickets-card">
+      <div class="tickets-filter-row"
+        style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: end; margin-bottom: 1.5rem;">
+        <div class="tickets-field" style="position: relative;">
+          <svg
+            style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #a0aec0; pointer-events: none;"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input id="ticket-search" type="text" class="form-input" placeholder="Cari kode tiket atau nama acara..."
+            style="padding-left: 2.5rem;">
+        </div>
+        <div class="tickets-field" style="min-width: 180px;">
+          <select id="ticket-status-filter" class="form-input"
+            style="background: white; cursor: pointer; height: 42px; border-radius: 12px; border: 1px solid var(--border); padding: 0 10px;">
+            <option value="">Semua Status</option>
+            <option value="VALID">Valid</option>
+            <option value="TERPAKAI">Terpakai</option>
+            <option value="PENDING">Pending</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="ticket-card-list" class="tickets-list"></div>
+      <div id="ticket-empty-state" class="tickets-empty hidden">Tidak ada tiket yang cocok dengan filter saat ini.</div>
+    </section>
+  </main>
+
+  <!-- Modal Tambah Tiket Baru -->
+  <div class="seat-modal" id="modal-add-ticket">
+    <div class="seat-modal-panel"
+      style="max-width: 500px; background: #fffdf9; border: 1px solid rgba(185,133,78,.25); border-radius: 24px; box-shadow: 0 15px 35px rgba(100, 80, 60, 0.15);">
+      <div
+        style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(185,133,78,.14);">
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink); margin: 0;">Tambah Tiket Baru</h2>
+          <p style="margin: 0.3rem 0 0; color: var(--muted); font-size: 0.88rem;">Tambahkan tiket baru ke order dan
+            kategori yang sesuai.</p>
+        </div>
+        <button type="button" onclick="closeAddTicketModal()" class="auth-modal-close"
+          style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1;">&times;</button>
+      </div>
+
+      <form id="form-add-ticket" style="padding: 1.5rem; display: grid; gap: 1.25rem;">
+        <div class="tickets-field" style="display: grid; gap: 0.35rem;">
+          <label for="form-order" class="form-label" style="font-weight: 700; color: var(--ink);">ORDER</label>
+          <select id="form-order" class="form-input"
+            style="background: white; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border);" required>
+            <option value="" disabled selected>Pilih Order...</option>
+          </select>
+        </div>
+
+        <div class="tickets-field" style="display: grid; gap: 0.35rem;">
+          <label for="form-category" class="form-label" style="font-weight: 700; color: var(--ink);">KATEGORI
+            TIKET</label>
+          <select id="form-category" class="form-input"
+            style="background: white; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border);" required
+            disabled>
+            <option value="" disabled selected>Pilih Kategori Tiket...</option>
+          </select>
+        </div>
+
+        <div class="tickets-field id-seats-container" style="display: none; gap: 0.35rem;">
+          <label for="form-seat" class="form-label" style="font-weight: 700; color: var(--ink);">KURSI <span
+              style="font-weight: normal; color: var(--muted); font-size: 0.8rem;">(opsional — reserved
+              seating)</span></label>
+          <select id="form-seat" class="form-input"
+            style="background: white; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border);">
+            <option value="">Pilih Kursi...</option>
+          </select>
+        </div>
+
+        <div class="tickets-field" style="display: grid; gap: 0.35rem;">
+          <label class="form-label" style="font-weight: 700; color: var(--ink);">KODE TIKET</label>
+          <input type="text" class="form-input"
+            style="background: #f8f9fa; color: var(--muted); cursor: not-allowed; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border);"
+            value="Auto-generate saat dibuat" disabled>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+          <button type="button" onclick="closeAddTicketModal()"
+            style="padding: 0.6rem 1.5rem; color: var(--ink); background: rgba(255,255,255,.6); border: 1px solid var(--border); cursor: pointer; border-radius: 12px; font-weight: 700; font-size: 0.9rem;">Batal</button>
+          <button type="submit" class="tickets-submit-btn"
+            style="padding: 0.6rem 1.5rem; color: white; border: none; cursor: pointer; border-radius: 12px; font-weight: 700; font-size: 0.9rem;">Buat
+            Tiket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Update Tiket (Admin Only) -->
+  <div class="seat-modal" id="modal-update-ticket">
+    <div class="seat-modal-panel"
+      style="max-width: 480px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15);">
+      <div
+        style="padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb;">
+        <h2 style="font-size: 1.2rem; font-weight: 800; color: #1f2937; margin: 0;">Update Tiket</h2>
+        <button type="button" onclick="closeUpdateModal()"
+          style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9ca3af; line-height: 1;">&times;</button>
+      </div>
+
+      <form id="form-update-ticket" style="padding: 1.5rem; display: grid; gap: 1.25rem;">
+        <input type="hidden" id="upd-ticket-id">
+
+        <div style="display: grid; gap: 0.3rem;">
+          <label class="form-label"
+            style="font-weight: 700; color: #6b7280; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">KODE
+            TIKET</label>
+          <input type="text" id="upd-ticket-code" class="form-input"
+            style="background: #f3f4f6; color: #6b7280; cursor: not-allowed; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1px solid #e5e7eb; font-family: monospace; font-weight: 700;"
+            disabled>
+        </div>
+
+        <div style="display: grid; gap: 0.3rem;">
+          <label for="upd-status" class="form-label"
+            style="font-weight: 700; color: #6b7280; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">STATUS</label>
+          <select id="upd-status" class="form-input"
+            style="background: white; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1px solid #e5e7eb; cursor: pointer;">
+            <option value="Valid">Valid</option>
+            <option value="Terpakai">Terpakai</option>
+            <option value="Pending">Pending</option>
+          </select>
+        </div>
+
+        <div id="upd-seat-container" style="display: none; gap: 0.3rem;">
+          <label for="upd-seat" class="form-label"
+            style="font-weight: 700; color: #6b7280; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">KURSI
+            <span style="font-weight: normal; color: #9ca3af;">(opsional)</span></label>
+          <select id="upd-seat" class="form-input"
+            style="background: white; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1px solid #e5e7eb; cursor: pointer;">
+            <option value="">Tanpa Kursi</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem;">
+          <button type="button" onclick="closeUpdateModal()"
+            style="padding: 0.6rem 1.5rem; color: #374151; background: white; border: 1px solid #d1d5db; cursor: pointer; border-radius: 10px; font-weight: 700; font-size: 0.9rem;">Batal</button>
+          <button type="submit"
+            style="padding: 0.6rem 1.5rem; color: white; background: #4f46e5; border: none; cursor: pointer; border-radius: 10px; font-weight: 700; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Simpan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Hapus Tiket (Admin Only) -->
+  <div class="seat-modal" id="modal-delete-ticket">
+    <div class="seat-modal-panel"
+      style="max-width: 420px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15);">
+      <div
+        style="padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb;">
+        <h2 style="font-size: 1.2rem; font-weight: 800; color: #dc2626; margin: 0;">Hapus Tiket</h2>
+        <button type="button" onclick="closeDeleteModal()"
+          style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9ca3af; line-height: 1;">&times;</button>
+      </div>
+      <div style="padding: 1.5rem;">
+        <p style="color: #4b5563; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          Apakah Anda yakin ingin menghapus tiket ini? Relasi kursi akan dilepaskan. Tindakan ini tidak dapat
+          dibatalkan.
+        </p>
+        <input type="hidden" id="del-ticket-id">
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" onclick="closeDeleteModal()"
+            style="padding: 0.6rem 1.5rem; color: #374151; background: white; border: 1px solid #d1d5db; cursor: pointer; border-radius: 10px; font-weight: 700; font-size: 0.9rem;">Batal</button>
+          <button type="button" id="btn-confirm-delete"
+            style="padding: 0.6rem 1.5rem; color: white; background: #dc2626; border: none; cursor: pointer; border-radius: 10px; font-weight: 700; font-size: 0.9rem;">Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="ticket-card-template">
+    <article class="ticket-card">
+      <div class="ticket-card-main">
+        <div class="ticket-card-top">
+          <div class="ticket-card-mark">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fbbf24" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z">
+              </path>
+              <line x1="9" y1="9" x2="9" y2="15" stroke="#fbbf24" stroke-dasharray="2 2" stroke-width="2"></line>
+              <line x1="15" y1="9" x2="15" y2="15" stroke="#fbbf24" stroke-dasharray="2 2" stroke-width="2"></line>
+            </svg>
+          </div>
+          <div class="ticket-card-heading">
+            <div class="ticket-card-pills">
+              <span class="tickets-status-pill" data-role-status></span>
+              <span class="tickets-category-pill" data-role-category></span>
+            </div>
+            <h3 class="ticket-card-title" data-role-title></h3>
+            <p class="ticket-card-code" data-role-code style="font-family: monospace; font-weight: bold;"></p>
+          </div>
+        </div>
+
+        <div class="ticket-card-grid">
+          <div class="ticket-card-meta">
+            <span class="ticket-card-label">JADWAL</span>
+            <strong>
+              <svg style="width: 14px; height: 14px; margin-right: 4px;" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span data-role-date></span>
+            </strong>
+          </div>
+          <div class="ticket-card-meta">
+            <span class="ticket-card-label">LOKASI</span>
+            <strong>
+              <svg style="width: 14px; height: 14px; margin-right: 4px;" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span data-role-location></span>
+            </strong>
+          </div>
+          <div class="ticket-card-meta">
+            <span class="ticket-card-label">KURSI</span>
+            <strong>
+              <span data-role-seat></span>
+            </strong>
+          </div>
+          <div class="ticket-card-meta">
+            <span class="ticket-card-label">HARGA</span>
+            <strong style="color: #2563eb;">
+              <span data-role-price></span>
+            </strong>
+          </div>
+          <div class="ticket-card-meta">
+            <span class="ticket-card-label">ORDER</span>
+            <strong>
+              <span data-role-order></span>
+            </strong>
+          </div>
+          <div class="ticket-card-meta" data-customer-block>
+            <span class="ticket-card-label">PELANGGAN</span>
+            <strong>
+              <span data-role-customer></span>
+            </strong>
+          </div>
+        </div>
+
+        <div class="ticket-card-actions" data-role-actions></div>
+      </div>
+
+      <!-- QR Section inside Ticket Card  -->
+      <div class="ticket-qr-section" data-role-qr-panel>
+        <div class="ticket-qr-divider"></div>
+        <div class="ticket-qr-container">
+          <div class="ticket-qr-box">
+            <svg style="width:70px;height:70px;" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+              <path d="M14 14h2v2h-2z"></path>
+              <path d="M18 14h3v3h-3z"></path>
+              <path d="M14 18h3v3h-3z"></path>
+              <path d="M18 18h3v3h-3z"></path>
+            </svg>
+          </div>
+          <span class="ticket-qr-caption">SCAN ENTRY</span>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    // Dynamic data injected from EJS
+    const ticketsData = JSON.parse('<%- JSON.stringify(tickets).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'") %>');
+    const currentRole = "<%= ticketRole %>";
+    const currentUsername = "<%= user.username %>";
+
+    // Formatter for IDR currency
+    const idrFormatter = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      maximumFractionDigits: 0
+    });
+
+    // Date formatter for event datetime
+    function formatEventDate(dateString) {
+      if (!dateString) return '-';
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString;
+
+      const yr = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const dy = String(d.getDate()).padStart(2, '0');
+      const hr = String(d.getHours()).padStart(2, '0');
+      const mn = String(d.getMinutes()).padStart(2, '0');
+      return `${yr}-${mo}-${dy} ${hr}:${mn}`;
+    }
+
+    // Populate list of tickets
+    const cardList = document.getElementById('ticket-card-list');
+    const cardTemplate = document.getElementById('ticket-card-template');
+    const emptyState = document.getElementById('ticket-empty-state');
+
+    function getTicketStatus(t) {
+      if (t.has_seat) return 'TERPAKAI';
+      if (t.payment_status === 'Paid' || t.payment_status === 'Lunas') return 'VALID';
+      return 'PENDING';
+    }
+
+    function renderTickets(filteredTickets) {
+      cardList.innerHTML = '';
+
+      if (filteredTickets.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      filteredTickets.forEach(t => {
+        const clone = cardTemplate.content.cloneNode(true);
+
+        // Title (Event Name)
+        clone.querySelector('[data-role-title]').textContent = t.event_name;
+
+        // Ticket Code
+        clone.querySelector('[data-role-code]').textContent = t.ticket_code;
+
+        // Category
+        const catPill = clone.querySelector('[data-role-category]');
+        catPill.textContent = t.category_name;
+        const tier = String(t.category_name).toLowerCase();
+        if (tier.includes('vvip') || tier.includes('wwvip')) {
+          catPill.classList.add('cat-wwvip');
+        } else if (tier.includes('vip')) {
+          catPill.classList.add('cat-vip');
+        } else {
+          catPill.classList.add('cat-regular');
+        }
+
+        // Status
+        const statusPill = clone.querySelector('[data-role-status]');
+        const statusText = getTicketStatus(t);
+        statusPill.textContent = statusText;
+        if (statusText === 'VALID') {
+          statusPill.classList.add('status-valid');
+        } else if (statusText === 'TERPAKAI') {
+          statusPill.classList.add('status-used');
+        } else {
+          statusPill.classList.add('status-pending');
+        }
+
+        // Metas
+        clone.querySelector('[data-role-date]').textContent = formatEventDate(t.event_datetime);
+        clone.querySelector('[data-role-location]').textContent = t.location || '-';
+        clone.querySelector('[data-role-seat]').textContent = t.seat_label || '-';
+        clone.querySelector('[data-role-order]').textContent = t.order_id ? t.order_id.substring(0, 8) + '...' : '-';
+
+        // Price
+        clone.querySelector('[data-role-price]').textContent = idrFormatter.format(t.price);
+
+        // Handle QR Code panel based on role
+        const qrPanel = clone.querySelector('[data-role-qr-panel]');
+        if (qrPanel) {
+          qrPanel.style.display = currentRole === 'customer' ? 'flex' : 'none';
+        }
+
+        // Actions Container
+        const actionsContainer = clone.querySelector('[data-role-actions]');
+        if (actionsContainer) {
+          if (currentRole === 'admin' || currentRole === 'organizer') {
+            // Update button (Edit)
+            const updBtn = document.createElement('button');
+            updBtn.type = 'button';
+            updBtn.className = 'btn-edit-premium';
+            updBtn.innerHTML = '<svg style="width:14px;height:14px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Edit';
+            updBtn.addEventListener('click', () => openUpdateModal(t));
+            actionsContainer.appendChild(updBtn);
+
+            // Delete button (Hapus)
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'btn-hapus-premium';
+            delBtn.innerHTML = '<svg style="width:14px;height:14px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg> Hapus';
+            delBtn.addEventListener('click', () => openDeleteTicketModal(t));
+            actionsContainer.appendChild(delBtn);
+          } else if (currentRole === 'customer') {
+            // Customer actions: Tampilkan QR, Download, Share
+            const qrBtn = document.createElement('button');
+            qrBtn.type = 'button';
+            qrBtn.className = 'ticket-action-btn ticket-action-qr-show';
+            qrBtn.innerHTML = '<svg style="width:14px;height:14px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm0 12h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12-12h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg> Tampilkan QR';
+            actionsContainer.appendChild(qrBtn);
+
+            const dlBtn = document.createElement('button');
+            dlBtn.type = 'button';
+            dlBtn.className = 'ticket-action-btn ticket-action-icon-only';
+            dlBtn.innerHTML = '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>';
+            actionsContainer.appendChild(dlBtn);
+
+            const shBtn = document.createElement('button');
+            shBtn.type = 'button';
+            shBtn.className = 'ticket-action-btn ticket-action-icon-only';
+            shBtn.innerHTML = '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 10.742l4.632-2.316m0 0a3 3 0 10-2.222-2.518m2.222 2.518a3 3 0 00-2.222 5.036m6.064-2.72l-4.632 2.316m0 0a3 3 0 102.222 2.518 3 3 0 00-2.222-2.518" /></svg>';
+            actionsContainer.appendChild(shBtn);
+          }
+        }
+
+        cardList.appendChild(clone);
+      });
+    }
+
+    // Initial Render
+    renderTickets(ticketsData);
+
+    // Client-side Search and Filter logic
+    const searchInput = document.getElementById('ticket-search');
+    const statusSelect = document.getElementById('ticket-status-filter');
+
+    function applyFilters() {
+      const query = searchInput.value.toLowerCase().trim();
+      const status = statusSelect.value;
+
+      const filtered = ticketsData.filter(t => {
+        const matchSearch = !query ||
+          t.ticket_code.toLowerCase().includes(query) ||
+          t.event_name.toLowerCase().includes(query);
+
+        const ticketStatus = getTicketStatus(t);
+        const matchStatus = !status || ticketStatus === status;
+
+        return matchSearch && matchStatus;
+      });
+
+      renderTickets(filtered);
+    }
+
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (statusSelect) statusSelect.addEventListener('change', applyFilters);
+
+    // =============================================
+    //  Modal: Tambah Tiket Baru
+    // =============================================
+    const addModal = document.getElementById('modal-add-ticket');
+    const openModalBtn = document.getElementById('open-ticket-modal');
+    const formAddTicket = document.getElementById('form-add-ticket');
+
+    const formOrder = document.getElementById('form-order');
+    const formCategory = document.getElementById('form-category');
+    const formSeat = document.getElementById('form-seat');
+    const seatContainer = document.querySelector('.id-seats-container');
+
+    function openAddTicketModal() {
+      if (addModal) {
+        addModal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+        loadOrders();
+      }
+    }
+
+    function closeAddTicketModal() {
+      if (addModal) {
+        addModal.classList.remove('is-open');
+        document.body.style.overflow = '';
+        formAddTicket.reset();
+        formCategory.disabled = true;
+        formCategory.innerHTML = '<option value="" disabled selected>Pilih Kategori Tiket...</option>';
+        seatContainer.style.display = 'none';
+        formSeat.innerHTML = '<option value="">Pilih Kursi...</option>';
+      }
+    }
+
+    if (openModalBtn) {
+      openModalBtn.addEventListener('click', openAddTicketModal);
+    }
+
+    // Load Orders dynamically via AJAX
+    async function loadOrders() {
+      try {
+        const res = await fetch(`/api/tickets/orders?username=${currentUsername}`);
+        const data = await res.json();
+
+        if (data.success) {
+          formOrder.innerHTML = '<option value="" disabled selected>Pilih Order...</option>';
+          data.orders.forEach(o => {
+            const opt = document.createElement('option');
+            opt.value = o.order_id;
+            opt.dataset.eventId = o.event_id;
+            opt.textContent = `${o.order_id.substring(0, 8)}... — ${o.customer_name} — ${o.event_name}`;
+            formOrder.appendChild(opt);
+          });
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Gagal memuat daftar order.', 'error');
+      }
+    }
+
+    // When order changes, load event details (categories and empty seats)
+    if (formOrder) {
+      formOrder.addEventListener('change', async () => {
+        const selectedOpt = formOrder.options[formOrder.selectedIndex];
+        const eventId = selectedOpt.dataset.eventId;
+
+        if (!eventId) return;
+
+        try {
+          formCategory.disabled = true;
+          formCategory.innerHTML = '<option value="" disabled selected>Loading...</option>';
+
+          const res = await fetch(`/api/tickets/event-details/${eventId}`);
+          const data = await res.json();
+
+          if (data.success) {
+            // 1. Populate Category dropdown
+            formCategory.innerHTML = '<option value="" disabled selected>Pilih Kategori Tiket...</option>';
+            data.categories.forEach(cat => {
+              const opt = document.createElement('option');
+              opt.value = cat.category_id;
+
+              const soldCount = cat.quota - cat.sisa_kuota;
+              opt.textContent = `${cat.category_name} — ${idrFormatter.format(cat.price)} (${soldCount}/${cat.quota})`;
+
+              if (cat.sisa_kuota <= 0) {
+                opt.disabled = true;
+                opt.textContent += ' [PENUH]';
+              }
+              formCategory.appendChild(opt);
+            });
+            formCategory.disabled = false;
+
+            // 2. Handle Reserved Seating / Seats dropdown
+            if (data.has_seats) {
+              seatContainer.style.display = 'grid';
+              formSeat.innerHTML = '<option value="">Pilih Kursi...</option>';
+              data.seats.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.seat_id;
+                opt.textContent = `${s.section} — Baris ${s.row_number}, No. ${s.seat_number}`;
+                formSeat.appendChild(opt);
+              });
+              formSeat.required = false;
+            } else {
+              seatContainer.style.display = 'none';
+              formSeat.innerHTML = '<option value="">Pilih Kursi...</option>';
+              formSeat.required = false;
+            }
+          } else {
+            showToast(data.message, 'error');
+          }
+        } catch (err) {
+          showToast('Gagal memuat kategori tiket dan kursi.', 'error');
+        }
+      });
+    }
+
+    // Handle form submission to create new ticket
+    if (formAddTicket) {
+      formAddTicket.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const payload = {
+          torder_id: formOrder.value,
+          tcategory_id: formCategory.value,
+          seat_id: formSeat.value || null
+        };
+
+        try {
+          const res = await fetch('/api/tickets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast(data.message, 'success');
+            closeAddTicketModal();
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            showToast(data.message, 'error');
+          }
+        } catch (err) {
+          showToast('Gagal menyimpan tiket.', 'error');
+        }
+      });
+    }
+
+    // =============================================
+    //  Modal: Update Tiket (Admin Only)
+    // =============================================
+    const updateModal = document.getElementById('modal-update-ticket');
+    const formUpdateTicket = document.getElementById('form-update-ticket');
+    const updSeatContainer = document.getElementById('upd-seat-container');
+    const updSeatSelect = document.getElementById('upd-seat');
+    const updStatusSelect = document.getElementById('upd-status');
+    let currentUpdateEventId = null;
+
+    async function openUpdateModal(t) {
+      document.getElementById('upd-ticket-id').value = t.ticket_id;
+      document.getElementById('upd-ticket-code').value = t.ticket_code;
+
+      // Set status dropdown
+      const statusVal = getTicketStatus(t);
+      if (statusVal === 'VALID') updStatusSelect.value = 'Valid';
+      else if (statusVal === 'TERPAKAI') updStatusSelect.value = 'Terpakai';
+      else updStatusSelect.value = 'Pending';
+
+      currentUpdateEventId = t.event_id;
+
+      // Load seats for this event
+      try {
+        const res = await fetch(`/api/tickets/event-details/${t.event_id}`);
+        const data = await res.json();
+
+        if (data.success && data.has_seats) {
+          updSeatContainer.style.display = 'grid';
+          updSeatSelect.innerHTML = '<option value="">Tanpa Kursi</option>';
+
+          // Add available seats
+          data.seats.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.seat_id;
+            opt.textContent = `${s.section} — Baris ${s.row_number}, No. ${s.seat_number}`;
+            updSeatSelect.appendChild(opt);
+          });
+
+          // If ticket currently has a seat, add it as an option and select it
+          if (t.seat_label && t.seat_label !== '-') {
+            // Check if the current seat is already in the options
+            let hasCurrent = false;
+            for (const opt of updSeatSelect.options) {
+              if (opt.textContent.includes(t.seat_label.replace(' ', ''))) {
+                hasCurrent = true;
+                opt.selected = true;
+                break;
+              }
+            }
+            // If current seat not found in available (it's occupied by this ticket), add it
+            if (!hasCurrent) {
+              // We need to find the seat_id from ticket data
+              // The seat is currently assigned to this ticket, we pass it from has_relationship
+              if (t.seat_id) {
+                const opt = document.createElement('option');
+                opt.value = t.seat_id;
+                opt.textContent = `${t.seat_label} (saat ini)`;
+                opt.selected = true;
+                updSeatSelect.appendChild(opt);
+              }
+            }
+          }
+        } else {
+          updSeatContainer.style.display = 'none';
+          updSeatSelect.innerHTML = '<option value="">Tanpa Kursi</option>';
+        }
+      } catch (err) {
+        updSeatContainer.style.display = 'none';
+      }
+
+      updateModal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeUpdateModal() {
+      updateModal.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    if (formUpdateTicket) {
+      formUpdateTicket.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const ticketId = document.getElementById('upd-ticket-id').value;
+        const seatId = updSeatSelect.value || null;
+
+        try {
+          const res = await fetch(`/api/tickets/${ticketId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ seat_id: seatId })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast(data.message, 'success');
+            closeUpdateModal();
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            showToast(data.message, 'error');
+          }
+        } catch (err) {
+          showToast('Gagal memperbarui tiket.', 'error');
+        }
+      });
+    }
+
+    // =============================================
+    //  Modal: Hapus Tiket (Admin Only)
+    // =============================================
+    const deleteModal = document.getElementById('modal-delete-ticket');
+    const btnConfirmDelete = document.getElementById('btn-confirm-delete');
+
+    function openDeleteTicketModal(t) {
+      document.getElementById('del-ticket-id').value = t.ticket_id;
+      deleteModal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+      deleteModal.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    if (btnConfirmDelete) {
+      btnConfirmDelete.addEventListener('click', async () => {
+        const ticketId = document.getElementById('del-ticket-id').value;
+        try {
+          const res = await fetch(`/api/tickets/${ticketId}`, { method: 'DELETE' });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast(data.message, 'success');
+            closeDeleteModal();
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            showToast(data.message, 'error');
+          }
+        } catch (err) {
+          showToast('Gagal menghapus tiket.', 'error');
+        }
+      });
+    }
+
+    // ESC to close modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAddTicketModal();
+        closeUpdateModal();
+        closeDeleteModal();
+      }
+    });
+  </script>
+
+  <%- include('partials/footer') %>
