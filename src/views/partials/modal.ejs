@@ -1,0 +1,228 @@
+<div id="modal-root">
+  <div id="login-modal" class="fixed inset-0 z-[100] hidden" aria-hidden="true">
+    <div data-close-login-modal class="absolute inset-0 auth-modal-backdrop"></div>
+
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+      <div class="auth-modal-panel w-full max-w-md">
+        <div class="auth-modal-header px-5 pt-5 flex items-start justify-between gap-3">
+          <div>
+            <h2 class="auth-modal-title">Masuk ke akun Anda</h2>
+            <p class="auth-muted mt-2">Gunakan kredensial Anda untuk melanjutkan ke dashboard.</p>
+          </div>
+          <button type="button" data-close-login-modal class="auth-modal-close" aria-label="Tutup modal">x</button>
+        </div>
+
+        <form action="/login" method="post" class="auth-modal-body p-5 grid gap-4 auth-modal-form" id="login-modal-form">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <div>
+            <label for="modal-username" class="form-label">Username</label>
+            <input id="modal-username" name="username" type="text" placeholder="Masukkan username" class="form-input" pattern="[A-Za-z0-9]+" title="Username hanya boleh berisi huruf dan angka tanpa titik atau simbol">
+          </div>
+          <div>
+            <label for="modal-password" class="form-label">Password</label>
+            <input id="modal-password" name="password" type="password" placeholder="Masukkan password" class="form-input">
+          </div>
+
+          <button type="submit" class="btn-primary">Masuk</button>
+
+          <p class="text-sm text-center text-[#7f6c56]">Belum punya akun? <a href="/register" class="auth-link">Daftar sekarang</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="password-modal" class="password-modal" aria-hidden="true">
+    <div class="password-modal-backdrop" data-close-password-modal></div>
+    <div class="password-modal-panel" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
+      <div class="password-modal-header">
+        <div>
+          <h2 id="password-modal-title" class="password-modal-title">Ubah Password</h2>
+          <p id="password-modal-copy" class="password-modal-copy">Perbarui password untuk menjaga keamanan akun Anda.</p>
+        </div>
+        <button type="button" class="password-modal-close" data-close-password-modal aria-label="Tutup">x</button>
+      </div>
+
+      <form action="/profile/change-password" method="post" class="password-form-grid" id="password-modal-form">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+        <input type="hidden" name="current_username" value="">
+        <input type="hidden" name="role" value="">
+        <div class="profile-field">
+          <label for="global-old-password">Password Lama</label>
+          <input id="global-old-password" name="old_password" type="password" placeholder="Masukkan password lama" required>
+        </div>
+        <div class="profile-field">
+          <label for="global-new-password">Password Baru</label>
+          <input id="global-new-password" name="new_password" type="password" placeholder="Masukkan password baru" required>
+        </div>
+        <div class="profile-field">
+          <label for="global-confirm-password">Konfirmasi Password Baru</label>
+          <input id="global-confirm-password" name="confirm_new_password" type="password" placeholder="Ulangi password baru" required>
+        </div>
+
+        <div class="profile-inline-actions">
+          <button type="button" class="profile-btn profile-btn-ghost" data-close-password-modal>Batal</button>
+          <button type="button" class="profile-btn profile-btn-primary" id="password-modal-submit">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const loginModal = document.getElementById('login-modal');
+    const passwordModal = document.getElementById('password-modal');
+
+    if (!loginModal) { return; }
+
+    const loginOpeners = document.querySelectorAll('[data-open-login-modal]');
+    const loginClosers = loginModal.querySelectorAll('[data-close-login-modal]');
+    const loginForm = loginModal.querySelector('#login-modal-form');
+    const passwordOpeners = document.querySelectorAll('[data-open-password-modal]');
+    const passwordClosers = passwordModal ? passwordModal.querySelectorAll('[data-close-password-modal]') : [];
+    const passwordTitle = passwordModal ? passwordModal.querySelector('#password-modal-title') : null;
+    const passwordCopy = passwordModal ? passwordModal.querySelector('#password-modal-copy') : null;
+    const passwordForm = passwordModal ? passwordModal.querySelector('#password-modal-form') : null;
+    const passwordSubmitButton = passwordModal ? passwordModal.querySelector('#password-modal-submit') : null;
+    const passwordUsernameInput = passwordModal ? passwordModal.querySelector('[name="current_username"]') : null;
+    const passwordRoleInput = passwordModal ? passwordModal.querySelector('[name="role"]') : null;
+
+    const syncBodyScroll = function () {
+      const loginOpen = loginModal.getAttribute('aria-hidden') === 'false';
+      const passwordOpen = passwordModal && passwordModal.classList.contains('is-open');
+      document.body.style.overflow = loginOpen || passwordOpen ? 'hidden' : '';
+    };
+
+    const openLoginModal = function () {
+      loginModal.classList.remove('hidden');
+      loginModal.setAttribute('aria-hidden', 'false');
+      syncBodyScroll();
+      const firstInput = loginModal.querySelector('#modal-username'); if (firstInput) firstInput.focus();
+    };
+
+    const closeLoginModal = function () { loginModal.classList.add('hidden'); loginModal.setAttribute('aria-hidden', 'true'); syncBodyScroll(); };
+
+    const openPasswordModal = function (trigger) {
+      if (!passwordModal) return;
+      const activeProfileForm = document.querySelector('[data-profile-form]');
+      const profileUsernameInput = activeProfileForm ? activeProfileForm.querySelector('[name="current_username"]') : null;
+      const profileRoleInput = activeProfileForm ? activeProfileForm.querySelector('[name="role"]') : null;
+
+      if (passwordUsernameInput && profileUsernameInput) passwordUsernameInput.value = profileUsernameInput.value || '';
+      if (passwordRoleInput && profileRoleInput) passwordRoleInput.value = profileRoleInput.value || '';
+      if (trigger && passwordTitle && trigger.dataset.passwordTitle) passwordTitle.textContent = trigger.dataset.passwordTitle;
+      if (trigger && passwordCopy && trigger.dataset.passwordCopy) passwordCopy.textContent = trigger.dataset.passwordCopy;
+      if (trigger && passwordForm && trigger.dataset.passwordAction) passwordForm.setAttribute('action', trigger.dataset.passwordAction);
+      passwordModal.classList.add('is-open'); passwordModal.setAttribute('aria-hidden', 'false'); syncBodyScroll();
+      const firstInput = passwordModal.querySelector('#global-old-password'); if (firstInput) firstInput.focus();
+    };
+
+    const closePasswordModal = function () { if (!passwordModal) return; passwordModal.classList.remove('is-open'); passwordModal.setAttribute('aria-hidden', 'true'); syncBodyScroll(); };
+
+    loginOpeners.forEach(btn => btn.addEventListener('click', openLoginModal));
+    loginClosers.forEach(btn => btn.addEventListener('click', closeLoginModal));
+    passwordOpeners.forEach(btn => btn.addEventListener('click', () => openPasswordModal(btn)));
+    passwordClosers.forEach(btn => btn.addEventListener('click', closePasswordModal));
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(loginForm);
+        const payload = {
+          username: formData.get('username'),
+          password: formData.get('password'),
+          _csrf: formData.get('_csrf')
+        };
+
+        try {
+          const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            closeLoginModal();
+            if (typeof showSuccessToast === 'function') {
+              showSuccessToast(result.message, 2500);
+            }
+            setTimeout(() => {
+              window.location.href = result.redirectUrl || '/';
+            }, 800);
+          } else {
+            if (typeof showErrorToast === 'function') {
+              showErrorToast(result.message, 4000);
+            }
+          }
+        } catch (err) {
+          if (typeof showErrorToast === 'function') {
+            showErrorToast('Error: ' + err.message, 4000);
+          }
+        }
+      });
+    }
+
+    const submitPasswordForm = async function (event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      if (!passwordForm) {
+        return;
+      }
+
+      const formData = new FormData(passwordForm);
+      const payload = {};
+
+      formData.forEach(function (value, key) {
+        payload[key] = value;
+      });
+
+      try {
+        const response = await fetch(passwordForm.getAttribute('action') || '/profile/change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          closePasswordModal();
+          passwordForm.reset();
+          if (typeof showSuccessToast === 'function') {
+            showSuccessToast(result.message || 'Password berhasil diubah', 3000);
+          }
+        } else if (typeof showErrorToast === 'function') {
+          showErrorToast(result.message || 'Password gagal diubah', 4000);
+        }
+      } catch (err) {
+        if (typeof showErrorToast === 'function') {
+          showErrorToast('Error: ' + err.message, 4000);
+        }
+      }
+    };
+
+    if (passwordForm) {
+      passwordForm.addEventListener('submit', submitPasswordForm);
+    }
+
+    if (passwordSubmitButton) {
+      passwordSubmitButton.addEventListener('click', submitPasswordForm);
+    }
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') return;
+      if (loginModal.getAttribute('aria-hidden') === 'false') closeLoginModal();
+      if (passwordModal && passwordModal.classList.contains('is-open')) closePasswordModal();
+    });
+  })();
+</script>

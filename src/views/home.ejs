@@ -1,0 +1,468 @@
+<%- include('partials/header', { title: 'Beranda - TikTakTuk' }) %>
+
+  <% if (!user || !user.isAuthenticated) { %>
+    <!-- LANDING PAGE UNTUK PENGGUNA BELUM LOGIN -->
+    <main class="landing-wrap">
+      <!-- Hero Section -->
+      <section class="landing-hero" id="hero-section">
+        <div class="landing-hero-grid">
+          <div class="hero-text-content">
+            <span class="hero-mini-badge">✨ Welcome to TikTakTuk</span>
+            <h1 class="hero-headline">Pesan & Kelola Tiket Event Lebih Mudah!</h1>
+            <p class="hero-subtext">Temukan konser musik terpopuler, seminar inspiratif, dan workshop kreatif secara
+              instan. Amankan kursi favorit Anda secara visual dan kelola pemesanan dalam satu dashboard modern.</p>
+
+            <div class="hero-actions-group">
+              <a href="/register" id="btn-hero-register" class="hero-btn-primary">Mulai Registrasi</a>
+              <button type="button" id="btn-hero-login" data-open-login-modal class="hero-btn-secondary">Buka
+                Login</button>
+            </div>
+          </div>
+
+          <div class="hero-visual-content">
+            <!-- Physical Concert Ticket Mockup in Pure CSS -->
+            <div class="concert-ticket" id="mockup-ticket">
+              <div class="ticket-glow-effect"></div>
+              <div class="ticket-top-band">
+                <span class="ticket-logo-mark">TT</span>
+                <span class="ticket-category-tag">VIP PASS</span>
+              </div>
+
+              <div class="ticket-main-info">
+                <h3 class="ticket-event-title">Melodi Senja Concert</h3>
+                <div class="ticket-meta-grid">
+                  <div class="meta-item">
+                    <span class="meta-label">TANGGAL</span>
+                    <strong class="meta-value">15 Mei 2026</strong>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">VENUE</span>
+                    <strong class="meta-value">Jakarta Convention Center</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ticket-divider-line">
+                <div class="notch notch-left"></div>
+                <div class="dashed-line"></div>
+                <div class="notch notch-right"></div>
+              </div>
+
+              <div class="ticket-bottom-band">
+                <div class="stub-details">
+                  <span class="stub-label">KURSI</span>
+                  <strong class="stub-value">VIP-ROW-A12</strong>
+                </div>
+                <div class="stub-barcode">
+                  <div class="barcode-bar small"></div>
+                  <div class="barcode-bar medium"></div>
+                  <div class="barcode-bar large"></div>
+                  <div class="barcode-bar small"></div>
+                  <div class="barcode-bar medium"></div>
+                  <div class="barcode-bar large"></div>
+                  <div class="barcode-bar small"></div>
+                  <div class="barcode-bar medium"></div>
+                  <div class="barcode-bar small"></div>
+                  <div class="barcode-bar large"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Platform Stats Section -->
+      <section class="landing-stats" id="stats-section">
+        <div class="stats-container-grid">
+          <div class="stat-card-item">
+            <div class="stat-icon-wrapper text-amber-600">🏛️</div>
+            <div class="stat-details">
+              <h3 class="stat-number">15+</h3>
+              <p class="stat-label">Venue Premium Terdaftar</p>
+            </div>
+          </div>
+          <div class="stat-card-item">
+            <div class="stat-icon-wrapper text-emerald-600">🎟️</div>
+            <div class="stat-details">
+              <h3 class="stat-number">1,200+</h3>
+              <p class="stat-label">Tiket Aktif & Terverifikasi</p>
+            </div>
+          </div>
+          <div class="stat-card-item">
+            <div class="stat-icon-wrapper text-blue-600">🎤</div>
+            <div class="stat-details">
+              <h3 class="stat-number">50+</h3>
+              <p class="stat-label">Artis Terdaftar & Aktif</p>
+            </div>
+          </div>
+          <div class="stat-card-item">
+            <div class="stat-icon-wrapper text-purple-600">🔒</div>
+            <div class="stat-details">
+              <h3 class="stat-number">99.9%</h3>
+              <p class="stat-label">Transaksi Aman & Sukses</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Three Platform Roles Section -->
+      <section class="landing-roles-section" id="roles-section">
+        <div class="section-title-block text-center">
+          <h2 class="landing-section-title">Solusi Lengkap untuk Seluruh Kebutuhan Event</h2>
+          <p class="landing-section-desc">TikTakTuk menghubungkan Penonton, Kreator Acara, dan Pengelola Gedung dalam
+            satu platform cerdas.</p>
+        </div>
+
+        <div class="roles-cards-grid">
+          <!-- Customer Card -->
+          <article class="role-highlight-card" id="card-role-customer">
+            <div class="role-emoji-circle bg-amber-50">🎟️</div>
+            <h3 class="role-highlight-title">Bagi Penonton</h3>
+            <p class="role-highlight-text">Cari event favorit dengan mudah, checkout aman berlimpah promo diskon, dan
+              lakukan pemesanan kursi secara visual interaktif menggunakan denah 2D.</p>
+            <a href="/register" class="role-action-link text-amber-700">Mulai Eksplorasi &rarr;</a>
+          </article>
+
+          <!-- Organizer Card -->
+          <article class="role-highlight-card" id="card-role-organizer">
+            <div class="role-emoji-circle bg-emerald-50">📈</div>
+            <h3 class="role-highlight-title">Bagi Penyelenggara</h3>
+            <p class="role-highlight-text">Daftarkan event baru dalam hitungan menit, atur jenis tiket (VIP, regular,
+              presale), alokasikan kuota kursi, dan pantau grafik penjualan real-time di dashboard Anda.</p>
+            <a href="/register" class="role-action-link text-emerald-700">Pasang Event Sekarang &rarr;</a>
+          </article>
+
+          <!-- Admin Card -->
+          <article class="role-highlight-card" id="card-role-admin">
+            <div class="role-emoji-circle bg-blue-50">🏛️</div>
+            <h3 class="role-highlight-title">Bagi Administrator</h3>
+            <p class="role-highlight-text">Lakukan pengawasan penuh secara menyeluruh. Kelola data venue gedung,
+              validasi keanggotaan artis, dan pantau integritas transaksi keuangan global.</p>
+            <a href="/register" class="role-action-link text-blue-700">Pelajari Otoritas &rarr;</a>
+          </article>
+        </div>
+      </section>
+
+      <!-- Featured Events Showcase Grid -->
+      <section class="landing-featured-events" id="events-section">
+        <div class="section-title-block flex justify-between items-end flex-wrap gap-4">
+          <div>
+            <h2 class="landing-section-title text-left">Jelajahi Event Pilihan</h2>
+            <p class="landing-section-desc text-left">Dapatkan tiket sebelum kehabisan! Kursi terbatas untuk setiap
+              kategori.</p>
+          </div>
+          <button type="button" data-open-login-modal class="landing-see-all-btn">Lihat Semua Event</button>
+        </div>
+
+        <div class="featured-events-grid">
+          <% if (typeof featuredEvents !=='undefined' && Array.isArray(featuredEvents) && featuredEvents.length> 0) { %>
+            <% featuredEvents.forEach(function(event) { %>
+              <article class="event-showcase-card">
+                <div class="event-thumbnail-placeholder bg-gradient-to-tr from-amber-200 to-amber-400">
+                  <span class="event-badge-label">
+                    <%= String(event.category || 'EVENT' ).toUpperCase() %>
+                  </span>
+                  <span class="event-icon-mock">🎵</span>
+                </div>
+                <div class="event-card-body">
+                  <h3 class="event-card-name">
+                    <%= event.name %>
+                  </h3>
+                  <div class="event-card-info-list">
+                    <div class="info-row">
+                      <span class="info-icon">📅</span>
+                      <span class="info-text">
+                        <%= event.date %>
+                      </span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-icon">📍</span>
+                      <span class="info-text">
+                        <%= event.venue %>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="event-card-footer flex justify-between items-center mt-3 pt-3 border-t border-stone-100">
+                    <div class="price-stack">
+                      <span class="price-label">Mulai dari</span>
+                      <strong class="price-value">Rp <%= (event.price_start || 0).toLocaleString('id-ID') %></strong>
+                    </div>
+                    <button type="button" data-open-login-modal class="event-action-buy-btn">Beli Tiket</button>
+                  </div>
+                </div>
+              </article>
+              <% }) %>
+                <% } else { %>
+                  <!-- Fallback dummy event cards if empty -->
+                  <article class="event-showcase-card">
+                    <div class="event-thumbnail-placeholder bg-gradient-to-tr from-amber-200 to-amber-400">
+                      <span class="event-badge-label">KONSER MUSIK</span>
+                      <span class="event-icon-mock">🎵</span>
+                    </div>
+                    <div class="event-card-body">
+                      <h3 class="event-card-name">Konser Melodi Senja 2026</h3>
+                      <div class="event-card-info-list">
+                        <div class="info-row"><span class="info-icon">📅</span><span class="info-text">15 Mei
+                            2026</span></div>
+                        <div class="info-row"><span class="info-icon">📍</span><span class="info-text">Jakarta
+                            Convention Center</span></div>
+                      </div>
+                      <div
+                        class="event-card-footer flex justify-between items-center mt-3 pt-3 border-t border-stone-100">
+                        <div class="price-stack">
+                          <span class="price-label">Mulai dari</span>
+                          <strong class="price-value">Rp 250.000</strong>
+                        </div>
+                        <button type="button" data-open-login-modal class="event-action-buy-btn">Beli Tiket</button>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="event-showcase-card">
+                    <div class="event-thumbnail-placeholder bg-gradient-to-tr from-emerald-200 to-emerald-400">
+                      <span class="event-badge-label">WORKSHOP</span>
+                      <span class="event-icon-mock">📷</span>
+                    </div>
+                    <div class="event-card-body">
+                      <h3 class="event-card-name">Photography Masterclass</h3>
+                      <div class="event-card-info-list">
+                        <div class="info-row"><span class="info-icon">📅</span><span class="info-text">20 Mei
+                            2026</span></div>
+                        <div class="info-row"><span class="info-icon">📍</span><span class="info-text">Bandung Creative
+                            Hub</span></div>
+                      </div>
+                      <div
+                        class="event-card-footer flex justify-between items-center mt-3 pt-3 border-t border-stone-100">
+                        <div class="price-stack">
+                          <span class="price-label">Mulai dari</span>
+                          <strong class="price-value">Rp 150.000</strong>
+                        </div>
+                        <button type="button" data-open-login-modal class="event-action-buy-btn">Beli Tiket</button>
+                      </div>
+                    </div>
+                  </article>
+                  <% } %>
+        </div>
+      </section>
+
+      <!-- Footer Banner Call to Action -->
+      <section class="landing-cta-banner-wrapper" id="cta-banner">
+        <div class="landing-cta-banner-container bg-gradient-to-r from-amber-800 to-amber-950 text-white">
+          <h2 class="cta-banner-title">Siap Menikmati Kemudahan Akses Event Terbaik?</h2>
+          <p class="cta-banner-desc text-stone-200">Dapatkan kemudahan reservasi tempat duduk secara real-time, nikmati
+            diskon promo belanja yang berlimpah, dan kelola aktivitas event Anda dalam hitungan detik.</p>
+          <div class="cta-banner-actions flex justify-center gap-4 flex-wrap mt-2">
+            <a href="/register" class="cta-banner-primary-btn">Daftar Akun Sekarang</a>
+            <button type="button" data-open-login-modal class="cta-banner-secondary-btn">Masuk Ke Akun</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <% } else { %>
+      <!-- HOME PORTAL KHUSUS PENGGUNA SUDAH LOGIN -->
+      <% const userDashboardHref=user.role==='ADMIN' ? `/admin?username=${encodeURIComponent(user.username)}` :
+        user.role==='ORGANIZER' ? `/organizer/dashboard?username=${encodeURIComponent(user.username)}` :
+        `/dashboard?username=${encodeURIComponent(user.username)}`; %>
+
+        <main class="portal-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <!-- Portal Welcome Header Card -->
+          <div
+            class="portal-welcome-jumbotron bg-gradient-to-r from-stone-800 to-stone-900 rounded-3xl p-8 mb-8 text-white relative overflow-hidden shadow-xl border border-stone-700/30">
+            <div
+              class="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(185,133,78,0.15)_0,transparent_45%)]">
+            </div>
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div>
+                <div class="flex items-center gap-3 mb-2 flex-wrap">
+                  <span
+                    class="portal-welcome-badge bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest">Selamat
+                    Datang</span>
+                  <span
+                    class="portal-role-pill bg-white/10 text-stone-200 border border-white/10 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <%= user.role %> PORTAL
+                  </span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Hai, <%= user.full_name || user.username
+                    %>!</h1>
+                <p class="text-stone-300 mt-2 text-sm md:text-base">Aktivitas akun dan koordinasi data event Anda siap
+                  dikelola.</p>
+              </div>
+              <a href="<%= userDashboardHref %>"
+                class="portal-dashboard-cta-btn bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 px-7 py-3.5 rounded-2xl font-extrabold text-sm hover:from-amber-600 hover:to-amber-700 transition-all shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/20 active:scale-95 text-center">
+                Buka Dashboard Utama &rarr;
+              </a>
+            </div>
+          </div>
+
+          <!-- Stats Summary Row -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Stat Card 1 -->
+            <div
+              class="bg-white/70 backdrop-blur-md rounded-2xl border border-stone-200/60 p-6 shadow-sm hover:translate-y-[-2px] transition-transform duration-200">
+              <div class="flex justify-between items-start mb-4">
+                <span class="text-xs font-extrabold text-stone-400 uppercase tracking-widest">Jumlah Tiket</span>
+                <div
+                  class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                  🎟️</div>
+              </div>
+              <p class="text-3xl font-extrabold text-stone-800 mb-1">
+                <%= typeof ticketCount !=='undefined' ? ticketCount : 0 %>
+              </p>
+              <p class="text-xs text-stone-500">Tiket terdaftar di sistem</p>
+            </div>
+
+            <!-- Stat Card 2 -->
+            <div
+              class="bg-white/70 backdrop-blur-md rounded-2xl border border-stone-200/60 p-6 shadow-sm hover:translate-y-[-2px] transition-transform duration-200">
+              <div class="flex justify-between items-start mb-4">
+                <span class="text-xs font-extrabold text-stone-400 uppercase tracking-widest">Total Event</span>
+                <div
+                  class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                  📅</div>
+              </div>
+              <p class="text-3xl font-extrabold text-stone-800 mb-1">
+                <%= typeof eventCount !=='undefined' ? eventCount : 0 %>
+              </p>
+              <p class="text-xs text-stone-500">Event terhubung</p>
+            </div>
+
+            <!-- Stat Card 3 -->
+            <div
+              class="bg-white/70 backdrop-blur-md rounded-2xl border border-stone-200/60 p-6 shadow-sm hover:translate-y-[-2px] transition-transform duration-200">
+              <div class="flex justify-between items-start mb-4">
+                <span class="text-xs font-extrabold text-stone-400 uppercase tracking-widest">Voucher Promo</span>
+                <div
+                  class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold">
+                  🏷️</div>
+              </div>
+              <p class="text-3xl font-extrabold text-stone-800 mb-1">
+                <%= typeof promoCount !=='undefined' ? promoCount : 0 %>
+              </p>
+              <p class="text-xs text-stone-500">Promo potongan aktif</p>
+            </div>
+
+            <!-- Stat Card 4 -->
+            <div
+              class="bg-white/70 backdrop-blur-md rounded-2xl border border-stone-200/60 p-6 shadow-sm hover:translate-y-[-2px] transition-transform duration-200">
+              <div class="flex justify-between items-start mb-4">
+                <span class="text-xs font-extrabold text-stone-400 uppercase tracking-widest">Total Belanja /
+                  Dana</span>
+                <div
+                  class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold">
+                  💰</div>
+              </div>
+              <p class="text-2xl font-extrabold text-stone-800 mb-1">
+                <% if (typeof totalSpent==='number' ) { %>
+                  Rp <%= totalSpent.toLocaleString('id-ID') %>
+                    <% } else { %>
+                      <%= totalSpent || 'Rp 0' %>
+                        <% } %>
+              </p>
+              <p class="text-xs text-stone-500">Estimasi transaksi akun</p>
+            </div>
+          </div>
+
+          <!-- Splits Section: Upcoming Tickets & Recommendations -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Column: Upcoming Tickets list -->
+            <div
+              class="lg:col-span-7 bg-white/70 backdrop-blur-md rounded-3xl border border-stone-200/60 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-6 border-b border-stone-100 flex justify-between items-center">
+                <div>
+                  <h2 class="text-lg font-bold text-stone-800">Tiket Terdekat & Jadwal Mendatang</h2>
+                  <p class="text-xs text-stone-500">Tiket terdaftar yang siap Anda gunakan</p>
+                </div>
+                <% const myTicketsHref=user.role==='CUSTOMER' ?
+                  `/my-tickets?username=${encodeURIComponent(user.username)}` : user.role==='ORGANIZER' ?
+                  `/organizer/tickets?username=${encodeURIComponent(user.username)}` :
+                  `/admin/tickets?username=${encodeURIComponent(user.username)}`; %>
+                  <a href="<%= myTicketsHref %>"
+                    class="text-amber-700 hover:text-amber-800 font-extrabold text-xs tracking-wider uppercase">Semua
+                    Tiket &rarr;</a>
+              </div>
+
+              <div class="divide-y divide-stone-100 flex-1">
+                <% if (typeof upcomingTickets !=='undefined' && Array.isArray(upcomingTickets) &&
+                  upcomingTickets.length> 0) { %>
+                  <% upcomingTickets.forEach(function(ticket) { %>
+                    <div class="p-5 hover:bg-stone-50/50 transition-colors flex justify-between items-center group">
+                      <div>
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                          <h3 class="font-bold text-stone-800 text-sm md:text-base">
+                            <%= ticket.event_name %>
+                          </h3>
+                          <span
+                            class="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                            <%= ticket.tier || 'VIP' %>
+                          </span>
+                        </div>
+                        <div class="flex items-center text-xs text-stone-500 gap-4 flex-wrap">
+                          <span class="flex items-center gap-1">📅 <%= ticket.date %></span>
+                          <span class="flex items-center gap-1">📍 <%= ticket.venue %></span>
+                        </div>
+                      </div>
+                      <div class="text-stone-300 group-hover:text-stone-500 transition-colors pl-2">
+                        &rarr;
+                      </div>
+                    </div>
+                    <% }) %>
+                      <% } else { %>
+                        <div class="p-12 text-center text-stone-500 flex flex-col items-center justify-center h-full">
+                          <span class="text-3xl mb-2">🎫</span>
+                          <p class="font-bold">Belum Ada Tiket Mendatang</p>
+                          <p class="text-xs text-stone-400 mt-1">Cari event seru dan pesan tiket Anda sekarang juga!</p>
+                        </div>
+                        <% } %>
+              </div>
+            </div>
+
+            <!-- Right Column: Featured Events recommendations -->
+            <div
+              class="lg:col-span-5 bg-white/70 backdrop-blur-md rounded-3xl border border-stone-200/60 p-6 shadow-sm flex flex-col">
+              <h2 class="text-lg font-bold text-stone-800 mb-1">Rekomendasi Acara Pilihan</h2>
+              <p class="text-xs text-stone-500 mb-4">Event paling dinanti untuk mengisi akhir pekan Anda</p>
+
+              <div class="grid gap-4 flex-1">
+                <% if (typeof featuredEvents !=='undefined' && Array.isArray(featuredEvents) && featuredEvents.length>
+                  0) { %>
+                  <% featuredEvents.slice(0, 2).forEach(function(event) { %>
+                    <% const checkEventHref=user.role==='CUSTOMER' ?
+                      `/events/${event.id}/seats?username=${encodeURIComponent(user.username)}` :
+                      `/events?username=${encodeURIComponent(user.username)}`; %>
+                      <div
+                        class="border border-stone-200/40 rounded-2xl p-4 bg-white/50 hover:bg-white transition-all flex flex-col justify-between">
+                        <div>
+                          <div class="flex justify-between items-start gap-2 mb-2">
+                            <span
+                              class="bg-stone-100 text-stone-600 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              <%= event.category || 'Event' %>
+                            </span>
+                            <strong class="text-amber-700 text-xs font-extrabold">Rp <%= (event.price_start ||
+                                0).toLocaleString('id-ID') %></strong>
+                          </div>
+                          <h3 class="font-bold text-stone-800 text-sm line-clamp-1">
+                            <%= event.name %>
+                          </h3>
+                          <p class="text-[11px] text-stone-400 mt-1">📍 <%= event.venue %> • 📅 <%= event.date %>
+                          </p>
+                        </div>
+
+                        <a href="<%= checkEventHref %>"
+                          class="block w-full text-center mt-3 bg-stone-800 text-white hover:bg-stone-900 transition-colors py-2 rounded-xl text-xs font-bold">
+                          Beli & Pilih Kursi
+                        </a>
+                      </div>
+                      <% }) %>
+                        <% } else { %>
+                          <div class="text-stone-400 text-center py-6 text-xs flex-1 flex items-center justify-center">
+                            Tidak ada rekomendasi event aktif saat ini.
+                          </div>
+                          <% } %>
+              </div>
+            </div>
+          </div>
+        </main>
+        <% } %>
+
+          <%- include('partials/footer') %>

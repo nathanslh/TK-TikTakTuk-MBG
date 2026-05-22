@@ -1,0 +1,76 @@
+<%- include('partials/header', { title: 'Registrasi Admin - TikTakTuk' }) %>
+
+<main class="auth-wrap">
+    <section class="auth-brand">
+        <div class="auth-logo">TT</div>
+        <h1 class="auth-title">TikTakTuk</h1>
+        <p class="auth-subtitle">Daftar sebagai admin</p>
+    </section>
+
+    <section class="auth-card">
+        <p><a class="auth-link" href="/register">← Kembali</a></p>
+        <h2 class="auth-section-title section-spacer">Registrasi Admin</h2>
+        <p class="auth-muted">Akun admin digunakan untuk kebutuhan pengelolaan internal sistem.</p>
+
+        <form class="form-grid" id="register-admin-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <div>
+                <label class="form-label" for="username">Username</label>
+                <input class="form-input" id="username" name="username" type="text" placeholder="Masukkan username admin" pattern="[A-Za-z0-9]+" title="Username hanya boleh berisi huruf dan angka tanpa titik atau simbol" required>
+            </div>
+
+            <div>
+                <label class="form-label" for="password">Password</label>
+                <input class="form-input" id="password" name="password" type="password" placeholder="Masukkan password" required>
+            </div>
+
+            <button class="btn-primary" type="submit">Daftar</button>
+        </form>
+    </section>
+
+    <p class="auth-footer">Sudah punya akun? <button type="button" data-open-login-modal class="auth-link">Login di sini</button></p>
+</main>
+
+<script>
+  (function () {
+    const form = document.getElementById('register-admin-form');
+
+    if (!form) return;
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {
+        username: formData.get('username'),
+        password: formData.get('password'),
+        _csrf: formData.get('_csrf')
+      };
+
+      try {
+        const response = await fetch('/register/admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessToast(result.message);
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
+        } else {
+          showErrorToast(result.message);
+        }
+      } catch (err) {
+        showErrorToast('Error: ' + err.message);
+      }
+    });
+  })();
+</script>
+
+<%- include('partials/footer') %>

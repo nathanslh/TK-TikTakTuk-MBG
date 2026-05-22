@@ -1,0 +1,468 @@
+/* Styles for the tickets module – redesigned to match mockup (blue/indigo theme)
+   Uses site theme variables from global.css */
+
+body.site-bg {
+  background: #f9fafb !important;
+}
+
+.header-shell[data-ticket-role] .page-badge {
+  display: none !important;
+}
+
+.tickets-hero {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 24px !important;
+  width: 100%;
+  margin-bottom: 32px !important;
+}
+
+.tickets-stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 16px !important;
+  width: 100%;
+}
+
+.tickets-stat-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 16px !important;
+  padding: 24px 32px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  transition: box-shadow 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+.tickets-stat-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.tickets-stat-label {
+  text-transform: uppercase !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #9ca3af !important;
+  letter-spacing: 0.06em !important;
+  margin-bottom: 10px !important;
+}
+
+.tickets-stat-value {
+  font-size: 36px !important;
+  font-weight: 800 !important;
+  color: #111827 !important;
+  line-height: 1 !important;
+}
+
+/* Add Tiket Button - Blue Pill Shape matching mockup */
+.tickets-add-btn {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  padding: 0.65rem 1.6rem !important;
+  border-radius: 9999px !important;
+  font-size: 0.88rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+}
+
+.tickets-add-btn:hover {
+  background: #1d4ed8 !important;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+.tickets-add-btn:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.3);
+  outline-offset: 2px;
+}
+
+/* Submit button for Create modal */
+.tickets-submit-btn {
+  background: linear-gradient(145deg, var(--accent), #a87542) !important;
+  color: #fffdf9 !important;
+  border: 1px solid #a87542 !important;
+  box-shadow: 0 10px 20px rgba(143, 96, 49, 0.22) !important;
+  font-weight: 700 !important;
+}
+
+.tickets-submit-btn:hover {
+  background: linear-gradient(145deg, #c28e57, #9f6f3d) !important;
+  box-shadow: 0 14px 24px rgba(143, 96, 49, 0.28) !important;
+}
+
+/* Ticket Logo Blue box containing golden ticket */
+.ticket-card-mark {
+  width: 3.2rem !important;
+  height: 3.2rem !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Status pill colors – borderless, clean badges matching mockup */
+.tickets-status-pill {
+  font-weight: 700 !important;
+  padding: 0.2rem 0.55rem !important;
+  border-radius: 6px !important;
+  font-size: 0.7rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  display: inline-block !important;
+  border: none !important;
+}
+
+.tickets-status-pill.status-valid {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.tickets-status-pill.status-used {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.tickets-status-pill.status-pending {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+/* Category pill styling */
+.tickets-category-pill {
+  font-weight: 700 !important;
+  padding: 0.2rem 0.55rem !important;
+  border-radius: 6px !important;
+  font-size: 0.7rem !important;
+  display: inline-block !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  border: none !important;
+}
+
+.tickets-category-pill.cat-regular {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+.tickets-category-pill.cat-vip {
+  background: #eff6ff !important;
+  color: #1e40af !important;
+}
+
+.tickets-category-pill.cat-wwvip {
+  background: #faf5ff !important;
+  color: #6b21a8 !important;
+}
+
+.tickets-title {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #111827;
+}
+
+.tickets-section-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.tickets-section-copy {
+  margin-top: 0.25rem;
+  color: #6b7280;
+}
+
+.tickets-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 1.5rem;
+}
+
+.tickets-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.tickets-filter-row {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.tickets-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tickets-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.tickets-empty {
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px dashed #d1d5db;
+  color: #6b7280;
+  background: #f9fafb;
+  text-align: center;
+}
+
+/* Ticket Card – Premium rounded card matching mockup */
+.ticket-card {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 2rem !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01) !important;
+  padding: 1.75rem 2rem !important;
+  transition: box-shadow 0.2s ease, transform 0.15s ease !important;
+  backdrop-filter: none !important;
+}
+
+.ticket-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
+}
+
+.ticket-card-main {
+  display: grid;
+  gap: 1.25rem;
+  flex-grow: 1;
+}
+
+.ticket-card-top {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.ticket-card-heading {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.ticket-card-pills {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ticket-card-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.ticket-card-code {
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+
+.ticket-card-label {
+  color: #9ca3af;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.ticket-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem 1.25rem;
+  margin-top: 0.25rem;
+}
+
+/* Metadata elements – unboxed clean text style matching mockup */
+.ticket-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.ticket-card-meta strong {
+  font-size: 0.9rem;
+  color: #1f2937;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ticket-card-meta strong svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.ticket-card-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+/* Action Buttons – Update and Hapus clean outline style matching mockup */
+.ticket-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.ticket-action-update:hover {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+
+.ticket-action-delete {
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+}
+
+.ticket-action-delete:hover {
+  background: #fff5f5 !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+}
+
+
+/* QR Section inside Ticket Card (Customer Only) */
+.ticket-qr-section {
+  display: flex;
+  align-items: center !important;
+  gap: 2rem !important;
+  height: 100% !important;
+  flex-shrink: 0;
+}
+
+.ticket-qr-divider {
+  width: 1px !important;
+  height: 120px !important;
+  background-color: #f3f4f6 !important;
+}
+
+.ticket-qr-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.65rem !important;
+  min-width: 110px !important;
+}
+
+.ticket-qr-box {
+  width: 100px !important;
+  height: 100px !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid #f3f4f6 !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02) !important;
+}
+
+.ticket-qr-caption {
+  font-size: 0.65rem !important;
+  font-weight: 800 !important;
+  color: #9ca3af !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+}
+
+/* Customer Custom Action Buttons */
+.ticket-action-qr-show {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.ticket-action-qr-show:hover {
+  background: #1f2937 !important;
+}
+
+.ticket-action-icon-only {
+  padding: 0.45rem 0.65rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ticket-action-icon-only:hover {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .ticket-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .tickets-toolbar {
+    align-items: flex-start;
+  }
+
+  .ticket-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tickets-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ticket-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1.5rem !important;
+  }
+  .ticket-qr-section {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    width: 100% !important;
+  }
+  .ticket-qr-divider {
+    width: 100% !important;
+    height: 1px !important;
+  }
+}

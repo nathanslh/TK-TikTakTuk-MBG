@@ -1,0 +1,69 @@
+<%- include('partials/header', { title: 'Profil Pelanggan - TikTakTuk' }) %>
+
+<main class="profile-wrap">
+  <div class="profile-layout profile-layout-customer">
+    <aside class="profile-sidebar profile-sidebar-customer">
+      <div class="profile-sidebar-head">
+        <div class="profile-avatar profile-avatar-customer" aria-hidden="true" data-profile-avatar><%= (customer && customer.full_name ? customer.full_name : (user && user.first_name ? user.first_name : 'U')).charAt(0).toUpperCase() %></div>
+        <div>
+          <p class="profile-kicker">Akun Pelanggan</p>
+          <h1 class="profile-title profile-title-sidebar" data-profile-title data-profile-summary-name><%= customer && customer.full_name ? customer.full_name : 'Profil Saya' %></h1>
+          <p class="profile-subtitle profile-subtitle-sidebar">Kelola data pribadi akun Anda.</p>
+        </div>
+      </div>
+
+      <div class="profile-summary-card">
+        <div class="profile-summary-row"><span>Username</span><strong data-profile-summary-username><%= customer && customer.username ? '@' + customer.username : '-' %></strong></div>
+        <div class="profile-summary-row"><span>Email</span><strong data-profile-summary-email><%= customer && customer.email ? customer.email : '-' %></strong></div>
+        <div class="profile-summary-row"><span>Telepon</span><strong data-profile-summary-phone><%= customer && customer.phone_number ? customer.phone_number : '-' %></strong></div>
+      </div>
+
+      <div class="profile-action-stack">
+        <button type="button" class="profile-btn profile-btn-secondary" data-open-password-modal data-password-title="Ubah Password" data-password-copy="Perbarui password untuk menjaga keamanan akun Anda.">Ubah Password</button>
+        <button type="button" class="profile-btn profile-btn-primary" data-profile-edit>Edit Profil</button>
+      </div>
+    </aside>
+
+    <section class="profile-card profile-panel" id="customer-profile-card">
+      <header class="profile-card-head profile-panel-head">
+        <div>
+          <p class="profile-panel-eyebrow">Informasi Profil</p>
+          <p class="profile-panel-copy">Data profil diambil dari database akun pelanggan.</p>
+        </div>
+        <span class="profile-role-badge profile-role-customer">Pelanggan</span>
+      </header>
+
+      <form action="/profile/update" method="post" class="profile-grid-form" data-profile-form>
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+        <input type="hidden" name="role" value="CUSTOMER">
+        <input type="hidden" name="current_username" value="<%= customer && customer.username ? customer.username : '' %>">
+        <div class="profile-field">
+          <label for="customer-full-name">Nama Lengkap</label>
+          <input id="customer-full-name" name="full_name" type="text" value="<%= customer && customer.full_name ? customer.full_name : '' %>" data-profile-editable disabled>
+        </div>
+
+        <div class="profile-field">
+          <label for="customer-phone">Nomor Telepon</label>
+          <input id="customer-phone" name="phone_number" type="tel" value="<%= customer && customer.phone_number ? customer.phone_number : '' %>" data-profile-editable disabled>
+        </div>
+
+        <div class="profile-field profile-field-full">
+          <label for="customer-email">Email</label>
+          <input id="customer-email" name="email" type="email" value="<%= customer && customer.email ? customer.email : '' %>" data-profile-editable disabled>
+        </div>
+
+        <div class="profile-field profile-field-full">
+          <label for="customer-username">Username</label>
+          <input id="customer-username" name="username" type="text" value="<%= customer && customer.username ? customer.username : '' %>" data-profile-editable pattern="[A-Za-z0-9]+" title="Username hanya boleh berisi huruf dan angka tanpa titik atau simbol" disabled>
+        </div>
+
+        <div class="profile-inline-actions" hidden>
+          <button type="button" class="profile-btn profile-btn-ghost" data-profile-cancel hidden>Batal</button>
+          <button type="submit" class="profile-btn profile-btn-primary" data-profile-save hidden>Simpan Perubahan</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

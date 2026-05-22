@@ -1,0 +1,94 @@
+<div class="header-shell">
+  <header class="site-header sticky top-0 z-50">
+    <nav class="site-nav" aria-label="Navigasi utama">
+      <% const currentUsername = user && user.username ? encodeURIComponent(user.username) : ''; %>
+      <% const currentRole = user && user.role ? String(user.role).toUpperCase() : ''; %>
+      <% const dashboardHref = currentRole === 'ADMIN' ? `/admin?username=${currentUsername}` : currentRole === 'ORGANIZER' ? `/organizer/dashboard?username=${currentUsername}` : currentUsername ? `/dashboard?username=${currentUsername}` : '/dashboard'; %>
+      <% const profileHref = currentRole === 'ADMIN' ? `/admin/profile?username=${currentUsername}` : currentRole === 'ORGANIZER' ? `/organizer/profile?username=${currentUsername}` : currentUsername ? `/profile?username=${currentUsername}` : '/profile'; %>
+
+      <a href="/<%= currentUsername ? '?username=' + currentUsername : '' %>" class="brand-link">
+        <span class="brand-mark">TT</span>
+        <span class="brand-copy">
+          <span class="brand-name">TikTakTuk</span>
+        </span>
+      </a>
+
+      <div class="nav-group">
+        <% if (user && user.isAuthenticated) { %>
+
+          <% if (currentRole === 'ADMIN') { %>
+            <a href="<%= dashboardHref %>" class="nav-link">Dashboard</a>
+            <a href="/admin/events?username=<%= currentUsername %>" class="nav-link">Manajemen Event</a>
+            <a href="/admin/venues?username=<%= currentUsername %>" class="nav-link">Manajemen Venue</a>
+            <a href="/admin/artists?username=<%= currentUsername %>" class="nav-link">Manajemen Artist</a>
+            <a href="/admin/ticket-categories?username=<%= currentUsername %>" class="nav-link">Kategori Tiket</a>
+            <a href="/admin/tickets?username=<%= currentUsername %>" class="nav-link">Manajemen Tiket</a>
+            <a href="/seats?username=<%= currentUsername %>" class="nav-link">Manajemen Kursi</a>
+            <a href="/orders?username=<%= currentUsername %>" class="nav-link">Daftar Order</a>
+            <a href="/promotions?username=<%= currentUsername %>" class="nav-link">Promosi</a>
+            <a href="<%= profileHref %>" class="nav-link">Hai, <strong><%= user.username %></strong></a>
+
+          <% } else if (currentRole === 'ORGANIZER') { %>
+            <a href="<%= dashboardHref %>" class="nav-link">Dashboard</a>
+            <a href="/organizer/events?username=<%= currentUsername %>" class="nav-link">Event Saya</a>
+            <a href="/organizer/venues?username=<%= currentUsername %>" class="nav-link">Manajemen Venue</a>
+            <a href="/organizer/artists?username=<%= currentUsername %>" class="nav-link">Artis</a>
+            <a href="/organizer/ticket-categories?username=<%= currentUsername %>" class="nav-link">Kategori Tiket</a>
+            <a href="/organizer/tickets?username=<%= currentUsername %>" class="nav-link">Manajemen Tiket</a>
+            <a href="/seats?username=<%= currentUsername %>" class="nav-link">Manajemen Kursi</a>
+            <a href="/orders?username=<%= currentUsername %>" class="nav-link">Daftar Order</a>
+            <a href="/promotions?username=<%= currentUsername %>" class="nav-link">Promosi</a>
+            <a href="<%= profileHref %>" class="nav-link">Hai, <strong><%= user.username %></strong></a>
+
+          <% } else { %>
+            <a href="<%= dashboardHref %>" class="nav-link">Dashboard</a>
+            <a href="/events?username=<%= currentUsername %>" class="nav-link">Cari Event</a>
+            <a href="/customer/ticket-categories?username=<%= currentUsername %>" class="nav-link">Kategori Tiket</a>
+            <a href="/customer/venues?username=<%= currentUsername %>" class="nav-link">Venue</a>
+            <a href="/customer/artists?username=<%= currentUsername %>" class="nav-link">Artis</a>
+            <a href="/my-tickets?username=<%= currentUsername %>" class="nav-link">Tiket Saya</a>
+            <a href="/seats?username=<%= currentUsername %>" class="nav-link">Manajemen Kursi</a>
+            <a href="/orders?username=<%= currentUsername %>" class="nav-link">Daftar Order</a>
+            <a href="/promotions?username=<%= currentUsername %>" class="nav-link">Promosi</a>
+            <a href="<%= profileHref %>" class="nav-link">Hai, <strong><%= user.username %></strong></a>
+          <% } %>
+
+          <a href="/logout" class="nav-link nav-link-ghost">Logout</a>
+        <% } else { %>
+          <button type="button" data-open-login-modal class="nav-link nav-toggle">Login</button>
+          <a href="/register" class="nav-link nav-link-strong">Registrasi</a>
+        <% } %>
+      </div>
+    </nav>
+  </header>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-link:not(.nav-link-ghost)'); // Exclude logout
+
+    navLinks.forEach(link => {
+      try {
+        const url = new URL(link.href, window.location.origin);
+        const linkPath = url.pathname;
+        
+        // Exact match
+        if (linkPath === currentPath) {
+          link.classList.add('active');
+        } 
+        // Prefix match for sub-pages, excluding main dashboards and root to prevent double highlights
+        else if (
+          linkPath !== '/' && 
+          linkPath !== '/admin' && 
+          linkPath !== '/dashboard' && 
+          linkPath !== '/organizer/dashboard' && 
+          linkPath !== '/customer/dashboard' && 
+          currentPath.startsWith(linkPath)
+        ) {
+          link.classList.add('active');
+        }
+      } catch (e) {}
+    });
+  });
+</script>
