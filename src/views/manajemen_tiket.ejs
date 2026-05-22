@@ -347,9 +347,10 @@
     const emptyState = document.getElementById('ticket-empty-state');
 
     function getTicketStatus(t) {
+      const isPaid = (t.payment_status && (t.payment_status.toLowerCase() === 'paid' || t.payment_status.toLowerCase() === 'lunas'));
+      if (!isPaid) return 'PENDING';
       if (t.has_seat) return 'TERPAKAI';
-      if (t.payment_status === 'Paid' || t.payment_status === 'Lunas') return 'VALID';
-      return 'PENDING';
+      return 'VALID';
     }
 
     function renderTickets(filteredTickets) {
@@ -723,12 +724,13 @@
         e.preventDefault();
         const ticketId = document.getElementById('upd-ticket-id').value;
         const seatId = updSeatSelect.value || null;
+        const statusVal = updStatusSelect.value;
 
         try {
           const res = await fetch(`/api/tickets/${ticketId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ seat_id: seatId })
+            body: JSON.stringify({ seat_id: seatId, status: statusVal })
           });
           const data = await res.json();
 

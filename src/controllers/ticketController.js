@@ -120,10 +120,10 @@ exports.updateTicket = async (req, res, next) => {
   const client = await db.pool.connect();
   try {
     const { id } = req.params;
-    const { seat_id } = req.body; 
+    const { seat_id, status } = req.body; 
     await client.query('BEGIN');
     const ticketCheck = await client.query(`
-      SELECT t.ticket_id, t.ticket_code, tc.tevent_id
+      SELECT t.ticket_id, t.ticket_code, tc.tevent_id, t.torder_id
       FROM ticket t
       JOIN ticket_category tc ON tc.category_id = t.tcategory_id
       WHERE t.ticket_id = $1
@@ -133,6 +133,15 @@ exports.updateTicket = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Tiket tidak ditemukan.' });
     }
     const ticket = ticketCheck.rows[0];
+
+    if (status) {
+      let newPaymentStatus = 'Pending';
+      if (status.toUpperCase() === 'VALID' || status.toUpperCase() === 'TERPAKAI') {
+        newPaymentStatus = 'Paid';
+      }
+      await client.query('UPDATE "ORDER" SET payment_status = $1 WHERE order_id = $2', [newPaymentStatus, ticket.torder_id]);
+    }
+
     await client.query('DELETE FROM has_relationship WHERE ticket_id = $1', [id]);
     if (seat_id) {
       const seatCheck = await client.query(`

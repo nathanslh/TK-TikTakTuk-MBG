@@ -159,16 +159,6 @@
                                       </svg>
                                       Edit
                                     </button>
-                                    <button type="button"
-                                      onclick='openDeleteEventModal("<%= evt.event_id %>","<%= evt.event_title %>")'
-                                      class="btn-hapus-premium">
-                                      <svg style="width:13px;height:13px;" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                      </svg>
-                                      Hapus
-                                    </button>
                                   </div>
                                   <% } %>
                         </div>
@@ -270,31 +260,7 @@
         </div>
       </div>
 
-      <!-- Delete Modal -->
-      <div class="seat-modal" id="modal-delete-event">
-        <div class="seat-modal-panel seat-modal-panel--narrow">
-          <div
-            style="padding:1.25rem;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(185,133,78,.14);">
-            <h2 style="font-size:1.35rem;font-weight:800;color:var(--ink);">Hapus Event</h2>
-            <button type="button" onclick="closeModal('modal-delete-event')" class="auth-modal-close">x</button>
-          </div>
-          <div style="padding:1.25rem;">
-            <div
-              style="padding:1rem;border-radius:14px;background:var(--surface-soft);color:var(--muted);line-height:1.6;">
-              Event "<strong id="del-event-name" style="color:var(--ink);"></strong>" akan dihapus dari daftar event.
-              Tindakan ini tidak dapat dibatalkan.
-            </div>
-            <input type="hidden" id="del-event-id">
-            <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1.25rem;">
-              <button type="button" onclick="closeModal('modal-delete-event')"
-                style="padding:0.6rem 1.5rem;border-radius:999px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,.8);color:var(--ink);cursor:pointer;">Batal</button>
-              <button type="button" onclick="confirmDeleteEvent()"
-                style="padding:0.6rem 1.5rem;border-radius:999px;font-weight:700;border:none;background:rgba(220,38,38,.1);color:#dc2626;cursor:pointer;">Hapus</button>
-            </div>
-          </div>
-        </div>
       </div>
-
       <script>
         (function () {
           let ticketRowIdx = 0;
@@ -421,13 +387,6 @@
             openModal('modal-event-form');
           };
 
-          // Delete Modal
-          window.openDeleteEventModal = function (id, name) {
-            document.getElementById('del-event-id').value = id;
-            document.getElementById('del-event-name').textContent = name;
-            openModal('modal-delete-event');
-          };
-
           // Form Submit (Create/Edit)
           document.getElementById('form-event').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -462,8 +421,9 @@
 
             try {
               let url, method;
-              if (mode === 'edit') { url = '/api/events/' + eventId; method = 'PUT'; }
-              else { url = '/api/events'; method = 'POST'; }
+              const currentUsername = "<%= user.username %>";
+              if (mode === 'edit') { url = '/api/events/' + eventId + '?username=' + encodeURIComponent(currentUsername); method = 'PUT'; }
+              else { url = '/api/events?username=' + encodeURIComponent(currentUsername); method = 'POST'; }
 
               const res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
               const data = await res.json();
@@ -477,23 +437,9 @@
             } catch (err) { showErrorToast('Error: ' + err.message); }
           });
 
-          // Confirm Delete
-          window.confirmDeleteEvent = async function () {
-            const id = document.getElementById('del-event-id').value;
-            try {
-              const res = await fetch('/api/events/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
-              const data = await res.json();
-              if (data.success) {
-                closeModal('modal-delete-event');
-                showSuccessToast(data.message);
-                setTimeout(function () { location.reload(); }, 800);
-              } else { showErrorToast(data.message || 'Gagal menghapus event'); }
-            } catch (err) { showErrorToast('Error: ' + err.message); }
-          };
-
           // ESC key
           document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') { ['modal-event-form', 'modal-delete-event'].forEach(function (id) { var el = document.getElementById(id); if (el && el.classList.contains('is-open')) closeModal(id); }); }
+            if (e.key === 'Escape') { ['modal-event-form'].forEach(function (id) { var el = document.getElementById(id); if (el && el.classList.contains('is-open')) closeModal(id); }); }
           });
         })();
       </script>

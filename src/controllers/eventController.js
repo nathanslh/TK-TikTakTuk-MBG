@@ -69,9 +69,12 @@ exports.createEvent = async (req, res, next) => {
     if (!title || !date || !time || !venue_id) {
       return res.status(400).json({ success: false, message: 'Judul, tanggal, waktu, dan venue wajib diisi.' });
     }
-    const orgResult = await db.query('SELECT organizer_id FROM organizer LIMIT 1');
-    const organizerId = orgResult.rows[0]?.organizer_id;
-    if (!organizerId) return res.status(400).json({ success: false, message: 'Tidak ada organizer terdaftar.' });
+    const username = req.query.username;
+    const organizer = await getRoleAccount('ORGANIZER', username);
+    if (!organizer || !organizer.organizer_id) {
+      return res.status(400).json({ success: false, message: 'Tidak dapat menemukan data organizer. Pastikan Anda login sebagai Organizer.' });
+    }
+    const organizerId = organizer.organizer_id;
     const eventDatetime = date + ' ' + time + ':00';
     const eventResult = await db.query(
       'INSERT INTO event (event_id, event_datetime, event_title, venue_id, organizer_id) VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING event_id',
@@ -150,19 +153,6 @@ exports.updateEvent = async (req, res, next) => {
     return res.json({ success: true, message: 'Event "' + title.trim() + '" berhasil diperbarui!' });
   } catch (err) {
     console.error('Update event error:', err.message);
-    return res.status(400).json({ success: false, message: err.message });
-  }
-};
-exports.deleteEvent = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    await db.query('DELETE FROM ticket_category WHERE tevent_id = $1', [id]);
-    await db.query('DELETE FROM event_artist WHERE event_id = $1', [id]);
-    const result = await db.query('DELETE FROM event WHERE event_id = $1 RETURNING event_title', [id]);
-    if (result.rowCount === 0) return res.status(404).json({ success: false, message: 'Event tidak ditemukan.' });
-    return res.json({ success: true, message: 'Event "' + result.rows[0].event_title + '" berhasil dihapus!' });
-  } catch (err) {
-    console.error('Delete event error:', err.message);
     return res.status(400).json({ success: false, message: err.message });
   }
 };

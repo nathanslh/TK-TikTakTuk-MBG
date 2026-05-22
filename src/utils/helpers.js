@@ -99,22 +99,32 @@ async function getCustomerDashboardData(customerId) {
   const summaryResult = await db.query(
     `
       SELECT
-        COUNT(DISTINCT t.ticket_id)::int AS ticket_count,
-        COUNT(DISTINCT e.event_id)::int AS event_count,
         COALESCE((
-          SELECT COUNT(*)::int
+          SELECT COUNT(DISTINCT t.ticket_id)
+          FROM "ORDER" o
+          JOIN ticket t ON t.torder_id = o.order_id
+          WHERE o.customer_id = c.customer_id AND UPPER(o.payment_status) IN ('PAID', 'LUNAS')
+        ), 0)::int AS ticket_count,
+        COALESCE((
+          SELECT COUNT(DISTINCT e.event_id)
+          FROM "ORDER" o
+          JOIN ticket t ON t.torder_id = o.order_id
+          JOIN ticket_category tc ON tc.category_id = t.tcategory_id
+          JOIN event e ON e.event_id = tc.tevent_id
+          WHERE o.customer_id = c.customer_id AND UPPER(o.payment_status) IN ('PAID', 'LUNAS')
+        ), 0)::int AS event_count,
+        COALESCE((
+          SELECT COUNT(*)
           FROM promotion p
           WHERE CURRENT_DATE BETWEEN p.start_date AND p.end_date
-        ), 0) AS promo_count,
-        COALESCE(SUM(o.total_amount), 0)::numeric(12,2) AS total_spent
+        ), 0)::int AS promo_count,
+        COALESCE((
+          SELECT SUM(o.total_amount)
+          FROM "ORDER" o
+          WHERE o.customer_id = c.customer_id AND UPPER(o.payment_status) IN ('PAID', 'LUNAS')
+        ), 0)::numeric(12,2) AS total_spent
       FROM customer c
-      LEFT JOIN "ORDER" o ON o.customer_id = c.customer_id
-      LEFT JOIN ticket t ON t.torder_id = o.order_id
-      LEFT JOIN ticket_category tc ON tc.category_id = t.tcategory_id
-      LEFT JOIN event e ON e.event_id = tc.tevent_id
-      WHERE c.customer_id = $1
-      GROUP BY c.customer_id
-    `,
+      WHERE c.customer_id = $1    `,
     [customerId]
   );
   const upcomingTicketsResult = await db.query(
@@ -126,7 +136,7 @@ async function getCustomerDashboardData(customerId) {
         v.venue_name AS venue,
         tc.category_name AS tier
       FROM customer c
-      JOIN "ORDER" o ON o.customer_id = c.customer_id
+      JOIN "ORDER" o ON o.customer_id = c.customer_id AND UPPER(o.payment_status) IN ('PAID', 'LUNAS')
       JOIN ticket t ON t.torder_id = o.order_id
       JOIN ticket_category tc ON tc.category_id = t.tcategory_id
       JOIN event e ON e.event_id = tc.tevent_id
@@ -163,8 +173,14 @@ async function getAdminDashboardData() {
       SELECT
         (SELECT COUNT(*)::int FROM user_account) AS total_users,
         (SELECT COUNT(*)::int FROM event) AS total_events,
-        COALESCE((SELECT SUM(total_amount) FROM "ORDER" WHERE UPPER(payment_status) = 'PAID'), 0)::numeric(12,2) AS total_revenue,
-        (SELECT COUNT(*)::int FROM promotion WHERE CURRENT_DATE BETWEEN start_date AND end_date) AS active_promos
+        COALESCE((SELECT SUM(total_amount) FROM "ORDER" WHERE UPPER(payment_status) IN ('PAID', 'LUNAS')), 0)::numeric(12,2) AS total_revenue,
+        (SELECT COUNT(*)::int FROM promotion WHERE CURRENT_DATE BETWEEN start_date AND end_date) AS active_promos,
+        (SELECT COUNT(*)::int FROM venue) AS total_venues,
+        (SELECT COUNT(DISTINCT venue_id)::int FROM seat) AS reserved_venues_count,
+        (SELECT COALESCE(MAX(capacity), 0)::int FROM venue) AS largest_capacity,
+        (SELECT COUNT(*)::int FROM promotion WHERE UPPER(discount_type) = 'PERCENTAGE' AND CURRENT_DATE BETWEEN start_date AND end_date) AS promo_percentage,
+        (SELECT COUNT(*)::int FROM promotion WHERE UPPER(discount_type) IN ('NOMINAL', 'FIXED_AMOUNT', 'FIXED') AND CURRENT_DATE BETWEEN start_date AND end_date) AS promo_nominal,
+        (SELECT COUNT(*)::int FROM order_promotion) AS total_promo_usage
     `),
     db.query(
       `
@@ -194,6 +210,12 @@ async function getAdminDashboardData() {
     totalEvents: Number(summary.total_events) || 0,
     totalRevenue: formatCurrency(summary.total_revenue),
     activePromos: Number(summary.active_promos) || 0,
+    totalVenues: Number(summary.total_venues) || 0,
+    reservedVenuesCount: Number(summary.reserved_venues_count) || 0,
+    largestCapacity: Number(summary.largest_capacity) || 0,
+    promoPercentage: Number(summary.promo_percentage) || 0,
+    promoNominal: Number(summary.promo_nominal) || 0,
+    totalPromoUsage: Number(summary.total_promo_usage) || 0,
     recentOrders: recentOrdersResult.rows.map((row) => ({
       id: row.id,
       buyer_name: row.buyer_name,
@@ -219,12 +241,13 @@ async function getOrganizerDashboardData(organizerId, organizerDisplayName) {
           e.event_title AS name,
           e.event_datetime AS date,
           v.venue_name AS venue,
-          COUNT(t.ticket_id)::int AS tickets_sold,
+          COUNT(CASE WHEN UPPER(o.payment_status) IN ('PAID', 'LUNAS') THEN t.ticket_id END)::int AS tickets_sold,
           CASE WHEN e.event_datetime >= NOW() THEN 'active' ELSE 'past' END AS status
         FROM event e
         JOIN venue v ON v.venue_id = e.venue_id
         LEFT JOIN ticket_category tc ON tc.tevent_id = e.event_id
         LEFT JOIN ticket t ON t.tcategory_id = tc.category_id
+        LEFT JOIN "ORDER" o ON o.order_id = t.torder_id
         WHERE e.organizer_id = $1
         GROUP BY e.event_id, e.event_title, e.event_datetime, v.venue_name
         ORDER BY e.event_datetime ASC
@@ -235,7 +258,7 @@ async function getOrganizerDashboardData(organizerId, organizerDisplayName) {
       `
         SELECT COALESCE(SUM(o.total_amount), 0)::numeric(12,2) AS revenue
         FROM "ORDER" o
-        WHERE EXISTS (
+        WHERE UPPER(o.payment_status) IN ('PAID', 'LUNAS') AND EXISTS (
           SELECT 1
           FROM ticket t
           JOIN ticket_category tc ON tc.category_id = t.tcategory_id
@@ -250,7 +273,7 @@ async function getOrganizerDashboardData(organizerId, organizerDisplayName) {
       `
         SELECT COUNT(DISTINCT o.customer_id)::int AS attendees
         FROM "ORDER" o
-        WHERE EXISTS (
+        WHERE UPPER(o.payment_status) IN ('PAID', 'LUNAS') AND EXISTS (
           SELECT 1
           FROM ticket t
           JOIN ticket_category tc ON tc.category_id = t.tcategory_id

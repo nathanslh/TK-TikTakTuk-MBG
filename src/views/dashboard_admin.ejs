@@ -89,17 +89,17 @@
       <div class="space-y-4 mb-6">
         <div class="flex justify-between items-center text-sm">
           <span class="text-slate-500">Total Venue Terdaftar</span>
-          <span class="font-bold text-slate-800"><%= typeof totalEvents !== 'undefined' ? totalEvents : 0 %> Lokasi</span>
+          <span class="font-bold text-slate-800"><%= typeof totalVenues !== 'undefined' ? totalVenues : 0 %> Lokasi</span>
         </div>
         <div class="border-t border-slate-50"></div>
         <div class="flex justify-between items-center text-sm">
           <span class="text-slate-500">Reserved Seating</span>
-          <span class="font-bold text-slate-800"><%= typeof activePromos !== 'undefined' ? activePromos : 0 %> Venue</span>
+          <span class="font-bold text-slate-800"><%= typeof reservedVenuesCount !== 'undefined' ? reservedVenuesCount : 0 %> Venue</span>
         </div>
         <div class="border-t border-slate-50"></div>
         <div class="flex justify-between items-center text-sm">
           <span class="text-slate-500">Kapasitas Terbesar</span>
-          <span class="font-bold text-slate-800">1,000 Kursi</span>
+          <span class="font-bold text-slate-800"><%= typeof largestCapacity !== 'undefined' ? new Intl.NumberFormat('id-ID').format(largestCapacity) : 0 %> Kursi</span>
         </div>
       </div>
       <a href="/admin/venues" class="block w-full text-center py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors">
@@ -120,17 +120,17 @@
       <div class="space-y-4 mb-6">
         <div class="flex justify-between items-center text-sm">
           <span class="text-slate-500">Promo Persentase</span>
-          <span class="font-bold text-slate-800">1 Aktif</span>
+          <span class="font-bold text-slate-800"><%= typeof promoPercentage !== 'undefined' ? promoPercentage : 0 %> Aktif</span>
         </div>
         <div class="border-t border-slate-50"></div>
         <div class="flex justify-between items-center text-sm">
           <span class="text-slate-500">Promo Potongan Nominal</span>
-          <span class="font-bold text-slate-800">1 Aktif</span>
+          <span class="font-bold text-slate-800"><%= typeof promoNominal !== 'undefined' ? promoNominal : 0 %> Aktif</span>
         </div>
         <div class="border-t border-slate-50"></div>
         <div class="flex justify-between items-center text-sm">
           <span class="text-slate-500">Total Penggunaan</span>
-          <span class="font-bold text-slate-800">57 Kali</span>
+          <span class="font-bold text-slate-800"><%= typeof totalPromoUsage !== 'undefined' ? totalPromoUsage : 0 %> Kali</span>
         </div>
       </div>
       <a href="/admin/promotions" class="block w-full text-center py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors">

@@ -39,7 +39,6 @@ router.get('/organizer/events', eventController.organizerEvents);
 router.get('/admin/events', eventController.adminEvents);
 router.post('/api/events', eventController.createEvent);
 router.put('/api/events/:id', eventController.updateEvent);
-router.delete('/api/events/:id', eventController.deleteEvent);
 router.get('/admin/artists', artistController.adminArtists);
 router.get('/customer/artists', artistController.customerArtists);
 router.get('/organizer/artists', artistController.organizerArtists);

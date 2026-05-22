@@ -349,9 +349,10 @@
     const emptyState = document.getElementById('ticket-empty-state');
 
     function getTicketStatus(t) {
+      const isPaid = (t.payment_status && (t.payment_status.toLowerCase() === 'paid' || t.payment_status.toLowerCase() === 'lunas'));
+      if (!isPaid) return 'PENDING';
       if (t.has_seat) return 'TERPAKAI';
-      if (t.payment_status === 'Paid' || t.payment_status === 'Lunas') return 'VALID';
-      return 'PENDING';
+      return 'VALID';
     }
 
     function renderTickets(filteredTickets) {

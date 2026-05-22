@@ -14,7 +14,7 @@ exports.customerDashboard = async (req, res, next) => {
         title: 'Customer Tidak Ditemukan'
       });
     }
-    const customerDashboard = await getCustomerDashboardData(customer.user_id);
+    const customerDashboard = await getCustomerDashboardData(customer.customer_id);
     return res.render('dashboard_customer', {
       title: 'Customer Dashboard - TikTakTuk',
       user: {
@@ -59,6 +59,12 @@ exports.adminDashboard = async (req, res, next) => {
       totalEvents: adminDashboard.totalEvents,
       totalRevenue: adminDashboard.totalRevenue,
       activePromos: adminDashboard.activePromos,
+      totalVenues: adminDashboard.totalVenues,
+      reservedVenuesCount: adminDashboard.reservedVenuesCount,
+      largestCapacity: adminDashboard.largestCapacity,
+      promoPercentage: adminDashboard.promoPercentage,
+      promoNominal: adminDashboard.promoNominal,
+      totalPromoUsage: adminDashboard.totalPromoUsage,
       recentOrders: adminDashboard.recentOrders
     });
   } catch (err) {
@@ -73,7 +79,7 @@ exports.organizerDashboard = async (req, res, next) => {
         title: 'Organizer Tidak Ditemukan'
       });
     }
-    const organizerDashboard = await getOrganizerDashboardData(organizer.user_id, organizer.display_name);
+    const organizerDashboard = await getOrganizerDashboardData(organizer.organizer_id, organizer.display_name);
     return res.render('dashboard_organizer', {
       title: 'Organizer Dashboard',
       user: {

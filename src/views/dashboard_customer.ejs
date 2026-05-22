@@ -79,7 +79,7 @@
         <h2 class="text-lg font-bold text-slate-800 mb-1">Tiket Mendatang</h2>
         <p class="text-sm text-slate-500">Tiket pertunjukan yang akan datang</p>
       </div>
-      <a href="/my-tickets" class="text-blue-600 font-semibold text-sm hover:text-blue-700">Lihat Semua</a>
+      <a href="/my-tickets?username=<%= encodeURIComponent(user.username) %>" class="text-blue-600 font-semibold text-sm hover:text-blue-700">Lihat Semua</a>
     </div>
 
     <div class="divide-y divide-slate-100">
